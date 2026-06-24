@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#0f1115" />
+<title>Family Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<div class="app">
+
+  <!-- ───────── Top bar ───────── -->
+  <header class="topbar">
+    <div class="greet">
+      <div class="greet-hi" id="greeting">Good morning</div>
+      <div class="greet-home" id="homeName">The family</div>
+    </div>
+    <div class="clockblock">
+      <div class="clock" id="clock">7:24</div>
+      <div class="datert" id="date">Wednesday, June 24</div>
+    </div>
+  </header>
+
+  <!-- ───────── Tabs ───────── -->
+  <nav class="tabs" id="tabs">
+    <button class="tab is-active" data-view="home"><span>Home</span></button>
+    <button class="tab" data-view="week"><span>Week</span></button>
+    <button class="tab" data-view="chores"><span>Chores</span></button>
+    <button class="tab" data-view="grocery"><span>Grocery</span></button>
+  </nav>
+
+  <main class="stage">
+
+    <!-- ============ HOME ============ -->
+    <section class="view is-active" id="view-home">
+      <div class="home-grid">
+
+        <!-- Weather hero -->
+        <div class="card hero" id="hero">
+          <div class="hero-main">
+            <div class="hero-icon" id="heroIcon"></div>
+            <div class="hero-temp">
+              <div class="temp-now" id="tempNow">--</div>
+              <div class="temp-cond" id="tempCond">—</div>
+              <div class="temp-loc" id="tempLoc">Backyard</div>
+            </div>
+          </div>
+          <div class="hero-side">
+            <div class="metric"><span class="m-label">High / Low</span><span class="m-val" id="mHiLo">--</span></div>
+            <div class="metric"><span class="m-label">Humidity</span><span class="m-val" id="mHum">--</span></div>
+            <div class="metric"><span class="m-label">Rain today</span><span class="m-val rain" id="mRain">--</span></div>
+            <div class="metric"><span class="m-label">Indoor</span><span class="m-val" id="mIndoor">--</span></div>
+          </div>
+        </div>
+
+        <!-- Calendar -->
+        <div class="card calendar">
+          <div class="card-head">
+            <h2>Up next</h2>
+            <span class="card-sub">Family calendar</span>
+          </div>
+          <div class="agenda" id="agenda"></div>
+        </div>
+
+        <!-- Chores -->
+        <div class="card chores">
+          <div class="card-head">
+            <h2>Chores</h2>
+            <span class="card-sub" id="choreProgress">—</span>
+          </div>
+          <div class="chore-list" id="choreList"></div>
+        </div>
+
+        <!-- Rain trend -->
+        <div class="card trend">
+          <div class="card-head">
+            <h2>Rain · last 12h</h2>
+            <span class="card-sub" id="trendTotal">—</span>
+          </div>
+          <div class="rainchart" id="rainChart"></div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ============ WEEK ============ -->
+    <section class="view" id="view-week">
+      <div class="card week-card">
+        <div class="card-head"><h2>This week</h2><span class="card-sub">All events</span></div>
+        <div class="weekgrid" id="weekGrid"></div>
+      </div>
+    </section>
+
+    <!-- ============ CHORES ============ -->
+    <section class="view" id="view-chores">
+      <div class="card chores-full">
+        <div class="card-head"><h2>Chore chart</h2><span class="card-sub" id="choreProgress2">—</span></div>
+        <div class="chore-board" id="choreBoard"></div>
+      </div>
+    </section>
+
+    <!-- ============ GROCERY ============ -->
+    <section class="view" id="view-grocery">
+      <div class="card grocery-full">
+        <div class="card-head"><h2>Grocery list</h2><span class="card-sub" id="groceryCount">—</span></div>
+        <form class="grocery-add" id="groceryAdd">
+          <input id="groceryInput" type="text" placeholder="Add an item…" autocomplete="off" />
+          <button type="submit" id="groceryAddBtn" aria-label="Add">Add</button>
+        </form>
+        <div class="grocery-list" id="groceryList"></div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ───────── Footer ───────── -->
+  <footer class="statusbar">
+    <span class="live"><i class="pulse" id="pulse"></i> <span id="liveText">Live</span></span>
+    <span class="status-mid" id="statusMid">Tap a chore to check it off</span>
+    <span class="status-right" id="updated">—</span>
+  </footer>
+
+</div>
+
+<script src="config.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

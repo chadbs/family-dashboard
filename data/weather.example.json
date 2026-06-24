@@ -1,0 +1,12 @@
+{
+  "temperature_F": 68,
+  "condition": "Partly cloudy",
+  "hi": 74,
+  "lo": 59,
+  "humidity": 54,
+  "rain_in": 0.42,
+  "indoor_F": 71,
+  "indoor_hum": 42,
+  "rain12h": [0, 0, 0, 0, 0.02, 0.08, 0.18, 0.1, 0.04, 0, 0, 0],
+  "updated": "2026-06-24T07:24:00"
+}

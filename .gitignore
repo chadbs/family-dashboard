@@ -1,0 +1,19 @@
+# ── The whole point: never sync live state, so code updates can't wipe it ──
+data/state.json
+data/weather.json
+data/*.tmp
+
+# Screenshots the Surface posts for agent monitoring (optional, can be large)
+screenshots/*.png
+
+# Logs produced on the Surface (auto-update.bat writes scripts/update.log)
+*.log
+scripts/*.log
+
+# Machine-local Claude Code settings (permissions, etc.)
+.claude/settings.local.json
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+node_modules/
