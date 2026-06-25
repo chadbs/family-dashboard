@@ -318,6 +318,12 @@ const server = http.createServer(async (req, res) => {
 
   // ---- API: voice assistant — drives Claude Code to do what was asked ----
   if (pathname === "/api/voice" && req.method === "POST") {
+    // Only the wall itself (the kiosk on localhost) may issue voice commands —
+    // never other devices on the network. This endpoint can edit files + run
+    // git/node, so we keep it strictly loopback-only.
+    const ra = req.socket.remoteAddress || "";
+    if (!(ra === "127.0.0.1" || ra === "::1" || ra === "::ffff:127.0.0.1"))
+      return sendJSON(res, 403, { ok: false, error: "Voice commands can only run from the wall itself." });
     const body = await readBody(req);
     let text = "";
     try { text = String(JSON.parse(body).text || "").slice(0, 600); } catch {}
@@ -344,7 +350,10 @@ const server = http.createServer(async (req, res) => {
     ].join("\n");
 
     const { spawn } = require("child_process");
-    const child = spawn("claude", ["-p", "--output-format", "text", "--dangerously-skip-permissions"], { cwd: ROOT, shell: true });
+    // Scoped tools (NOT full bypass): edit files, look things up, validate, and
+    // commit — but no arbitrary shell. Covers calendar/grocery/recipes/app edits.
+    const TOOLS = "Read Edit Write Glob Grep WebFetch WebSearch Bash(node:*) Bash(git:*)";
+    const child = spawn("claude", ["-p", "--output-format", "text", "--allowedTools", TOOLS], { cwd: ROOT, shell: true });
     let out = "", err = "", done = false;
     const finish = (obj) => { if (done) return; done = true; clearTimeout(timer); sendJSON(res, 200, obj); };
     const timer = setTimeout(() => { try { child.kill(); } catch {} finish({ ok: false, error: "That took too long — try a simpler command." }); }, 120000);
@@ -352,10 +361,11 @@ const server = http.createServer(async (req, res) => {
     child.stdout.on("data", d => out += d.toString());
     child.stderr.on("data", d => err += d.toString());
     child.on("close", (code) => {
-      if (/not recognized|command not found|ENOENT/i.test(err))
+      const all = out + " " + err;   // Claude prints some errors to stdout, some to stderr
+      if (/not recognized|command not found|ENOENT/i.test(all))
         return finish({ ok: false, error: "Claude Code isn't installed here yet — run: npm i -g @anthropic-ai/claude-code, then claude setup-token." });
-      if (code !== 0 && /authenticat|invalid.*credential|401|setup-token|run .*login/i.test(err))
-        return finish({ ok: false, error: "Claude needs to sign in on this device — run: claude setup-token." });
+      if (code !== 0 && /authenticat|invalid.*credential|\b401\b|setup-token|run .*login/i.test(all))
+        return finish({ ok: false, error: "Claude needs to sign in on this device — run: claude setup-token (then try again)." });
       const summary = out.trim().replace(/\s+/g, " ").slice(0, 300);
       if (code === 0 && summary) finish({ ok: true, summary });
       else finish({ ok: false, error: summary || err.trim().replace(/\s+/g, " ").slice(0, 200) || "Couldn't complete that." });
