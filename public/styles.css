@@ -206,7 +206,7 @@ body {
 .edit-btn:active { transform: scale(.96); }
 .edit-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
 
-.chore-chart { display: flex; flex-direction: column; gap: clamp(6px, .8vw, 10px); overflow: auto; }
+.chore-chart { display: flex; flex-direction: column; gap: clamp(6px, .8vw, 10px); overflow-y: auto; overflow-x: hidden; }
 .cc-row { display: grid; grid-template-columns: minmax(120px, 1.7fr) repeat(7, minmax(0, 1fr));
   gap: clamp(5px, .6vw, 8px); align-items: stretch; }
 .cc-head { position: sticky; top: 0; background: var(--card); z-index: 1; padding-bottom: 4px; }
