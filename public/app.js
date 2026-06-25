@@ -160,13 +160,53 @@ function ensureWeek() {
 
 function slotFor(c) { return c.cadence === "weekly" ? "w" : String(todayIndex()); }
 function isDone(id, slot) { return !!(STATE.choreDone[id] && STATE.choreDone[id][slot]); }
+function choreColor(id) { const c = effectiveChores().find(x => x.id === id); return color(c && c.who); }
+
+// Flip a checkbox; returns true if it just became DONE (so we can celebrate).
 function toggleSlot(id, slot) {
   STATE.choreDone[id] = STATE.choreDone[id] || {};
-  if (STATE.choreDone[id][slot]) delete STATE.choreDone[id][slot];
-  else STATE.choreDone[id][slot] = true;
+  let nowDone;
+  if (STATE.choreDone[id][slot]) { delete STATE.choreDone[id][slot]; nowDone = false; }
+  else { STATE.choreDone[id][slot] = true; nowDone = true; }
   if (!Object.keys(STATE.choreDone[id]).length) delete STATE.choreDone[id];
   renderHomeChores(); renderChart();
   saveState();
+  return nowDone;
+}
+
+/* ---- kid-friendly celebration: a little confetti + an encouraging word,
+        localized to where they tapped — never a full-screen takeover ---- */
+const CHEERS = ["Great job!", "Nice!", "Woohoo!", "Way to go!", "Awesome!", "High five!", "You did it!", "Yay!"];
+function celebrate(x, y, accent) {
+  const fx = $("fx"); if (!fx) return;
+  // Fall back to screen center if we don't have tap coordinates.
+  if (!x && !y) { x = window.innerWidth / 2; y = window.innerHeight / 2; }
+  const palette = [accent || "#F59E0B", "#3B82F6", "#8B5CF6", "#10B981", "#F472B6", "#FBBF24", "#38BDF8"];
+
+  for (let i = 0; i < 18; i++) {
+    const p = document.createElement("i");
+    p.className = "confetti";
+    const ang = Math.random() * Math.PI * 2;
+    const dist = 45 + Math.random() * 85;
+    p.style.left = x + "px";
+    p.style.top = y + "px";
+    p.style.background = palette[i % palette.length];
+    p.style.setProperty("--dx", Math.cos(ang) * dist + "px");
+    p.style.setProperty("--dy", (Math.sin(ang) * dist - (25 + Math.random() * 45)) + "px");
+    p.style.setProperty("--rot", (Math.random() * 600 - 300) + "deg");
+    p.style.animationDelay = (Math.random() * 60) + "ms";
+    fx.appendChild(p);
+    setTimeout(() => p.remove(), 1200);
+  }
+
+  const msg = document.createElement("div");
+  msg.className = "cheer";
+  msg.textContent = CHEERS[Math.floor(Math.random() * CHEERS.length)];
+  msg.style.left = x + "px";
+  msg.style.top = (y - 26) + "px";
+  msg.style.color = accent || "var(--good)";
+  fx.appendChild(msg);
+  setTimeout(() => msg.remove(), 1300);
 }
 
 // Compact list on the Home tab — today's status, tap to toggle.
@@ -288,14 +328,18 @@ $("choreEditBtn").addEventListener("click", () => {
   else { renderChart(); renderHomeChores(); }
 });
 
-// Tap a grid cell (or a Home chore row) to check it off.
+// Tap a grid cell (or a Home chore row) to check it off — celebrate on done.
 $("choreChart").addEventListener("click", (e) => {
   const cell = e.target.closest(".cc-cell");
-  if (cell && cell.dataset.id) toggleSlot(cell.dataset.id, cell.dataset.slot);
+  if (cell && cell.dataset.id && toggleSlot(cell.dataset.id, cell.dataset.slot)) {
+    celebrate(e.clientX, e.clientY, choreColor(cell.dataset.id));
+  }
 });
 $("choreList").addEventListener("click", (e) => {
   const el = e.target.closest(".chore");
-  if (el) toggleSlot(el.dataset.id, el.dataset.slot);
+  if (el && toggleSlot(el.dataset.id, el.dataset.slot)) {
+    celebrate(e.clientX, e.clientY, choreColor(el.dataset.id));
+  }
 });
 
 // Editor: live-save name typing + who/cadence changes, handle delete + add.

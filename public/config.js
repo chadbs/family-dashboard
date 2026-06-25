@@ -33,14 +33,12 @@ window.CONFIG = {
   //          "weekly" -> checkmarks clear each Monday
   // The list itself is code (syncs from your PC). Which ones are CHECKED is
   // state (lives on the Surface, survives every update).
+  // These are just the STARTING chores. Add/edit/delete them right on the
+  // touchscreen with the "Edit" button on the Chores tab — your changes are
+  // saved on the device and survive every update.
   chores: [
-    { id: "dishes",  name: "Empty dishwasher",     who: "Kenzie",  cadence: "daily"  },
-    { id: "trash",   name: "Take out trash",       who: "Chad",    cadence: "daily"  },
-    { id: "tidytoys",name: "Tidy up toys",         who: "Addison", cadence: "daily"  },
-    { id: "plants",  name: "Water the plants",     who: "Addison", cadence: "daily"  },
-    { id: "lunches", name: "Make lunches",         who: "Kenzie",  cadence: "daily"  },
-    { id: "laundry", name: "Laundry",              who: "Chad",    cadence: "weekly" },
-    { id: "vacuum",  name: "Vacuum living room",   who: "Chad",    cadence: "weekly" },
+    { id: "windows", name: "Wash windows",   who: "Addison", cadence: "weekly" },
+    { id: "shoes",   name: "Clean up shoes", who: "Sophie",  cadence: "weekly" },
   ],
 
   // ── Calendar ─────────────────────────────────────────────────────────
