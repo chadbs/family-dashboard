@@ -98,8 +98,15 @@
     <!-- ============ CHORES ============ -->
     <section class="view" id="view-chores">
       <div class="card chores-full">
-        <div class="card-head"><h2>Chore chart</h2><span class="card-sub" id="choreProgress2">—</span></div>
-        <div class="chore-board" id="choreBoard"></div>
+        <div class="card-head">
+          <h2>Chore chart</h2>
+          <div class="chart-head-right">
+            <span class="card-sub" id="choreProgress2">—</span>
+            <button class="edit-btn" id="choreEditBtn" type="button">Edit</button>
+          </div>
+        </div>
+        <div class="chore-chart" id="choreChart"></div>
+        <div class="chore-editor" id="choreEditor" hidden></div>
       </div>
     </section>
 

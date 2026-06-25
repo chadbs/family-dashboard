@@ -11,7 +11,7 @@ const DOW  = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Satur
 const DOWS = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 const MON  = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 
-let STATE = { choresDone: {}, keys: {} };
+let STATE = { choreDone: {}, choreWeek: null, grocery: [] };
 
 /* ---------------------------------------------------------------- helpers */
 function color(who) { return (C.people && C.people[who]) || "#8A93A6"; }
@@ -122,52 +122,198 @@ function renderWeather(w) {
   $("trendTotal").textContent = `${total.toFixed(2)}" total`;
 }
 
-/* ---------------------------------------------------------------- chores */
-function resetChoresIfNeeded() {
-  const tk = todayKey(), wk = weekKey();
-  STATE.keys = STATE.keys || {};
-  let changed = false;
-  if (STATE.keys.daily !== tk) {
-    C.chores.filter(c => c.cadence === "daily").forEach(c => { if (STATE.choresDone[c.id]) { delete STATE.choresDone[c.id]; changed = true; } });
-    STATE.keys.daily = tk; changed = true;
+/* ---------------------------------------------------------------- chores
+   A weekly chore chart: rows are chores, columns are Mon–Sun. Daily chores
+   get a box per day; weekly chores get one box for the whole week. The whole
+   grid clears each Monday. The chore LIST seeds from config.js but, once you
+   edit it on the touchscreen, lives in state.json (survives code updates).
+   Checkmarks (STATE.choreDone) always live in state.json.                    */
+const DAY_ABBR = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+
+// The chore list in effect: your touchscreen-edited list, else config defaults.
+function effectiveChores() {
+  return (Array.isArray(STATE.chores) && STATE.chores.length) ? STATE.chores : (C.chores || []);
+}
+
+function weekStartDate(d = new Date()) {
+  const x = new Date(d); x.setHours(0, 0, 0, 0);
+  const dow = (x.getDay() + 6) % 7;            // Monday = 0 … Sunday = 6
+  x.setDate(x.getDate() - dow);
+  return x;
+}
+function weekKeyOf(d = new Date()) {
+  const w = weekStartDate(d);
+  return `${w.getFullYear()}-${String(w.getMonth() + 1).padStart(2, "0")}-${String(w.getDate()).padStart(2, "0")}`;
+}
+function todayIndex() { return (new Date().getDay() + 6) % 7; }
+
+// Clear the whole grid when a new week starts (Monday).
+function ensureWeek() {
+  STATE.choreDone = STATE.choreDone || {};
+  const wk = weekKeyOf();
+  if (STATE.choreWeek !== wk) {
+    STATE.choreDone = {};
+    STATE.choreWeek = wk;
+    saveState();
   }
-  if (STATE.keys.weekly !== wk) {
-    C.chores.filter(c => c.cadence === "weekly").forEach(c => { if (STATE.choresDone[c.id]) { delete STATE.choresDone[c.id]; changed = true; } });
-    STATE.keys.weekly = wk; changed = true;
-  }
-  if (changed) saveState();
 }
 
-function choreRow(c, showCadence) {
-  const done = !!STATE.choresDone[c.id];
-  const col = color(c.who);
-  return `<div class="chore ${done ? "done" : ""}" data-id="${c.id}">
-    <div class="chk"><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg></div>
-    <div class="chore-name">${c.name}</div>
-    ${showCadence ? `<span class="chore-cadence">${c.cadence}</span>` : ""}
-    <div class="chore-badge" style="background:${col}" title="${c.who}">${initials(c.who)}</div>
-  </div>`;
-}
-
-function renderChores() {
-  $("choreList").innerHTML = C.chores.map(c => choreRow(c, false)).join("");
-  $("choreBoard").innerHTML = C.chores.map(c => choreRow(c, true)).join("");
-  const done = C.chores.filter(c => STATE.choresDone[c.id]).length;
-  const txt = `${done} of ${C.chores.length} done`;
-  $("choreProgress").textContent = txt;
-  $("choreProgress2").textContent = txt;
-}
-
-function toggleChore(id) {
-  if (STATE.choresDone[id]) delete STATE.choresDone[id];
-  else STATE.choresDone[id] = true;
-  renderChores();
+function slotFor(c) { return c.cadence === "weekly" ? "w" : String(todayIndex()); }
+function isDone(id, slot) { return !!(STATE.choreDone[id] && STATE.choreDone[id][slot]); }
+function toggleSlot(id, slot) {
+  STATE.choreDone[id] = STATE.choreDone[id] || {};
+  if (STATE.choreDone[id][slot]) delete STATE.choreDone[id][slot];
+  else STATE.choreDone[id][slot] = true;
+  if (!Object.keys(STATE.choreDone[id]).length) delete STATE.choreDone[id];
+  renderHomeChores(); renderChart();
   saveState();
 }
 
-document.addEventListener("click", (e) => {
+// Compact list on the Home tab — today's status, tap to toggle.
+function renderHomeChores() {
+  const chores = effectiveChores();
+  $("choreList").innerHTML = chores.map(c => {
+    const slot = slotFor(c), done = isDone(c.id, slot), col = color(c.who);
+    return `<div class="chore ${done ? "done" : ""}" data-id="${c.id}" data-slot="${slot}">
+      <div class="chk"><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg></div>
+      <div class="chore-name">${escapeHtml(c.name)}</div>
+      ${c.cadence === "weekly" ? `<span class="chore-cadence">weekly</span>` : ""}
+      <div class="chore-badge" style="background:${col}" title="${escapeHtml(c.who || "")}">${c.who ? initials(c.who) : "?"}</div>
+    </div>`;
+  }).join("");
+  const done = chores.filter(c => isDone(c.id, slotFor(c))).length;
+  $("choreProgress").textContent = `${done} of ${chores.length} done`;
+}
+
+// The full weekly grid on the Chores tab.
+function renderChart() {
+  const chores = effectiveChores();
+  const ws = weekStartDate(), ti = todayIndex();
+  let head = `<div class="cc-row cc-head"><div class="cc-name">This week</div>`;
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(ws); d.setDate(d.getDate() + i);
+    head += `<div class="cc-day ${i === ti ? "today" : ""}"><span>${DAY_ABBR[i]}</span><small>${d.getDate()}</small></div>`;
+  }
+  head += `</div>`;
+
+  const chk = `<div class="chk"><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg></div>`;
+  const rows = chores.map(c => {
+    const col = color(c.who);
+    let cells;
+    if (c.cadence === "weekly") {
+      const done = isDone(c.id, "w");
+      cells = `<div class="cc-cell cc-week ${done ? "done" : ""}" data-id="${c.id}" data-slot="w">
+        ${chk}<span class="cc-week-label">${done ? "Done this week" : "Tap when done"}</span></div>`;
+    } else {
+      cells = "";
+      for (let i = 0; i < 7; i++) {
+        cells += `<div class="cc-cell ${isDone(c.id, String(i)) ? "done" : ""} ${i === ti ? "today" : ""} ${i > ti ? "future" : ""}" data-id="${c.id}" data-slot="${i}">${chk}</div>`;
+      }
+    }
+    return `<div class="cc-row ${c.cadence === "weekly" ? "is-weekly" : ""}">
+      <div class="cc-name"><span class="chore-badge sm" style="background:${col}" title="${escapeHtml(c.who || "")}">${c.who ? initials(c.who) : "?"}</span><span class="cc-title">${escapeHtml(c.name)}</span></div>${cells}</div>`;
+  }).join("");
+
+  $("choreChart").innerHTML = head + rows;
+
+  // Per-person tally of boxes checked this week.
+  const tally = {};
+  chores.forEach(c => {
+    const n = STATE.choreDone[c.id] ? Object.keys(STATE.choreDone[c.id]).length : 0;
+    if (c.who && n) tally[c.who] = (tally[c.who] || 0) + n;
+  });
+  const summary = Object.entries(tally).map(([w, n]) => `${initials(w)} ${n}`).join("  ·  ");
+  $("choreProgress2").textContent = summary || "Tap a box to check it off";
+}
+
+/* ---- editing the chore list (touchscreen) ---- */
+let editingChores = false;
+
+function peopleOptions(sel) {
+  return Object.keys(C.people || {}).map(n =>
+    `<option value="${escapeHtml(n)}" ${n === sel ? "selected" : ""}>${escapeHtml(n)}</option>`).join("");
+}
+
+// First edit copies the config defaults into state, then state is authoritative.
+function customizeChores() {
+  if (!Array.isArray(STATE.chores) || !STATE.chores.length) {
+    STATE.chores = (C.chores || []).map(c => ({ id: c.id, name: c.name, who: c.who, cadence: c.cadence }));
+  }
+}
+function addChore(name, who, cadence) {
+  name = (name || "").trim(); if (!name) return;
+  customizeChores();
+  STATE.chores.push({ id: "c" + Date.now().toString(36), name, who: who || null, cadence: cadence === "weekly" ? "weekly" : "daily" });
+  saveState(); renderEditor();
+}
+function deleteChore(id) {
+  customizeChores();
+  STATE.chores = STATE.chores.filter(c => c.id !== id);
+  if (STATE.choreDone[id]) delete STATE.choreDone[id];
+  saveState(); renderEditor();
+}
+function updateChore(id, field, val) {
+  customizeChores();
+  const c = STATE.chores.find(x => x.id === id);
+  if (c) { c[field] = val; saveState(); }
+}
+
+function renderEditor() {
+  const chores = effectiveChores();
+  const rows = chores.map(c => `<div class="ce-row" data-id="${c.id}">
+    <input class="ce-name" type="text" value="${escapeHtml(c.name)}" data-field="name" />
+    <select class="ce-who" data-field="who">${peopleOptions(c.who)}</select>
+    <select class="ce-cad" data-field="cadence">
+      <option value="daily" ${c.cadence === "daily" ? "selected" : ""}>Daily</option>
+      <option value="weekly" ${c.cadence === "weekly" ? "selected" : ""}>Weekly</option>
+    </select>
+    <button class="ce-del" data-del="${c.id}" type="button" aria-label="Delete">&times;</button>
+  </div>`).join("");
+  $("choreEditor").innerHTML = `<div class="ce-list">${rows}</div>
+    <form class="ce-add" id="choreAddForm">
+      <input class="ce-name" id="ceAddName" type="text" placeholder="New chore…" autocomplete="off" />
+      <select class="ce-who" id="ceAddWho">${peopleOptions(Object.keys(C.people || {})[0])}</select>
+      <select class="ce-cad" id="ceAddCad"><option value="daily">Daily</option><option value="weekly">Weekly</option></select>
+      <button class="ce-addbtn" type="submit">Add</button>
+    </form>`;
+}
+
+$("choreEditBtn").addEventListener("click", () => {
+  editingChores = !editingChores;
+  $("choreEditBtn").textContent = editingChores ? "Done" : "Edit";
+  $("choreEditBtn").classList.toggle("active", editingChores);
+  $("choreChart").hidden = editingChores;
+  $("choreEditor").hidden = !editingChores;
+  if (editingChores) renderEditor();
+  else { renderChart(); renderHomeChores(); }
+});
+
+// Tap a grid cell (or a Home chore row) to check it off.
+$("choreChart").addEventListener("click", (e) => {
+  const cell = e.target.closest(".cc-cell");
+  if (cell && cell.dataset.id) toggleSlot(cell.dataset.id, cell.dataset.slot);
+});
+$("choreList").addEventListener("click", (e) => {
   const el = e.target.closest(".chore");
-  if (el) toggleChore(el.dataset.id);
+  if (el) toggleSlot(el.dataset.id, el.dataset.slot);
+});
+
+// Editor: live-save name typing + who/cadence changes, handle delete + add.
+function onEditorChange(e) {
+  const row = e.target.closest(".ce-row");
+  if (row && e.target.dataset.field) updateChore(row.dataset.id, e.target.dataset.field, e.target.value);
+}
+$("choreEditor").addEventListener("input", onEditorChange);
+$("choreEditor").addEventListener("change", onEditorChange);
+$("choreEditor").addEventListener("click", (e) => {
+  const del = e.target.closest("[data-del]");
+  if (del) deleteChore(del.dataset.del);
+});
+$("choreEditor").addEventListener("submit", (e) => {
+  if (e.target.id !== "choreAddForm") return;
+  e.preventDefault();
+  addChore($("ceAddName").value, $("ceAddWho").value, $("ceAddCad").value);
+  $("ceAddName").value = ""; $("ceAddName").focus();
 });
 
 /* ---------------------------------------------------------------- grocery */
@@ -330,11 +476,10 @@ async function loadState() {
   try {
     const r = await fetch("/api/state", { cache: "no-store" });
     const s = await r.json();
-    STATE = Object.assign({ choresDone: {}, keys: {}, grocery: [] }, s);
-    STATE.choresDone = STATE.choresDone || {};
-    STATE.keys = STATE.keys || {};
+    STATE = Object.assign({ choreDone: {}, choreWeek: null, grocery: [] }, s);
+    STATE.choreDone = STATE.choreDone || {};
     STATE.grocery = STATE.grocery || [];
-  } catch { STATE = { choresDone: {}, keys: {}, grocery: [] }; }
+  } catch { STATE = { choreDone: {}, choreWeek: null, grocery: [] }; }
 }
 
 let saveTimer = null;
@@ -363,8 +508,9 @@ async function boot() {
   $("homeName").textContent = C.home || "The family";
   renderClock();
   await loadState();
-  resetChoresIfNeeded();
-  renderChores();
+  ensureWeek();
+  renderHomeChores();
+  renderChart();
   renderGrocery();
   renderAgenda();
   renderWeek();
@@ -375,11 +521,12 @@ async function boot() {
   setInterval(applyTheme, 1000 * 60 * 5);
   setInterval(loadWeather, 1000 * 30);
   setInterval(loadCalendar, 1000 * 60 * 15);
-  setInterval(() => { resetChoresIfNeeded(); renderChores(); }, 1000 * 60 * 5);
+  setInterval(() => { ensureWeek(); renderHomeChores(); renderChart(); }, 1000 * 60 * 5);
   // re-pull state periodically so edits from other devices show up
   setInterval(async () => {
-    if (document.activeElement === $("groceryInput")) return; // don't clobber typing
-    await loadState(); resetChoresIfNeeded(); renderChores(); renderGrocery();
+    if (editingChores) return;                                 // don't clobber an edit in progress
+    if (document.activeElement === $("groceryInput")) return;  // don't clobber typing
+    await loadState(); ensureWeek(); renderHomeChores(); renderChart(); renderGrocery();
   }, 1000 * 20);
   // watch for a new code version (after a git pull) and reload automatically
   watchVersion();
