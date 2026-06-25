@@ -695,6 +695,18 @@ function showLove() {
   $("loveModal").hidden = false;
 }
 function hideLove() { $("loveModal").hidden = true; }
+// One-time surprise note: shows immediately, once per distinct message.
+function showLoveNow() {
+  const msg = C.loveNow;
+  if (!msg) return false;
+  if (localStorage.getItem("loveNowSeen") === msg) return false;   // already shown this one
+  localStorage.setItem("loveNowSeen", msg);
+  $("loveMsg").textContent = msg;
+  $("loveEyebrow").textContent = "💌 A surprise note for " + (C.loveTo || "you");
+  spawnLoveHearts();
+  $("loveModal").hidden = false;
+  return true;
+}
 function maybeShowLove() {
   if (!C.loveTo || !(C.loveMessages || []).length) return;
   const target = (C.loveHour != null) ? C.loveHour : 7;
@@ -722,7 +734,7 @@ async function boot() {
   renderWeek();
   await loadWeather();
   loadCalendar();
-  maybeShowLove();
+  if (!showLoveNow()) maybeShowLove();   // surprise note wins; else the daily one
 
   setInterval(maybeShowLove, 1000 * 60);   // check each minute so it pops at loveHour
   setInterval(renderClock, 1000 * 10);

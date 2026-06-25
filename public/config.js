@@ -121,6 +121,10 @@ window.CONFIG = {
     "A summer breeze is lovely, but your laugh is better. Also your eyes. Also your everything. 🌴💚",
   ],
 
+  // One-time SURPRISE note: shows immediately (once) the moment the screen
+  // gets this update — on top of the daily 7am ones. Set back to null to clear.
+  loveNow: "Kenzie — this note cut the line ahead of all the morning ones just to say: I love you. Ridiculously. With my whole heart AND my entire mush of a brain. (Your green eyes started it.) 💚🌴",
+
   // ── Look & feel ──────────────────────────────────────────────────────
   // "auto" switches to a dark theme in the evening; or force "light" / "dark".
   theme: "auto",
