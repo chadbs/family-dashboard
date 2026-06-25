@@ -123,7 +123,7 @@ window.CONFIG = {
 
   // One-time SURPRISE note: shows immediately (once) the moment the screen
   // gets this update — on top of the daily 7am ones. Set back to null to clear.
-  loveNow: "Kenzie — if you can read this, the wall just updated itself JUST to tell you that you're devastatingly gorgeous and I'm hopelessly in love with you. The robots agree. 💚🌴",
+  loveNow: "Kenzie — fun fact: the entire internet sped up today just to rush you this message — you're breathtaking, I'm hopelessly in love with you, and the palm trees are (as always) jealous. 🌴💚",
 
   // ── Look & feel ──────────────────────────────────────────────────────
   // "auto" switches to a dark theme in the evening; or force "light" / "dark".
