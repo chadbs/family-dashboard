@@ -26,6 +26,7 @@ const PUBLIC    = path.join(ROOT, "public");
 const DATA_DIR  = path.join(ROOT, "data");
 const STATE     = path.join(DATA_DIR, "state.json");
 const WEATHER   = path.join(DATA_DIR, "weather.json");
+const SECRETS   = path.join(DATA_DIR, "secrets.json");   // gitignored: Gmail creds etc.
 
 // Make sure the data folder exists.
 if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
@@ -212,6 +213,59 @@ function expandEvent(e, now, horizon) {
   return out;
 }
 
+// Send a plain-text email through Gmail SMTP (implicit TLS, no dependencies).
+// Needs a Gmail App Password (not the account password).
+function sendGmail({ user, pass, to, subject, text, fromName }) {
+  return new Promise((resolve, reject) => {
+    const tls = require("tls");
+    const enc = s => Buffer.from(String(s), "utf8").toString("base64");
+    const encSubject = /[^\x00-\x7F]/.test(subject) ? `=?UTF-8?B?${enc(subject)}?=` : subject;
+    const body =
+      `From: ${fromName ? `${fromName} <${user}>` : user}\r\n` +
+      `To: ${to}\r\n` +
+      `Subject: ${encSubject}\r\n` +
+      `MIME-Version: 1.0\r\n` +
+      `Content-Type: text/plain; charset=utf-8\r\n\r\n` +
+      String(text).replace(/\r?\n/g, "\r\n").replace(/^\./gm, "..") +
+      `\r\n.\r\n`;
+
+    // Each step: the response code we expect, then the command to send next.
+    const steps = [
+      { code: 220, send: "EHLO familydashboard\r\n" },
+      { code: 250, send: "AUTH LOGIN\r\n" },
+      { code: 334, send: enc(user) + "\r\n" },
+      { code: 334, send: enc(pass) + "\r\n" },
+      { code: 235, send: `MAIL FROM:<${user}>\r\n` },
+      { code: 250, send: `RCPT TO:<${to}>\r\n` },
+      { code: 250, send: "DATA\r\n" },
+      { code: 354, send: body },
+      { code: 250, send: "QUIT\r\n" },
+      { code: 221, send: null },
+    ];
+
+    const socket = tls.connect(465, "smtp.gmail.com", { servername: "smtp.gmail.com" });
+    let stage = 0, buf = "", done = false;
+    const fail = m => { if (done) return; done = true; try { socket.destroy(); } catch {} reject(new Error(m)); };
+    socket.setEncoding("utf8");
+    socket.setTimeout(20000, () => fail("timed out talking to Gmail"));
+    socket.on("error", e => fail(String((e && e.message) || e)));
+    socket.on("data", chunk => {
+      buf += chunk;
+      let i;
+      while ((i = buf.indexOf("\n")) >= 0) {
+        const line = buf.slice(0, i).replace(/\r$/, ""); buf = buf.slice(i + 1);
+        if (/^\d{3}-/.test(line)) continue;            // multi-line reply, wait for the last line
+        const code = parseInt(line.slice(0, 3), 10);
+        if (code !== steps[stage].code) return fail(`Gmail said: ${line}`);
+        const cmd = steps[stage].send;
+        stage++;
+        if (cmd) socket.write(cmd);
+        if (stage >= steps.length) { done = true; try { socket.end(); } catch {} return resolve(true); }
+      }
+    });
+  });
+}
+
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, `http://${req.headers.host}`);
   const pathname = decodeURIComponent(url.pathname);
@@ -236,6 +290,30 @@ const server = http.createServer(async (req, res) => {
       }
     }
     res.writeHead(405); return res.end();
+  }
+
+  // ---- API: share grocery list by email (Gmail) -------------------------
+  if (pathname === "/api/share-grocery" && req.method === "POST") {
+    let secrets;
+    try { secrets = JSON.parse(fs.readFileSync(SECRETS, "utf8")); }
+    catch { return sendJSON(res, 200, { ok: false, error: "Email isn't set up yet — create data/secrets.json (copy data/secrets.example.json and fill it in)." }); }
+    const { gmailUser, gmailAppPassword, groceryTo } = secrets;
+    if (!gmailUser || !gmailAppPassword || !groceryTo) {
+      return sendJSON(res, 200, { ok: false, error: "data/secrets.json is missing gmailUser, gmailAppPassword, or groceryTo." });
+    }
+    let grocery = [];
+    try { grocery = (JSON.parse(fs.readFileSync(STATE, "utf8")).grocery) || []; } catch {}
+    const toBuy = grocery.filter(g => g && !g.done);
+    if (!toBuy.length) return sendJSON(res, 200, { ok: false, error: "The grocery list is empty." });
+    const text = "Here's the grocery list:\n\n" + toBuy.map(g => `• ${g.text}`).join("\n") + "\n\n— sent from the family dashboard 💚";
+    try {
+      await sendGmail({ user: gmailUser, pass: gmailAppPassword, to: groceryTo,
+        subject: `🛒 Grocery list (${toBuy.length} item${toBuy.length === 1 ? "" : "s"})`,
+        text, fromName: secrets.fromName || "Family Dashboard" });
+      return sendJSON(res, 200, { ok: true, count: toBuy.length });
+    } catch (e) {
+      return sendJSON(res, 200, { ok: false, error: "Couldn't send: " + ((e && e.message) || e) });
+    }
   }
 
   // ---- API: version (so the screen auto-reloads after a code update) ----
@@ -312,5 +390,5 @@ if (require.main === module) {
   });
 } else {
   // Imported by tests — expose the calendar parser without starting the server.
-  module.exports = { parseICS, expandEvent, icsToDate };
+  module.exports = { parseICS, expandEvent, icsToDate, sendGmail };
 }

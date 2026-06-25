@@ -115,7 +115,14 @@
     <!-- ============ GROCERY ============ -->
     <section class="view" id="view-grocery">
       <div class="card grocery-full">
-        <div class="card-head"><h2>Grocery list</h2><span class="card-sub" id="groceryCount">—</span></div>
+        <div class="card-head">
+          <h2>Grocery list</h2>
+          <div class="grocery-head-right">
+            <span class="card-sub" id="groceryCount">—</span>
+            <button class="share-btn" id="grocerySend" type="button">📧 Send to Kenzie</button>
+          </div>
+        </div>
+        <span class="share-status" id="grocerySendStatus"></span>
         <form class="grocery-add" id="groceryAdd">
           <input id="groceryInput" type="text" placeholder="Add an item…" autocomplete="off" />
           <button type="submit" id="groceryAddBtn" aria-label="Add">Add</button>

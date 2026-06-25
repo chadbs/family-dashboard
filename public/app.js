@@ -537,6 +537,23 @@ $("groceryList").addEventListener("click", (e) => {
   if (item) toggleGrocery(item.dataset.id);
 });
 
+// Email the grocery list to Kenzie (server sends it via Gmail).
+$("grocerySend")?.addEventListener("click", async () => {
+  const btn = $("grocerySend"), status = $("grocerySendStatus");
+  btn.disabled = true;
+  status.className = "share-status"; status.textContent = "Sending…";
+  try {
+    const r = await fetch("/api/share-grocery", { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" });
+    const d = await r.json();
+    if (d.ok) { status.classList.add("ok"); status.textContent = `Sent ${d.count} item${d.count === 1 ? "" : "s"} to Kenzie ✓`; }
+    else { status.classList.add("err"); status.textContent = d.error || "Couldn't send."; }
+  } catch {
+    status.classList.add("err"); status.textContent = "Couldn't reach the server.";
+  }
+  setTimeout(() => { btn.disabled = false; }, 1200);
+  setTimeout(() => { status.textContent = ""; status.className = "share-status"; }, 7000);
+});
+
 /* ---------------------------------------------------------------- calendar */
 let liveEvents = null;   // set once the real Google Calendar loads
 

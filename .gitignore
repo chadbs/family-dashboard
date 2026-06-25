@@ -3,6 +3,9 @@ data/state.json
 data/weather.json
 data/*.tmp
 
+# Secrets (Gmail app password, etc.) — NEVER commit these
+data/secrets.json
+
 # Screenshots the Surface posts for agent monitoring (optional, can be large)
 screenshots/*.png
 
