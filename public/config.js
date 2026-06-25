@@ -123,7 +123,7 @@ window.CONFIG = {
 
   // One-time SURPRISE note: shows immediately (once) the moment the screen
   // gets this update — on top of the daily 7am ones. Set back to null to clear.
-  loveNow: "Kenzie — fun fact: the entire internet sped up today just to rush you this message — you're breathtaking, I'm hopelessly in love with you, and the palm trees are (as always) jealous. 🌴💚",
+  loveNow: "Kenzie — official notice: this wall is now permanently mounted upstairs for ONE reason — to remind you every single day that you're the most breathtaking woman in any room, your green eyes are illegal in several states, and I'm hopelessly in love with you. (The palm trees remain jealous.) 🌴💚",
 
   // ── Look & feel ──────────────────────────────────────────────────────
   // "auto" switches to a dark theme in the evening; or force "light" / "dark".
