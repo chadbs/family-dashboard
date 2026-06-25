@@ -40,12 +40,23 @@ window.CONFIG = {
   //          "weekly" -> checkmarks clear each Monday
   // The list itself is code (syncs from your PC). Which ones are CHECKED is
   // state (lives on the Surface, survives every update).
+  // Who counts as a "kid": their chores show BIG pictures and they earn the
+  // reward below. Anyone here without a picture on a chore gets one assigned
+  // automatically (from the chore's name).
+  kids: ["Addison", "Sophie"],
+
+  // Reward: finish this many chore check-offs in a week to earn the treat.
+  rewardGoal: 7,
+  rewardEmoji: "🍦",
+  rewardName: "ice cream",
+
   // These are just the STARTING chores. Add/edit/delete them right on the
   // touchscreen with the "Edit" button on the Chores tab — your changes are
-  // saved on the device and survive every update.
+  // saved on the device and survive every update. "pic" is optional: kid
+  // chores without one get a picture auto-picked from the name.
   chores: [
-    { id: "windows", name: "Wash windows",   who: "Addison", cadence: "weekly" },
-    { id: "shoes",   name: "Clean up shoes", who: "Sophie",  cadence: "weekly" },
+    { id: "windows", name: "Wash windows",   who: "Addison", cadence: "weekly", pic: "🪟" },
+    { id: "shoes",   name: "Clean up shoes", who: "Sophie",  cadence: "weekly", pic: "👟" },
   ],
 
   // ── Calendar ─────────────────────────────────────────────────────────

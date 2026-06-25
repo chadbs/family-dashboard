@@ -307,6 +307,60 @@ body {
   transition: transform .12s var(--ease); }
 .ce-addbtn:active { transform: scale(.96); }
 
+/* ---------- Ice-cream reward bar ---------- */
+.reward-bar { display: flex; flex-wrap: wrap; gap: clamp(8px, 1.2vw, 14px); margin-bottom: clamp(10px, 1.4vw, 16px); }
+.reward-bar[hidden] { display: none; }
+.reward { flex: 1 1 260px; display: grid; grid-template-columns: auto 1fr auto; align-items: center;
+  gap: clamp(10px, 1.4vw, 16px); position: relative; overflow: hidden;
+  background: var(--card-2); border: 1.5px solid var(--line); border-radius: var(--r-md);
+  padding: clamp(10px, 1.3vw, 16px) clamp(14px, 1.6vw, 20px); transition: all .3s var(--ease); }
+.reward-who { display: flex; align-items: center; gap: 9px; font-weight: 700; font-size: clamp(14px, 1.4vw, 19px); }
+.reward-ava { width: clamp(30px, 2.8vw, 40px); height: clamp(30px, 2.8vw, 40px); border-radius: 50%;
+  display: grid; place-items: center; font-size: clamp(16px, 1.7vw, 23px);
+  background: color-mix(in srgb, var(--kid) 25%, var(--card)); }
+.reward-pips { display: flex; flex-wrap: wrap; gap: clamp(5px, .7vw, 9px); justify-content: center; }
+.pip { width: clamp(14px, 1.5vw, 22px); height: clamp(14px, 1.5vw, 22px); border-radius: 50%;
+  background: transparent; border: 2px solid var(--line-2); transition: all .25s var(--ease); }
+.pip.on { transform: scale(1.05); box-shadow: 0 2px 8px color-mix(in srgb, var(--kid) 50%, transparent); }
+.reward-goal { display: flex; align-items: center; gap: 8px; font-weight: 800; }
+.reward-count { font-size: clamp(14px, 1.5vw, 20px); color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+.reward-ice { font-size: clamp(24px, 2.6vw, 38px); filter: grayscale(.7) opacity(.55); transition: filter .3s var(--ease); }
+.reward-earned-tag { position: absolute; inset: 0; display: none; align-items: center; justify-content: center;
+  gap: 8px; font-weight: 800; font-size: clamp(15px, 1.7vw, 22px); color: #fff;
+  background: linear-gradient(120deg, color-mix(in srgb, var(--kid) 88%, #000), var(--kid)); }
+.reward.earned { border-color: var(--kid); }
+.reward.earned .reward-ice { filter: none; animation: ice-bounce 1s var(--ease) infinite; }
+.reward.earned .reward-earned-tag { display: flex; animation: love-in .4s var(--ease); }
+@keyframes ice-bounce { 0%,100% { transform: translateY(0) rotate(-4deg); } 50% { transform: translateY(-5px) rotate(4deg); } }
+
+/* Big pictures for kid chores. */
+.cc-row.kid { min-height: clamp(56px, 6.2vw, 92px); }
+.cc-pic { font-size: clamp(30px, 3.6vw, 50px); line-height: 1; flex-shrink: 0; filter: drop-shadow(0 2px 4px rgba(0,0,0,.2)); }
+.cc-row.kid .cc-title { font-size: clamp(15px, 1.55vw, 22px); font-weight: 600; }
+.chore.kid .chore-name { display: flex; align-items: center; gap: 10px; }
+.chore-pic { font-size: clamp(24px, 2.4vw, 34px); line-height: 1; flex-shrink: 0; }
+
+/* ---------- Ice-cream shower (reward earned) ---------- */
+.icecream { position: absolute; top: -50px; opacity: 0; will-change: transform;
+  animation-name: ice-fall; animation-timing-function: cubic-bezier(.3,.1,.5,1); }
+@keyframes ice-fall {
+  0%   { opacity: 0; transform: translateY(0) rotate(0deg); }
+  10%  { opacity: 1; }
+  100% { opacity: .9; transform: translateY(104vh) rotate(40deg); }
+}
+.ice-banner { position: absolute; top: 16%; left: 50%; transform: translateX(-50%);
+  white-space: nowrap; font-weight: 800; font-size: clamp(22px, 3.4vw, 46px); color: #fff;
+  padding: clamp(12px, 1.6vw, 20px) clamp(22px, 3vw, 40px); border-radius: 999px;
+  background: linear-gradient(120deg, #fb7185, #f472b6, #c084fc);
+  box-shadow: 0 16px 50px rgba(0,0,0,.4); animation: ice-banner 3.1s var(--ease) forwards; }
+@keyframes ice-banner {
+  0%   { opacity: 0; transform: translateX(-50%) scale(.6) translateY(-10px); }
+  12%  { opacity: 1; transform: translateX(-50%) scale(1.06) translateY(0); }
+  82%  { opacity: 1; transform: translateX(-50%) scale(1); }
+  100% { opacity: 0; transform: translateX(-50%) scale(1) translateY(-12px); }
+}
+@media (prefers-reduced-motion: reduce) { .icecream { display: none; } }
+
 /* ---------- Grocery ---------- */
 .grocery-full { height: 100%; }
 .grocery-add { display: flex; gap: 10px; margin-bottom: 14px; }

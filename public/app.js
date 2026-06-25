@@ -166,6 +166,34 @@ function isDone(id, slot) { return !!(STATE.choreDone[id] && STATE.choreDone[id]
 function choreById(id) { return effectiveChores().find(x => x.id === id); }
 function choreColor(id) { const c = choreById(id); return color(c && c.who); }
 function choreWho(id) { const c = choreById(id); return c && c.who; }
+function isKid(who) { return (C.kids || []).includes(who); }
+
+// Auto-pick a picture for a chore from its name (kid chores without one).
+const CHORE_PICS = [
+  [/window/i, "🪟"], [/shoe/i, "👟"], [/tooth|teeth|brush/i, "🪥"], [/\bbed\b|make.*bed/i, "🛏️"],
+  [/toy/i, "🧸"], [/dish|dishwash/i, "🍽️"], [/trash|garbage/i, "🗑️"], [/recycl/i, "♻️"],
+  [/\bdog\b|puppy|walk/i, "🐕"], [/\bcat\b|kitty/i, "🐈"], [/fish/i, "🐠"],
+  [/plant|water/i, "🪴"], [/flower/i, "🌷"], [/vacuum|sweep/i, "🧹"], [/mop|floor/i, "🧽"],
+  [/laundry|fold|clothes/i, "🧺"], [/wash/i, "🧼"], [/clean|tidy|pick.?up/i, "🧼"],
+  [/\broom\b/i, "🚪"], [/table|set.*table/i, "🍽️"], [/lunch|meal|cook|kitchen/i, "🍱"],
+  [/book|read/i, "📚"], [/\bcar\b/i, "🚗"], [/mail/i, "📬"], [/snow|shovel/i, "❄️"],
+  [/leaf|rake/i, "🍂"], [/towel/i, "🧻"], [/hair/i, "💇"], [/face|hand/i, "🧽"],
+  [/feed|food|bowl/i, "🥣"], [/homework|study/i, "✏️"], [/music|piano|practice/i, "🎹"],
+];
+function chorePic(c) {
+  if (c.pic) return c.pic;                                  // explicit picture wins
+  for (const [re, emo] of CHORE_PICS) if (re.test(c.name || "")) return emo;
+  return "⭐";                                              // friendly fallback
+}
+
+// How many chore check-offs a person has this week (for the reward).
+function rewardCount(who) {
+  let n = 0;
+  effectiveChores().forEach(c => {
+    if (c.who === who && STATE.choreDone[c.id]) n += Object.keys(STATE.choreDone[c.id]).length;
+  });
+  return n;
+}
 
 // Flip a checkbox; returns true if it just became DONE (so we can celebrate).
 function toggleSlot(id, slot) {
@@ -241,9 +269,10 @@ function renderHomeChores() {
   const chores = effectiveChores();
   $("choreList").innerHTML = chores.map(c => {
     const slot = slotFor(c), done = isDone(c.id, slot), col = color(c.who);
-    return `<div class="chore ${done ? "done" : ""}" data-id="${c.id}" data-slot="${slot}">
+    const pic = isKid(c.who) ? `<span class="chore-pic">${chorePic(c)}</span>` : "";
+    return `<div class="chore ${done ? "done" : ""} ${isKid(c.who) ? "kid" : ""}" data-id="${c.id}" data-slot="${slot}">
       <div class="chk"><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg></div>
-      <div class="chore-name">${escapeHtml(c.name)}</div>
+      <div class="chore-name">${pic}${escapeHtml(c.name)}</div>
       ${c.cadence === "weekly" ? `<span class="chore-cadence">weekly</span>` : ""}
       <div class="${badgeClass(c.who)}" style="background:${col}" title="${escapeHtml(c.who || "")}">${badgeText(c.who)}</div>
     </div>`;
@@ -277,11 +306,16 @@ function renderChart() {
         cells += `<div class="cc-cell ${isDone(c.id, String(i)) ? "done" : ""} ${i === ti ? "today" : ""} ${i > ti ? "future" : ""}" data-id="${c.id}" data-slot="${i}">${chk}</div>`;
       }
     }
-    return `<div class="cc-row ${c.cadence === "weekly" ? "is-weekly" : ""}">
-      <div class="cc-name"><span class="${badgeClass(c.who)} sm" style="background:${col}" title="${escapeHtml(c.who || "")}">${badgeText(c.who)}</span><span class="cc-title">${escapeHtml(c.name)}</span></div>${cells}</div>`;
+    const kid = isKid(c.who);
+    const lead = kid
+      ? `<span class="cc-pic">${chorePic(c)}</span>`
+      : `<span class="${badgeClass(c.who)} sm" style="background:${col}" title="${escapeHtml(c.who || "")}">${badgeText(c.who)}</span>`;
+    return `<div class="cc-row ${kid ? "kid" : ""} ${c.cadence === "weekly" ? "is-weekly" : ""}">
+      <div class="cc-name">${lead}<span class="cc-title">${escapeHtml(c.name)}</span></div>${cells}</div>`;
   }).join("");
 
   $("choreChart").innerHTML = head + rows;
+  renderRewards();
 
   // Per-person tally of boxes checked this week.
   const tally = {};
@@ -291,6 +325,53 @@ function renderChart() {
   });
   const summary = Object.entries(tally).map(([w, n]) => `${initials(w)} ${n}`).join("  ·  ");
   $("choreProgress2").textContent = summary || "Tap a box to check it off";
+}
+
+// Ice-cream reward bar: each kid's progress toward C.rewardGoal chores.
+function renderRewards() {
+  const host = $("rewardBar"); if (!host) return;
+  const goal = C.rewardGoal || 7;
+  const kids = (C.kids || []).filter(k => effectiveChores().some(c => c.who === k));
+  if (!kids.length) { host.hidden = true; host.innerHTML = ""; return; }
+  host.hidden = false;
+  host.innerHTML = kids.map(k => {
+    const n = rewardCount(k);
+    const earned = n >= goal;
+    const col = color(k);
+    const pips = Array.from({ length: goal }, (_, i) =>
+      `<span class="pip ${i < n ? "on" : ""}" style="${i < n ? `background:${col};border-color:${col}` : ""}"></span>`).join("");
+    return `<div class="reward ${earned ? "earned" : ""}" style="--kid:${col}">
+      <div class="reward-who"><span class="reward-ava">${avatarOf(k) || initials(k)}</span><span class="reward-name">${escapeHtml(k)}</span></div>
+      <div class="reward-pips">${pips}</div>
+      <div class="reward-goal">
+        <span class="reward-count">${Math.min(n, goal)}/${goal}</span>
+        <span class="reward-ice">${C.rewardEmoji || "🍦"}</span>
+      </div>
+      <div class="reward-earned-tag">${C.rewardEmoji || "🍦"} ${escapeHtml((C.rewardName || "ice cream"))} earned!</div>
+    </div>`;
+  }).join("");
+}
+
+// A big (non-blocking) ice-cream shower when a kid hits the reward goal.
+function iceCreamParty(who) {
+  const fx = $("fx"); if (!fx) return;
+  const scoops = ["🍦", "🍨", "🍧"];
+  for (let i = 0; i < 26; i++) {
+    const e = document.createElement("div");
+    e.className = "icecream";
+    e.textContent = scoops[i % scoops.length];
+    e.style.left = (Math.random() * 100) + "%";
+    e.style.fontSize = (24 + Math.random() * 28) + "px";
+    e.style.animationDelay = (Math.random() * 0.9) + "s";
+    e.style.animationDuration = (1.9 + Math.random() * 1.5) + "s";
+    fx.appendChild(e);
+    setTimeout(() => e.remove(), 3600);
+  }
+  const banner = document.createElement("div");
+  banner.className = "ice-banner";
+  banner.textContent = `${C.rewardEmoji || "🍦"} ${who} earned ${(C.rewardName || "ice cream").toUpperCase()}! ${C.rewardEmoji || "🍦"}`;
+  fx.appendChild(banner);
+  setTimeout(() => banner.remove(), 3200);
 }
 
 /* ---- editing the chore list (touchscreen) ---- */
@@ -304,7 +385,7 @@ function peopleOptions(sel) {
 // First edit copies the config defaults into state, then state is authoritative.
 function customizeChores() {
   if (!Array.isArray(STATE.chores) || !STATE.chores.length) {
-    STATE.chores = (C.chores || []).map(c => ({ id: c.id, name: c.name, who: c.who, cadence: c.cadence }));
+    STATE.chores = (C.chores || []).map(c => ({ id: c.id, name: c.name, who: c.who, cadence: c.cadence, pic: c.pic }));
   }
 }
 function addChore(name, who, cadence) {
@@ -356,16 +437,22 @@ $("choreEditBtn").addEventListener("click", () => {
 });
 
 // Tap a grid cell (or a Home chore row) to check it off — celebrate on done.
+function onChoreChecked(id, x, y) {
+  const who = choreWho(id);
+  celebrate(x, y, color(who), who);
+  // Just crossed the reward line? Make it rain ice cream.
+  if (isKid(who) && rewardCount(who) === (C.rewardGoal || 7)) iceCreamParty(who);
+}
 $("choreChart").addEventListener("click", (e) => {
   const cell = e.target.closest(".cc-cell");
   if (cell && cell.dataset.id && toggleSlot(cell.dataset.id, cell.dataset.slot)) {
-    celebrate(e.clientX, e.clientY, choreColor(cell.dataset.id), choreWho(cell.dataset.id));
+    onChoreChecked(cell.dataset.id, e.clientX, e.clientY);
   }
 });
 $("choreList").addEventListener("click", (e) => {
   const el = e.target.closest(".chore");
   if (el && toggleSlot(el.dataset.id, el.dataset.slot)) {
-    celebrate(e.clientX, e.clientY, choreColor(el.dataset.id), choreWho(el.dataset.id));
+    onChoreChecked(el.dataset.id, e.clientX, e.clientY);
   }
 });
 
