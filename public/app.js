@@ -330,28 +330,38 @@ function renderChart() {
 }
 
 // Ice-cream reward bar: each kid's progress toward C.rewardGoal chores.
-function renderRewards() {
-  const host = $("rewardBar"); if (!host) return;
+// The kids earn the treat as a TEAM: their chore check-offs are combined.
+function teamCount() {
+  return (C.kids || []).reduce((sum, k) => sum + rewardCount(k), 0);
+}
+
+// One shared "team treat" bar (rendered on both the Chores tab and Home).
+function rewardHTML() {
   const goal = C.rewardGoal || 7;
   const kids = (C.kids || []).filter(k => effectiveChores().some(c => c.who === k));
-  if (!kids.length) { host.hidden = true; host.innerHTML = ""; return; }
-  host.hidden = false;
-  host.innerHTML = kids.map(k => {
-    const n = rewardCount(k);
-    const earned = n >= goal;
-    const col = color(k);
-    const pips = Array.from({ length: goal }, (_, i) =>
-      `<span class="pip ${i < n ? "on" : ""}" style="${i < n ? `background:${col};border-color:${col}` : ""}"></span>`).join("");
-    return `<div class="reward ${earned ? "earned" : ""}" style="--kid:${col}">
-      <div class="reward-who"><span class="reward-ava">${avatarOf(k) || initials(k)}</span><span class="reward-name">${escapeHtml(k)}</span></div>
-      <div class="reward-pips">${pips}</div>
-      <div class="reward-goal">
-        <span class="reward-count">${Math.min(n, goal)}/${goal}</span>
-        <span class="reward-ice">${C.rewardEmoji || "🍦"}</span>
-      </div>
-      <div class="reward-earned-tag">${C.rewardEmoji || "🍦"} ${escapeHtml((C.rewardName || "ice cream"))} earned!</div>
-    </div>`;
-  }).join("");
+  if (!kids.length) return null;
+  const n = teamCount();
+  const earned = n >= goal;
+  const avatars = kids.map(k => avatarOf(k) || initials(k)).join("");
+  const pips = Array.from({ length: goal }, (_, i) => `<span class="pip ${i < n ? "on" : ""}"></span>`).join("");
+  const ice = C.rewardEmoji || "🍦";
+  return `<div class="reward team ${earned ? "earned" : ""}">
+    <div class="reward-who"><span class="reward-ava">${avatars}</span><span class="reward-name">Team treat</span></div>
+    <div class="reward-pips">${pips}</div>
+    <div class="reward-goal">
+      <span class="reward-count">${Math.min(n, goal)}/${goal}</span>
+      <span class="reward-ice">${ice}</span>
+    </div>
+    <div class="reward-earned-tag">${ice} ${escapeHtml(C.rewardName || "ice cream")} earned — great teamwork! ${ice}</div>
+  </div>`;
+}
+function renderRewards() {
+  const html = rewardHTML();
+  for (const id of ["rewardBar", "rewardBarHome"]) {
+    const host = $(id); if (!host) continue;
+    if (!html) { host.hidden = true; host.innerHTML = ""; }
+    else { host.hidden = false; host.innerHTML = html; }
+  }
 }
 
 // A big (non-blocking) ice-cream shower when a kid hits the reward goal.
@@ -371,7 +381,8 @@ function iceCreamParty(who) {
   }
   const banner = document.createElement("div");
   banner.className = "ice-banner";
-  banner.textContent = `${C.rewardEmoji || "🍦"} ${who} earned ${(C.rewardName || "ice cream").toUpperCase()}! ${C.rewardEmoji || "🍦"}`;
+  const ice = C.rewardEmoji || "🍦";
+  banner.textContent = `${ice} ${who || "The kids"} earned ${(C.rewardName || "ice cream").toUpperCase()}! ${ice}`;
   fx.appendChild(banner);
   setTimeout(() => banner.remove(), 3200);
 }
@@ -442,8 +453,8 @@ $("choreEditBtn").addEventListener("click", () => {
 function onChoreChecked(id, x, y) {
   const who = choreWho(id);
   celebrate(x, y, color(who), who);
-  // Just crossed the reward line? Make it rain ice cream.
-  if (isKid(who) && rewardCount(who) === (C.rewardGoal || 7)) iceCreamParty(who);
+  // The kids' COMBINED total just crossed the line? Make it rain ice cream.
+  if (isKid(who) && teamCount() === (C.rewardGoal || 7)) iceCreamParty();
 }
 $("choreChart").addEventListener("click", (e) => {
   const cell = e.target.closest(".cc-cell");

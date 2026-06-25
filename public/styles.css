@@ -310,10 +310,11 @@ body {
 /* ---------- Ice-cream reward bar ---------- */
 .reward-bar { display: flex; flex-wrap: wrap; gap: clamp(8px, 1.2vw, 14px); margin-bottom: clamp(10px, 1.4vw, 16px); }
 .reward-bar[hidden] { display: none; }
-.reward { flex: 1 1 260px; display: grid; grid-template-columns: auto 1fr auto; align-items: center;
+.reward { --kid: var(--accent); flex: 1 1 260px; display: grid; grid-template-columns: auto 1fr auto; align-items: center;
   gap: clamp(10px, 1.4vw, 16px); position: relative; overflow: hidden;
   background: var(--card-2); border: 1.5px solid var(--line); border-radius: var(--r-md);
   padding: clamp(10px, 1.3vw, 16px) clamp(14px, 1.6vw, 20px); transition: all .3s var(--ease); }
+.reward.team { --kid: #f472b6; }   /* ice-cream pink for the shared team goal */
 .reward-who { display: flex; align-items: center; gap: 9px; font-weight: 700; font-size: clamp(14px, 1.4vw, 19px); }
 .reward-ava { width: clamp(30px, 2.8vw, 40px); height: clamp(30px, 2.8vw, 40px); border-radius: 50%;
   display: grid; place-items: center; font-size: clamp(16px, 1.7vw, 23px);
@@ -321,7 +322,7 @@ body {
 .reward-pips { display: flex; flex-wrap: wrap; gap: clamp(5px, .7vw, 9px); justify-content: center; }
 .pip { width: clamp(14px, 1.5vw, 22px); height: clamp(14px, 1.5vw, 22px); border-radius: 50%;
   background: transparent; border: 2px solid var(--line-2); transition: all .25s var(--ease); }
-.pip.on { transform: scale(1.05); box-shadow: 0 2px 8px color-mix(in srgb, var(--kid) 50%, transparent); }
+.pip.on { background: var(--kid); border-color: var(--kid); transform: scale(1.05); box-shadow: 0 2px 8px color-mix(in srgb, var(--kid) 50%, transparent); }
 .reward-goal { display: flex; align-items: center; gap: 8px; font-weight: 800; }
 .reward-count { font-size: clamp(14px, 1.5vw, 20px); color: var(--ink-soft); font-variant-numeric: tabular-nums; }
 .reward-ice { font-size: clamp(24px, 2.6vw, 38px); filter: grayscale(.7) opacity(.55); transition: filter .3s var(--ease); }
@@ -332,6 +333,12 @@ body {
 .reward.earned .reward-ice { filter: none; animation: ice-bounce 1s var(--ease) infinite; }
 .reward.earned .reward-earned-tag { display: flex; animation: love-in .4s var(--ease); }
 @keyframes ice-bounce { 0%,100% { transform: translateY(0) rotate(-4deg); } 50% { transform: translateY(-5px) rotate(4deg); } }
+/* Compact team bar on the Home chores card */
+.reward-bar.home { margin: 0 0 clamp(8px, 1vw, 12px); }
+.reward-bar.home .reward { flex: 1 1 100%; padding: clamp(8px, 1vw, 12px) clamp(12px, 1.4vw, 16px); }
+.reward-bar.home .reward-ava { width: clamp(26px, 2.4vw, 34px); height: clamp(26px, 2.4vw, 34px); font-size: clamp(14px, 1.5vw, 19px); }
+.reward-bar.home .reward-name { font-size: clamp(12px, 1.2vw, 16px); }
+.reward-bar.home .reward-ice { font-size: clamp(20px, 2.2vw, 30px); }
 
 /* Big pictures for kid chores. */
 .cc-row.kid { min-height: clamp(56px, 6.2vw, 92px); }
