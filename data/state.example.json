@@ -1,6 +1,6 @@
 {
-  "choresDone": {},
-  "keys": {},
-  "grocery": [],
-  "lastSeen": null
+  "chores": null,
+  "choreDone": {},
+  "choreWeek": null,
+  "grocery": []
 }
