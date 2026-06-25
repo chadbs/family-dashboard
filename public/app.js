@@ -11,7 +11,7 @@ const DOW  = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Satur
 const DOWS = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 const MON  = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 
-let STATE = { choreDone: {}, choreWeek: null, grocery: [] };
+let STATE = { choreDone: {}, choreWeek: null, grocery: [], events: [] };
 
 /* ---------------------------------------------------------------- helpers */
 function color(who) { return (C.people && C.people[who]) || "#8A93A6"; }
@@ -555,10 +555,31 @@ $("grocerySend")?.addEventListener("click", async () => {
 });
 
 /* ---------------------------------------------------------------- calendar */
-let liveEvents = null;   // set once the real Google Calendar loads
+let liveEvents = null;   // set if an optional iCal feed is configured
+
+// The dashboard's OWN calendar: events the family (or voice/Claude) adds, kept
+// in state.json as { id, date:"YYYY-MM-DD", time:"HH:MM"|null, title, who }.
+function localEventsAsOffsets() {
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  return (STATE.events || []).map(ev => {
+    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(ev.date || "");
+    if (!m) return null;
+    const dt = new Date(+m[1], +m[2] - 1, +m[3]); dt.setHours(0, 0, 0, 0);
+    const d = Math.round((dt - today) / 86400000);
+    let time = "All day";
+    if (ev.time && /^\d{1,2}:\d{2}$/.test(ev.time)) {
+      let [hh, mm] = ev.time.split(":").map(Number);
+      const ap = hh >= 12 ? "p" : "a"; hh = hh % 12 || 12;
+      time = `${hh}:${String(mm).padStart(2, "0")}${ap}`;
+    }
+    return { d, time, title: ev.title, who: ev.who || null };
+  }).filter(e => e && e.d >= 0 && e.d <= 7);
+}
 
 function eventsForOffset() {
-  const source = liveEvents || C.sampleEvents || [];
+  // Dashboard-owned events + any optional iCal feed; fall back to samples.
+  let source = [...localEventsAsOffsets(), ...(liveEvents || [])];
+  if (!source.length) source = C.sampleEvents || [];
   const map = {};
   source.forEach(e => { (map[e.d] ||= []).push(e); });
   return map;
@@ -664,10 +685,11 @@ async function loadState() {
   try {
     const r = await fetch("/api/state", { cache: "no-store" });
     const s = await r.json();
-    STATE = Object.assign({ choreDone: {}, choreWeek: null, grocery: [] }, s);
+    STATE = Object.assign({ choreDone: {}, choreWeek: null, grocery: [], events: [] }, s);
     STATE.choreDone = STATE.choreDone || {};
     STATE.grocery = STATE.grocery || [];
-  } catch { STATE = { choreDone: {}, choreWeek: null, grocery: [] }; }
+    STATE.events = STATE.events || [];
+  } catch { STATE = { choreDone: {}, choreWeek: null, grocery: [], events: [] }; }
 }
 
 let saveTimer = null;
@@ -748,6 +770,83 @@ function maybeShowLove() {
 $("loveModal").addEventListener("click", hideLove);
 document.addEventListener("keydown", (e) => { if (e.key === "Escape") hideLove(); });
 
+/* ---------------------------------------------------------------- voice assistant
+   Tap the mic → speak → the command goes to /api/voice, which lets Claude Code
+   do it (add a calendar event, grocery items from a recipe, change the app, …). */
+const voiceSR = window.SpeechRecognition || window.webkitSpeechRecognition;
+let voiceRec = null;
+
+function voiceShow(state, status, text) {
+  const m = $("voiceModal");
+  m.hidden = false;
+  m.dataset.state = state;
+  $("voiceOrb").textContent = state === "thinking" ? "✨" : state === "done" ? "✅" : state === "error" ? "🤔" : "🎤";
+  $("voiceStatus").textContent = status;
+  $("voiceText").textContent = text || "";
+  $("voiceCancel").textContent = state === "done" ? "Done" : state === "thinking" ? "Working…" : "Close";
+}
+function voiceHide() { $("voiceModal").hidden = true; }
+function voiceStop() { if (voiceRec) { const r = voiceRec; voiceRec = null; try { r.abort(); } catch {} } }
+
+function startVoice() {
+  if (!voiceSR) { voiceShow("error", "This screen can't listen", "Use Edge or Chrome with a microphone."); return; }
+  let finalText = "";
+  const rec = new voiceSR();
+  voiceRec = rec;
+  rec.lang = "en-US";
+  rec.interimResults = true;
+  rec.continuous = false;
+  rec.maxAlternatives = 1;
+  voiceShow("listening", "Listening…", "");
+  rec.onresult = (e) => {
+    let interim = "";
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      const t = e.results[i][0].transcript;
+      if (e.results[i].isFinal) finalText += t; else interim += t;
+    }
+    $("voiceText").textContent = (finalText + interim).trim();
+  };
+  rec.onerror = (e) => {
+    if (voiceRec !== rec) return;
+    voiceRec = null;
+    if (e.error === "not-allowed" || e.error === "service-not-allowed")
+      voiceShow("error", "Microphone blocked", "Allow mic access for this page, then try again.");
+    else if (e.error === "no-speech")
+      voiceShow("error", "Didn't hear anything", "Tap the mic and speak.");
+    else voiceShow("error", "Couldn't listen", e.error || "");
+  };
+  rec.onend = () => {
+    if (voiceRec !== rec) return;   // was aborted
+    voiceRec = null;
+    const cmd = finalText.trim();
+    if (cmd) sendVoiceCommand(cmd);
+    else voiceShow("error", "Didn't hear anything", "Tap the mic and speak.");
+  };
+  try { rec.start(); } catch {}
+}
+
+async function sendVoiceCommand(text) {
+  voiceShow("thinking", "On it…", text);
+  try {
+    const r = await fetch("/api/voice", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ text }) });
+    const data = await r.json();
+    if (data.ok) {
+      voiceShow("done", data.summary || "Done!", "");
+      await loadState(); ensureWeek();
+      renderHomeChores(); renderChart(); renderGrocery(); renderAgenda(); renderWeek();
+      setTimeout(() => { if ($("voiceModal").dataset.state === "done") voiceHide(); }, 6000);
+    } else {
+      voiceShow("error", "Hmm", data.error || "Couldn't do that.");
+    }
+  } catch {
+    voiceShow("error", "Couldn't reach the assistant", "Is the dashboard server running?");
+  }
+}
+
+$("voiceBtn").addEventListener("click", startVoice);
+$("voiceCancel").addEventListener("click", () => { voiceStop(); voiceHide(); });
+$("voiceModal").addEventListener("click", (e) => { if (e.target.id === "voiceModal") { voiceStop(); voiceHide(); } });
+
 /* ---------------------------------------------------------------- boot */
 async function boot() {
   applyTheme();
@@ -775,6 +874,7 @@ async function boot() {
     if (editingChores) return;                                 // don't clobber an edit in progress
     if (document.activeElement === $("groceryInput")) return;  // don't clobber typing
     await loadState(); ensureWeek(); renderHomeChores(); renderChart(); renderGrocery();
+    renderAgenda(); renderWeek();                               // pick up voice/Claude-added events
   }, 1000 * 20);
   // watch for a new code version (after a git pull) and reload automatically
   watchVersion();
