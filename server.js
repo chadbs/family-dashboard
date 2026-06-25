@@ -291,13 +291,15 @@ const server = http.createServer(async (req, res) => {
       // SPA-ish fallback to index.html
       fs.readFile(path.join(PUBLIC, "index.html"), (e2, html) => {
         if (e2) { res.writeHead(404); return res.end("Not found"); }
-        res.writeHead(200, { "Content-Type": MIME[".html"] });
+        res.writeHead(200, { "Content-Type": MIME[".html"], "Cache-Control": "no-store" });
         res.end(html);
       });
       return;
     }
     const ext = path.extname(filePath).toLowerCase();
-    res.writeHead(200, { "Content-Type": MIME[ext] || "application/octet-stream" });
+    // no-store so the wall always loads fresh code after a git pull + reload
+    // (otherwise Edge serves a stale cached app.js/config.js and nothing changes)
+    res.writeHead(200, { "Content-Type": MIME[ext] || "application/octet-stream", "Cache-Control": "no-store" });
     res.end(content);
   });
 });
