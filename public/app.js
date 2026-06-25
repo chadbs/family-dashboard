@@ -573,6 +573,52 @@ $("tabs").addEventListener("click", (e) => {
   document.querySelectorAll(".view").forEach(v => v.classList.toggle("is-active", v.id === `view-${view}`));
 });
 
+/* ---------------------------------------------------------------- love note
+   A sweet popup that greets someone (Kenzie) each morning at C.loveHour,
+   rotating through C.loveMessages one per day. Shown once a day; dismiss by
+   tapping. "Shown today" is remembered in localStorage (device-local).        */
+function pickLoveMessage() {
+  const msgs = C.loveMessages || [];
+  if (!msgs.length) return null;
+  const day = Math.floor(Date.now() / 86400000);   // rotates once per day
+  return msgs[day % msgs.length];
+}
+function spawnLoveHearts() {
+  const host = $("loveHearts"); if (!host) return;
+  host.innerHTML = "";
+  const glyphs = ["💚", "🖤", "💕", "🌴", "✨", "💗"];
+  for (let i = 0; i < 14; i++) {
+    const h = document.createElement("span");
+    h.className = "love-heart";
+    h.textContent = glyphs[Math.floor(Math.random() * glyphs.length)];
+    h.style.left = (Math.random() * 100) + "%";
+    h.style.fontSize = (18 + Math.random() * 26) + "px";
+    h.style.animationDelay = (Math.random() * 2.2) + "s";
+    h.style.animationDuration = (3.4 + Math.random() * 2.6) + "s";
+    host.appendChild(h);
+  }
+}
+function showLove() {
+  const msg = pickLoveMessage(); if (!msg) return;
+  $("loveMsg").textContent = msg;
+  $("loveEyebrow").textContent = "Good morning, " + (C.loveTo || "beautiful") + " 💚";
+  spawnLoveHearts();
+  $("loveModal").hidden = false;
+}
+function hideLove() { $("loveModal").hidden = true; }
+function maybeShowLove() {
+  if (!C.loveTo || !(C.loveMessages || []).length) return;
+  const target = (C.loveHour != null) ? C.loveHour : 7;
+  const tk = todayKey();
+  if (localStorage.getItem("loveLastShown") === tk) return;     // already greeted today
+  const hr = new Date().getHours();
+  if (hr < target || hr >= target + 6) return;                  // morning window only
+  localStorage.setItem("loveLastShown", tk);
+  showLove();
+}
+$("loveModal").addEventListener("click", hideLove);
+document.addEventListener("keydown", (e) => { if (e.key === "Escape") hideLove(); });
+
 /* ---------------------------------------------------------------- boot */
 async function boot() {
   applyTheme();
@@ -587,7 +633,9 @@ async function boot() {
   renderWeek();
   await loadWeather();
   loadCalendar();
+  maybeShowLove();
 
+  setInterval(maybeShowLove, 1000 * 60);   // check each minute so it pops at loveHour
   setInterval(renderClock, 1000 * 10);
   setInterval(applyTheme, 1000 * 60 * 5);
   setInterval(loadWeather, 1000 * 30);

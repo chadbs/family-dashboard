@@ -136,6 +136,16 @@
 <!-- Celebration effects layer (confetti + cheer); never blocks taps -->
 <div id="fx" aria-hidden="true"></div>
 
+<!-- Daily love note — pops in the morning, tap anywhere to dismiss -->
+<div id="loveModal" class="love-modal" hidden>
+  <div class="love-hearts" id="loveHearts" aria-hidden="true"></div>
+  <div class="love-card">
+    <div class="love-eyebrow" id="loveEyebrow">Good morning, my love</div>
+    <div class="love-msg" id="loveMsg"></div>
+    <button class="love-close" id="loveClose" type="button">xoxo &nbsp;💋</button>
+  </div>
+</div>
+
 <script src="config.js"></script>
 <script src="app.js"></script>
 </body>
