@@ -47,7 +47,7 @@ window.CONFIG = {
   // To pull your real Google Calendar: in Google Calendar settings, copy the
   // "Secret address in iCal format" and paste it below. Leave null to use the
   // sample events instead.
-  calendarICalUrl: null,
+  calendarICalUrl: "https://calendar.google.com/calendar/ical/chadsolanyk%40gmail.com/private-afa5561c80778c7283eeab6ed1cc52af/basic.ics",
 
   // Sample events (used when calendarICalUrl is null). d = days from today.
   sampleEvents: [

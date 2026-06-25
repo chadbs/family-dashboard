@@ -84,7 +84,11 @@ function fetchText(target, depth = 0) {
   });
 }
 
-// Minimal iCal parser -> upcoming events for the next 14 days.
+// iCal parser -> upcoming events for the next 14 days.
+// Handles plain VEVENTs *and* recurring ones (RRULE), which families rely on:
+// FREQ=DAILY/WEEKLY/MONTHLY/YEARLY with INTERVAL, BYDAY, UNTIL, COUNT, plus EXDATE.
+const HORIZON_DAYS = 14;
+
 function parseICS(ics) {
   // unfold folded lines (continuation lines start with space or tab)
   const lines = ics.replace(/\r\n/g, "\n").split("\n");
@@ -94,12 +98,12 @@ function parseICS(ics) {
     else unfolded.push(ln);
   }
 
-  const out = [];
+  const events = [];
   let cur = null;
   for (const ln of unfolded) {
-    if (ln === "BEGIN:VEVENT") { cur = {}; continue; }
+    if (ln === "BEGIN:VEVENT") { cur = { exdates: [] }; continue; }
     if (ln === "END:VEVENT") {
-      if (cur && cur.title && cur.start) out.push(cur);
+      if (cur && cur.title && cur.dtstart) events.push(cur);
       cur = null; continue;
     }
     if (!cur) continue;
@@ -108,28 +112,104 @@ function parseICS(ics) {
     const name = key.split(";")[0].toUpperCase();
     if (name === "SUMMARY") cur.title = val.replace(/\\,/g, ",").replace(/\\n/gi, " ").replace(/\\;/g, ";").trim();
     else if (name === "DTSTART") {
-      const allDay = /VALUE=DATE/i.test(key) || /^\d{8}$/.test(val);
-      cur.allDay = allDay;
-      cur.start = icsDate(val, allDay);
+      cur.allDay = /VALUE=DATE/i.test(key) || /^\d{8}$/.test(val);
+      cur.dtstart = val;
     }
+    else if (name === "RRULE") cur.rrule = val;
+    else if (name === "EXDATE") val.split(",").forEach(v => cur.exdates.push(v.trim()));
   }
 
   const now = new Date(); now.setHours(0, 0, 0, 0);
-  const horizon = new Date(now); horizon.setDate(horizon.getDate() + 14);
+  const horizon = new Date(now); horizon.setDate(horizon.getDate() + HORIZON_DAYS);
+
+  const out = [];
+  for (const e of events) {
+    for (const ms of expandEvent(e, now, horizon)) {
+      out.push({ title: e.title, start: new Date(ms).toISOString(), allDay: !!e.allDay, who: null });
+    }
+  }
   return out
-    .filter(e => e.start && new Date(e.start) >= now && new Date(e.start) <= horizon)
     .sort((a, b) => new Date(a.start) - new Date(b.start))
-    .slice(0, 60)
-    .map(e => ({ title: e.title, start: e.start, allDay: !!e.allDay, who: null }));
+    .slice(0, 60);
 }
 
-function icsDate(v, allDay) {
-  const m = v.match(/^(\d{4})(\d{2})(\d{2})(?:T(\d{2})(\d{2})(\d{2}))?(Z)?/);
+// Parse an iCal date/datetime into a JS Date (local for floating/all-day, UTC for trailing Z).
+function icsToDate(v, allDay) {
+  const m = String(v).match(/^(\d{4})(\d{2})(\d{2})(?:T(\d{2})(\d{2})(\d{2}))?(Z)?/);
   if (!m) return null;
   const [, y, mo, d, hh = "0", mm = "0", ss = "0", z] = m;
-  if (allDay) return new Date(+y, +mo - 1, +d).toISOString();
-  if (z) return new Date(Date.UTC(+y, +mo - 1, +d, +hh, +mm, +ss)).toISOString();
-  return new Date(+y, +mo - 1, +d, +hh, +mm, +ss).toISOString();
+  if (allDay) return new Date(+y, +mo - 1, +d);
+  if (z) return new Date(Date.UTC(+y, +mo - 1, +d, +hh, +mm, +ss));
+  return new Date(+y, +mo - 1, +d, +hh, +mm, +ss);
+}
+
+// Return the occurrence timestamps (ms) of an event that fall within [now, horizon].
+function expandEvent(e, now, horizon) {
+  const start = icsToDate(e.dtstart, e.allDay);
+  if (!start) return [];
+  const nowMs = now.getTime(), horMs = horizon.getTime();
+
+  if (!e.rrule) {
+    const ms = start.getTime();
+    return (ms >= nowMs && ms <= horMs) ? [ms] : [];
+  }
+
+  const R = {};
+  e.rrule.split(";").forEach(p => { const [k, v] = p.split("="); if (k) R[k.toUpperCase()] = v; });
+  const freq = (R.FREQ || "").toUpperCase();
+  const interval = Math.max(1, parseInt(R.INTERVAL || "1", 10) || 1);
+  const until = R.UNTIL ? icsToDate(R.UNTIL, !/T/.test(R.UNTIL)) : null;
+  const count = R.COUNT ? parseInt(R.COUNT, 10) : null;
+  const DOW = { SU: 0, MO: 1, TU: 2, WE: 3, TH: 4, FR: 5, SA: 6 };
+  const byday = R.BYDAY ? R.BYDAY.split(",").map(d => DOW[d.slice(-2).toUpperCase()]).filter(n => n != null) : null;
+  const exset = new Set((e.exdates || []).map(v => { const d = icsToDate(v, e.allDay); return d ? d.getTime() : -1; }));
+  const hh = start.getHours(), mm = start.getMinutes(), ss = start.getSeconds();
+
+  const out = [];
+  let generated = 0;       // total occurrences emitted by the rule (for COUNT)
+  const GUARD = 20000;     // safety cap so a malformed rule can't loop forever
+  let stop = false;
+
+  // Record one candidate occurrence; returns false when the series is exhausted.
+  function consider(d) {
+    const ms = d.getTime();
+    if (ms < start.getTime()) return true;                 // before the series begins
+    if (until && ms > until.getTime()) { stop = true; return false; }
+    if (count != null && generated >= count) { stop = true; return false; }
+    generated++;
+    if (ms >= nowMs && ms <= horMs && !exset.has(ms)) out.push(ms);
+    return true;
+  }
+
+  if (freq === "WEEKLY") {
+    const days = (byday && byday.length ? byday : [start.getDay()]).slice().sort((a, b) => a - b);
+    for (let k = 0; k < GUARD && !stop; k++) {
+      const weekRef = new Date(start); weekRef.setDate(weekRef.getDate() + k * 7 * interval);
+      for (const dow of days) {
+        const occ = new Date(weekRef);
+        occ.setDate(occ.getDate() + (dow - weekRef.getDay()));
+        occ.setHours(hh, mm, ss, 0);
+        if (!consider(occ)) break;
+      }
+      if (weekRef.getTime() > horMs + 7 * 86400000) break;
+    }
+  } else if (freq === "DAILY" || freq === "MONTHLY" || freq === "YEARLY") {
+    const cur = new Date(start);
+    for (let k = 0; k < GUARD && !stop; k++) {
+      const occ = new Date(cur); occ.setHours(hh, mm, ss, 0);
+      if (!consider(occ)) break;
+      if (occ.getTime() > horMs) break;
+      if (freq === "DAILY") cur.setDate(cur.getDate() + interval);
+      else if (freq === "MONTHLY") cur.setMonth(cur.getMonth() + interval);
+      else cur.setFullYear(cur.getFullYear() + interval);
+    }
+  } else {
+    // Unknown FREQ: fall back to the single start date if it's in range.
+    const ms = start.getTime();
+    if (ms >= nowMs && ms <= horMs) out.push(ms);
+  }
+
+  return out;
 }
 
 const server = http.createServer(async (req, res) => {
