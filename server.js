@@ -316,6 +316,64 @@ const server = http.createServer(async (req, res) => {
     }
   }
 
+  // ---- API: voice assistant — drives Claude Code to do what was asked ----
+  if (pathname === "/api/voice" && req.method === "POST") {
+    // Only the wall itself (the kiosk on localhost) may issue voice commands —
+    // never other devices on the network. This endpoint can edit files + run
+    // git/node, so we keep it strictly loopback-only.
+    const ra = req.socket.remoteAddress || "";
+    if (!(ra === "127.0.0.1" || ra === "::1" || ra === "::ffff:127.0.0.1"))
+      return sendJSON(res, 403, { ok: false, error: "Voice commands can only run from the wall itself." });
+    const body = await readBody(req);
+    let text = "";
+    try { text = String(JSON.parse(body).text || "").slice(0, 600); } catch {}
+    if (!text.trim()) return sendJSON(res, 200, { ok: false, error: "I didn't catch that." });
+
+    const today = new Date();
+    const dow = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"][today.getDay()];
+    const iso = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+    const prompt = [
+      `A family member just spoke this to the wall-mounted family dashboard. Carry out what they asked, then reply with ONE short, warm sentence describing what you did — it is read back to them.`,
+      ``,
+      `Command: "${text}"`,
+      ``,
+      `You are in the dashboard's project folder. Today is ${dow}, ${iso}.`,
+      `LIVE DATA is in data/state.json (gitignored). Edit it to change the calendar, grocery, or chores — keep it VALID JSON and preserve existing keys:`,
+      `  - Calendar: state.events = [{ "id":"ev<unique>", "date":"YYYY-MM-DD", "time":"HH:MM" 24h or null for all-day, "title":"...", "who":"Chad|Kenzie|Addison|Sophie" or null }]`,
+      `  - Grocery: state.grocery = [{ "id":"g<unique>", "text":"...", "done":false }]  (for a recipe, look the recipe up on the web first, then add its ingredients)`,
+      `  - Chores: state.chores = [{ "id":"c<unique>", "name":"...", "who":"...", "cadence":"daily|weekly", "pic":"emoji optional" }]`,
+      `The wall re-reads state.json within ~20s, so editing the file is enough.`,
+      ``,
+      `LOOK/FEEL or NEW FEATURES live in code: public/config.js (title, people/colors, theme), public/app.js, public/styles.css. If you change code: run "node --check" on any .js you touch, keep the app working, then commit and push so it survives the next auto-update. The wall reloads itself on code changes.`,
+      ``,
+      `Rules: keep changes minimal and safe — a family relies on this display, never break it. Never print or expose data/secrets.json. If the request is unclear or unsafe, do nothing and say so briefly. End with ONE short friendly sentence for the family.`,
+    ].join("\n");
+
+    const { spawn } = require("child_process");
+    // Scoped tools (NOT full bypass): edit files, look things up, validate, and
+    // commit — but no arbitrary shell. Covers calendar/grocery/recipes/app edits.
+    const TOOLS = "Read Edit Write Glob Grep WebFetch WebSearch Bash(node:*) Bash(git:*)";
+    const child = spawn("claude", ["-p", "--output-format", "text", "--allowedTools", TOOLS], { cwd: ROOT, shell: true });
+    let out = "", err = "", done = false;
+    const finish = (obj) => { if (done) return; done = true; clearTimeout(timer); sendJSON(res, 200, obj); };
+    const timer = setTimeout(() => { try { child.kill(); } catch {} finish({ ok: false, error: "That took too long — try a simpler command." }); }, 120000);
+    child.on("error", () => finish({ ok: false, error: "Claude Code isn't installed here yet — run: npm i -g @anthropic-ai/claude-code, then claude setup-token." }));
+    child.stdout.on("data", d => out += d.toString());
+    child.stderr.on("data", d => err += d.toString());
+    child.on("close", (code) => {
+      const all = out + " " + err;   // Claude prints some errors to stdout, some to stderr
+      if (/not recognized|command not found|ENOENT/i.test(all))
+        return finish({ ok: false, error: "Claude Code isn't installed here yet — run: npm i -g @anthropic-ai/claude-code, then claude setup-token." });
+      if (code !== 0 && /authenticat|invalid.*credential|\b401\b|setup-token|run .*login/i.test(all))
+        return finish({ ok: false, error: "Claude needs to sign in on this device — run: claude setup-token (then try again)." });
+      const summary = out.trim().replace(/\s+/g, " ").slice(0, 300);
+      if (code === 0 && summary) finish({ ok: true, summary });
+      else finish({ ok: false, error: summary || err.trim().replace(/\s+/g, " ").slice(0, 200) || "Couldn't complete that." });
+    });
+    try { child.stdin.write(prompt); child.stdin.end(); } catch {}
+    return;
+  }
+
   // ---- API: version (so the screen auto-reloads after a code update) ----
   if (pathname === "/api/version") {
     try {
