@@ -1,0 +1,8 @@
+# Normalize text files to LF in the repo by default.
+* text=auto
+
+# Windows scripts MUST use CRLF, or cmd.exe / PowerShell misparse them
+# (LF-ending .bat files make cmd.exe run stray commands — e.g. the `date` prompt).
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf

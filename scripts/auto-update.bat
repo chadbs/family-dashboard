@@ -10,5 +10,4 @@ REM  can never wipe them.
 REM ===========================================================================
 
 cd /d "%~dp0\.."
-echo [%date% %time%] checking for updates>> scripts\update.log
 git pull --rebase --autostash>> scripts\update.log 2>&1
