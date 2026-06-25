@@ -114,6 +114,11 @@ window.CONFIG = {
     "I'd rearrange the stars to spell your name, but they're too busy staring at you.",
     "Kenzie, you're a 10 — but on a scale of how much I love you, you flat-out broke the machine.",
     "Good morning, beautiful. Reminder: you're stunning, I'm obsessed, and the coffee's cold because I got lost looking at you. ☕💚",
+    "Summer is amazing, but only because you're in it. Green eyes + sunshine = an actual hazard. ☀️💚",
+    "Your black hair in the summer sun looks like the night sky crashed the party early. Unfairly gorgeous. 🖤☀️",
+    "Hot day forecast, but you're the real heat wave. Those emerald eyes could melt glaciers, Kenzie. 💚🌡️",
+    "Watching you with Addy and Sophie — you're the most beautiful thing about every single day. 🐰🐢💚",
+    "A summer breeze is lovely, but your laugh is better. Also your eyes. Also your everything. 🌴💚",
   ],
 
   // ── Look & feel ──────────────────────────────────────────────────────

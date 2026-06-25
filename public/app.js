@@ -179,6 +179,7 @@ const CHORE_PICS = [
   [/book|read/i, "📚"], [/\bcar\b/i, "🚗"], [/mail/i, "📬"], [/snow|shovel/i, "❄️"],
   [/leaf|rake/i, "🍂"], [/towel/i, "🧻"], [/hair/i, "💇"], [/face|hand/i, "🧽"],
   [/feed|food|bowl/i, "🥣"], [/homework|study/i, "✏️"], [/music|piano|practice/i, "🎹"],
+  [/bath|shower/i, "🛁"], [/swim|pool/i, "🏊"], [/bike|cycle/i, "🚲"], [/garden|yard|weed/i, "🌻"],
 ];
 function chorePic(c) {
   if (c.pic) return c.pic;                                  // explicit picture wins
@@ -209,7 +210,8 @@ function toggleSlot(id, slot) {
 
 /* ---- kid-friendly celebration: a little confetti + an encouraging word,
         localized to where they tapped — never a full-screen takeover ---- */
-const CHEERS = ["Great job!", "Nice!", "Woohoo!", "Way to go!", "Awesome!", "High five!", "You did it!", "Yay!"];
+const CHEERS = ["Great job!", "Nice!", "Woohoo!", "Way to go!", "Awesome!", "High five!", "You did it!", "Yay!",
+  "Superstar! ⭐", "So proud!", "Incredible!", "You rock! 🎸", "Amazing!", "Keep it up!", "Winner! 🏆", "Nailed it!"];
 const FUN_ANIMALS = ["🐰", "🐢"];   // the kids' favorites, always join the party
 function celebrate(x, y, accent, who) {
   const fx = $("fx"); if (!fx) return;
