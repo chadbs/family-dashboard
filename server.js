@@ -302,8 +302,13 @@ const server = http.createServer(async (req, res) => {
   });
 });
 
-server.listen(PORT, () => {
-  console.log(`\n  Family dashboard running:`);
-  console.log(`    On this machine:  http://localhost:${PORT}`);
-  console.log(`    On your network:  http://<this-device-ip>:${PORT}\n`);
-});
+if (require.main === module) {
+  server.listen(PORT, () => {
+    console.log(`\n  Family dashboard running:`);
+    console.log(`    On this machine:  http://localhost:${PORT}`);
+    console.log(`    On your network:  http://<this-device-ip>:${PORT}\n`);
+  });
+} else {
+  // Imported by tests — expose the calendar parser without starting the server.
+  module.exports = { parseICS, expandEvent, icsToDate };
+}
