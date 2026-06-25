@@ -16,6 +16,9 @@ let STATE = { choreDone: {}, choreWeek: null, grocery: [] };
 /* ---------------------------------------------------------------- helpers */
 function color(who) { return (C.people && C.people[who]) || "#8A93A6"; }
 function initials(who) { return who.slice(0, 1).toUpperCase(); }
+function avatarOf(who) { return (C.avatars && C.avatars[who]) || ""; }            // emoji, or "" if none
+function badgeText(who) { return avatarOf(who) || (who ? initials(who) : "?"); }   // what to show on the badge
+function badgeClass(who) { return avatarOf(who) ? "chore-badge avatar" : "chore-badge"; }
 function todayKey() { const d = new Date(); return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`; }
 function weekKey() {
   const d = new Date(); const onejan = new Date(d.getFullYear(), 0, 1);
@@ -160,7 +163,9 @@ function ensureWeek() {
 
 function slotFor(c) { return c.cadence === "weekly" ? "w" : String(todayIndex()); }
 function isDone(id, slot) { return !!(STATE.choreDone[id] && STATE.choreDone[id][slot]); }
-function choreColor(id) { const c = effectiveChores().find(x => x.id === id); return color(c && c.who); }
+function choreById(id) { return effectiveChores().find(x => x.id === id); }
+function choreColor(id) { const c = choreById(id); return color(c && c.who); }
+function choreWho(id) { const c = choreById(id); return c && c.who; }
 
 // Flip a checkbox; returns true if it just became DONE (so we can celebrate).
 function toggleSlot(id, slot) {
@@ -177,7 +182,8 @@ function toggleSlot(id, slot) {
 /* ---- kid-friendly celebration: a little confetti + an encouraging word,
         localized to where they tapped — never a full-screen takeover ---- */
 const CHEERS = ["Great job!", "Nice!", "Woohoo!", "Way to go!", "Awesome!", "High five!", "You did it!", "Yay!"];
-function celebrate(x, y, accent) {
+const FUN_ANIMALS = ["🐰", "🐢"];   // the kids' favorites, always join the party
+function celebrate(x, y, accent, who) {
   const fx = $("fx"); if (!fx) return;
   // Fall back to screen center if we don't have tap coordinates.
   if (!x && !y) { x = window.innerWidth / 2; y = window.innerHeight / 2; }
@@ -199,6 +205,27 @@ function celebrate(x, y, accent) {
     setTimeout(() => p.remove(), 1200);
   }
 
+  // Bunnies & turtles hop out — the person's own animal leads the way.
+  const buddies = [];
+  const mine = avatarOf(who);
+  if (mine) buddies.push(mine);
+  FUN_ANIMALS.forEach(a => { if (!buddies.includes(a)) buddies.push(a); });
+  buddies.forEach((emo, i) => {
+    const b = document.createElement("div");
+    b.className = "buddy";
+    const ang = (-Math.PI / 2) + (i - (buddies.length - 1) / 2) * 0.55;   // fan upward
+    const dist = 72 + Math.random() * 46;
+    b.textContent = emo;
+    b.style.left = x + "px";
+    b.style.top = y + "px";
+    b.style.setProperty("--dx", Math.cos(ang) * dist + "px");
+    b.style.setProperty("--dy", (Math.sin(ang) * dist) + "px");
+    b.style.setProperty("--rot", (Math.random() * 36 - 18) + "deg");
+    b.style.animationDelay = (i * 45) + "ms";
+    fx.appendChild(b);
+    setTimeout(() => b.remove(), 1500);
+  });
+
   const msg = document.createElement("div");
   msg.className = "cheer";
   msg.textContent = CHEERS[Math.floor(Math.random() * CHEERS.length)];
@@ -218,7 +245,7 @@ function renderHomeChores() {
       <div class="chk"><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg></div>
       <div class="chore-name">${escapeHtml(c.name)}</div>
       ${c.cadence === "weekly" ? `<span class="chore-cadence">weekly</span>` : ""}
-      <div class="chore-badge" style="background:${col}" title="${escapeHtml(c.who || "")}">${c.who ? initials(c.who) : "?"}</div>
+      <div class="${badgeClass(c.who)}" style="background:${col}" title="${escapeHtml(c.who || "")}">${badgeText(c.who)}</div>
     </div>`;
   }).join("");
   const done = chores.filter(c => isDone(c.id, slotFor(c))).length;
@@ -251,7 +278,7 @@ function renderChart() {
       }
     }
     return `<div class="cc-row ${c.cadence === "weekly" ? "is-weekly" : ""}">
-      <div class="cc-name"><span class="chore-badge sm" style="background:${col}" title="${escapeHtml(c.who || "")}">${c.who ? initials(c.who) : "?"}</span><span class="cc-title">${escapeHtml(c.name)}</span></div>${cells}</div>`;
+      <div class="cc-name"><span class="${badgeClass(c.who)} sm" style="background:${col}" title="${escapeHtml(c.who || "")}">${badgeText(c.who)}</span><span class="cc-title">${escapeHtml(c.name)}</span></div>${cells}</div>`;
   }).join("");
 
   $("choreChart").innerHTML = head + rows;
@@ -332,13 +359,13 @@ $("choreEditBtn").addEventListener("click", () => {
 $("choreChart").addEventListener("click", (e) => {
   const cell = e.target.closest(".cc-cell");
   if (cell && cell.dataset.id && toggleSlot(cell.dataset.id, cell.dataset.slot)) {
-    celebrate(e.clientX, e.clientY, choreColor(cell.dataset.id));
+    celebrate(e.clientX, e.clientY, choreColor(cell.dataset.id), choreWho(cell.dataset.id));
   }
 });
 $("choreList").addEventListener("click", (e) => {
   const el = e.target.closest(".chore");
   if (el && toggleSlot(el.dataset.id, el.dataset.slot)) {
-    celebrate(e.clientX, e.clientY, choreColor(el.dataset.id));
+    celebrate(e.clientX, e.clientY, choreColor(el.dataset.id), choreWho(el.dataset.id));
   }
 });
 

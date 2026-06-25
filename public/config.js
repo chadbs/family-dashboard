@@ -20,6 +20,13 @@ window.CONFIG = {
     Sophie:  "#10B981",   // green
   },
 
+  // Fun avatars shown on chore badges (any emoji works). People without one
+  // just show their first initial. The kids' favorites: Addy 🐰, Sophie 🐢.
+  avatars: {
+    Addison: "🐰",
+    Sophie:  "🐢",
+  },
+
   // ── Birthdays ────────────────────────────────────────────────────────
   // The dashboard shows the next upcoming birthday and figures out the age
   // automatically from the year born.

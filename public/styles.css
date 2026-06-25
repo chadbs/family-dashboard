@@ -223,6 +223,9 @@ body {
   overflow: hidden; text-overflow: ellipsis; }
 .chore-badge.sm { width: clamp(24px, 2.2vw, 30px); height: clamp(24px, 2.2vw, 30px);
   margin-left: 0; font-size: clamp(10px, .95vw, 13px); flex-shrink: 0; }
+/* Emoji avatars sit a touch larger so the bunny/turtle reads clearly. */
+.chore-badge.avatar { font-size: clamp(16px, 1.7vw, 23px); }
+.chore-badge.sm.avatar { font-size: clamp(14px, 1.5vw, 19px); }
 
 /* Big, kid-friendly tap targets. */
 .cc-cell { background: var(--card-2); border: 2px solid transparent; border-radius: var(--r-md);
@@ -267,10 +270,22 @@ body {
   72%  { opacity: .9; transform: translate(-50%, -105%) scale(1); }
   100% { opacity: 0; transform: translate(-50%, -145%) scale(1); }
 }
+/* Bunnies & turtles that hop out on a chore completion. */
+.buddy { position: absolute; transform: translate(-50%, -50%); opacity: 0;
+  font-size: clamp(28px, 3.2vw, 46px); line-height: 1; will-change: transform;
+  filter: drop-shadow(0 4px 8px rgba(0,0,0,.25)); animation: buddy-hop 1.4s var(--ease) forwards; }
+@keyframes buddy-hop {
+  0%   { opacity: 0; transform: translate(-50%, -50%) scale(.4) rotate(0deg); }
+  25%  { opacity: 1; transform: translate(calc(-50% + var(--dx) * .55), calc(-50% + var(--dy) * .6 - 26px)) scale(1.18) rotate(var(--rot)); }
+  60%  { opacity: 1; transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(1) rotate(0deg); }
+  100% { opacity: 0; transform: translate(calc(-50% + var(--dx) * 1.1), calc(-50% + var(--dy) + 70px)) scale(.92) rotate(var(--rot)); }
+}
 @media (prefers-reduced-motion: reduce) {
   .confetti { display: none; }
   .cheer { animation-duration: .9s; }
+  .buddy { animation: buddy-fade 1s var(--ease) forwards; }
 }
+@keyframes buddy-fade { 0% { opacity: 0; } 30% { opacity: 1; } 100% { opacity: 0; } }
 
 /* ---------- Chore editor ---------- */
 .chore-editor { display: flex; flex-direction: column; gap: clamp(8px, 1vw, 12px); overflow: auto; }
