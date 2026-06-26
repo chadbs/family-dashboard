@@ -10,26 +10,34 @@ cd /d "%~dp0\.."
 REM 1) Start the local server in the background
 start "dashboard-server" /min node server.js
 
-REM 2) Start the weather bridge (reads your AcuRite sensor via rtl_433).
-REM    If rtl_433 isn't on PATH, set its full path first, e.g.:
-REM      set "RTL433=C:\rtl_433\rtl_433.exe"
+REM 2) Weather bridge — find your rtl_433.exe so it can read the AcuRite sensor.
+REM    Best: move the rtl_433 folder to C:\rtl_433\ (so a Downloads cleanup
+REM    can't break it). Add another line here if yours lives somewhere else.
+if not defined RTL433 if exist "C:\rtl_433\rtl_433.exe" set "RTL433=C:\rtl_433\rtl_433.exe"
+if not defined RTL433 if exist "%USERPROFILE%\Downloads\rtl_433-win-x64-25.12\rtl_433.exe" set "RTL433=%USERPROFILE%\Downloads\rtl_433-win-x64-25.12\rtl_433.exe"
 start "weather-bridge" /min node scripts\weather-bridge.js
 
 REM Give the server a moment to come up
 timeout /t 3 /nobreak >nul
 
-REM 3) Open Microsoft Edge in full-screen kiosk mode pointed at the dashboard.
-REM    Bare "msedge" isn't always on PATH, so find Edge by its real location.
-set "EDGE="
-if exist "%ProgramFiles(x86)%\Microsoft\Edge\Application\msedge.exe" set "EDGE=%ProgramFiles(x86)%\Microsoft\Edge\Application\msedge.exe"
-if exist "%ProgramFiles%\Microsoft\Edge\Application\msedge.exe" set "EDGE=%ProgramFiles%\Microsoft\Edge\Application\msedge.exe"
-if exist "%LocalAppData%\Microsoft\Edge\Application\msedge.exe" set "EDGE=%LocalAppData%\Microsoft\Edge\Application\msedge.exe"
+REM 3) Open the dashboard full-screen (kiosk). Prefer Chrome, then Edge.
+set "BROWSER="
+set "KARGS="
+if exist "%ProgramFiles%\Google\Chrome\Application\chrome.exe" set "BROWSER=%ProgramFiles%\Google\Chrome\Application\chrome.exe"
+if exist "%ProgramFiles(x86)%\Google\Chrome\Application\chrome.exe" set "BROWSER=%ProgramFiles(x86)%\Google\Chrome\Application\chrome.exe"
+if exist "%LocalAppData%\Google\Chrome\Application\chrome.exe" set "BROWSER=%LocalAppData%\Google\Chrome\Application\chrome.exe"
+if defined BROWSER set "KARGS=--kiosk http://localhost:8080 --no-first-run --disable-pinch --overscroll-history-navigation=0"
 
-if defined EDGE (
-  start "" "%EDGE%" --kiosk "http://localhost:8080" --edge-kiosk-type=fullscreen --no-first-run --disable-pinch --overscroll-history-navigation=0
+if not defined BROWSER (
+  if exist "%ProgramFiles(x86)%\Microsoft\Edge\Application\msedge.exe" set "BROWSER=%ProgramFiles(x86)%\Microsoft\Edge\Application\msedge.exe"
+  if exist "%ProgramFiles%\Microsoft\Edge\Application\msedge.exe" set "BROWSER=%ProgramFiles%\Microsoft\Edge\Application\msedge.exe"
+  if defined BROWSER set "KARGS=--kiosk http://localhost:8080 --edge-kiosk-type=fullscreen --no-first-run --disable-pinch --overscroll-history-navigation=0"
+)
+
+if defined BROWSER (
+  start "" "%BROWSER%" %KARGS%
 ) else (
-  echo Microsoft Edge was not found. Opening in your default browser instead.
-  echo ^(For true kiosk mode, install Edge or edit start.bat with your browser's path.^)
+  echo No Chrome or Edge found; opening your default browser instead.
   start "" "http://localhost:8080"
 )
 
