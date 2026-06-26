@@ -105,15 +105,33 @@ async function loadWeather() {
   }
 }
 
+// Dew point (°F) from temperature (°F) + relative humidity (%), Magnus formula.
+function dewPointF(tF, rh) {
+  const tC = (tF - 32) * 5 / 9, a = 17.625, b = 243.04;
+  const g = Math.log(Math.max(1, rh) / 100) + (a * tC) / (b + tC);
+  return ((b * g) / (a - g)) * 9 / 5 + 32;
+}
+
 function renderWeather(w) {
-  $("tempNow").innerHTML = `${Math.round(w.temperature_F)}<span class="deg">°</span>`;
+  const r = v => (v == null || isNaN(v)) ? null : Math.round(v);
+  $("tempNow").innerHTML = `${r(w.temperature_F) ?? "--"}<span class="deg">°</span>`;
   $("tempCond").textContent = w.condition || "—";
   $("tempLoc").textContent = C.location || "Outside";
   $("heroIcon").innerHTML = weatherIcon(w.condition);
-  $("mHiLo").textContent = `${Math.round(w.hi)}° / ${Math.round(w.lo)}°`;
-  $("mHum").textContent = `${Math.round(w.humidity)}%`;
+  $("mHiLo").textContent = (r(w.hi) != null && r(w.lo) != null) ? `${r(w.hi)}° / ${r(w.lo)}°` : "—";
+  $("mHum").textContent = r(w.humidity) != null ? `${r(w.humidity)}%` : "—";
   $("mRain").textContent = `${(w.rain_in ?? 0).toFixed(2)}"`;
-  $("mIndoor").textContent = `${Math.round(w.indoor_F)}° · ${Math.round(w.indoor_hum)}%`;
+  // 4th metric: indoor if a sensor reports it; otherwise dew point (from temp + humidity).
+  if (r(w.indoor_F) != null) {
+    $("mIndoorLabel").textContent = "Indoor";
+    $("mIndoor").textContent = `${r(w.indoor_F)}°${r(w.indoor_hum) != null ? ` · ${r(w.indoor_hum)}%` : ""}`;
+  } else if (r(w.temperature_F) != null && r(w.humidity) != null) {
+    $("mIndoorLabel").textContent = "Dew point";
+    $("mIndoor").textContent = `${r(dewPointF(w.temperature_F, w.humidity))}°`;
+  } else {
+    $("mIndoorLabel").textContent = "Indoor";
+    $("mIndoor").textContent = "—";
+  }
 
   const r12 = w.rain12h || [];
   const max = Math.max(0.01, ...r12);
