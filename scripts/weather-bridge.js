@@ -54,20 +54,26 @@ function resetDayIfNeeded() {
 /* ---- map an rtl_433 event onto our weather snapshot --------------------- */
 function mapEvent(o) {
   const model = (o.model || "").toLowerCase();
+  const isIndoor = model.includes("indoor") || o.channel === "I";
 
-  // OUTDOOR temperature / humidity (adjust the model match to your sensor)
-  if (o.temperature_F != null && !model.includes("indoor") && !model.includes("tower-i")) {
-    const t = Number(o.temperature_F);
-    wx.temperature_F = t;
-    wx.hi = wx.hi == null ? t : Math.max(wx.hi, t);
-    wx.lo = wx.lo == null ? t : Math.min(wx.lo, t);
-  }
-  if (o.humidity != null && !model.includes("indoor")) wx.humidity = Number(o.humidity);
+  // Temperature: accept Fahrenheit OR Celsius (rtl_433 varies by sensor).
+  const tF = o.temperature_F != null ? Number(o.temperature_F)
+           : o.temperature_C != null ? Number(o.temperature_C) * 9 / 5 + 32
+           : null;
+  const hum = o.humidity != null ? Number(o.humidity) : null;
 
-  // INDOOR sensor (the 01608 console reports indoor temp/humidity too)
-  if (model.includes("indoor") || o.channel === "I") {
-    if (o.temperature_F != null) wx.indoor_F = Number(o.temperature_F);
-    if (o.humidity != null) wx.indoor_hum = Number(o.humidity);
+  if (isIndoor) {
+    // INDOOR sensor (the 01608 console reports indoor temp/humidity too)
+    if (tF != null) wx.indoor_F = tF;
+    if (hum != null) wx.indoor_hum = hum;
+  } else {
+    // OUTDOOR temperature / humidity
+    if (tF != null) {
+      wx.temperature_F = tF;
+      wx.hi = wx.hi == null ? tF : Math.max(wx.hi, tF);
+      wx.lo = wx.lo == null ? tF : Math.min(wx.lo, tF);
+    }
+    if (hum != null) wx.humidity = hum;
   }
 
   // RAIN (cumulative). We diff it to get "today" and per-hour buckets.

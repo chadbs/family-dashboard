@@ -10,9 +10,10 @@ cd /d "%~dp0\.."
 REM 1) Start the local server in the background
 start "dashboard-server" /min node server.js
 
-REM 2) Start the weather bridge (reads your AcuRite sensor). Comment out until
-REM    your RTL-SDR dongle + rtl_433 are installed (see README).
-REM start "weather-bridge" /min node scripts\weather-bridge.js
+REM 2) Start the weather bridge (reads your AcuRite sensor via rtl_433).
+REM    If rtl_433 isn't on PATH, set its full path first, e.g.:
+REM      set "RTL433=C:\rtl_433\rtl_433.exe"
+start "weather-bridge" /min node scripts\weather-bridge.js
 
 REM Give the server a moment to come up
 timeout /t 3 /nobreak >nul
