@@ -268,7 +268,9 @@ function celebrate(x, y, accent, who) {
 
 // Compact list on the Home tab — today's status, tap to toggle.
 function renderHomeChores() {
-  const chores = effectiveChores();
+  // Still-to-do chores float to the top; completed ones sink to the bottom.
+  const chores = effectiveChores().slice().sort((a, b) =>
+    (isDone(a.id, slotFor(a)) ? 1 : 0) - (isDone(b.id, slotFor(b)) ? 1 : 0));
   $("choreList").innerHTML = chores.map(c => {
     const slot = slotFor(c), done = isDone(c.id, slot), col = color(c.who);
     const pic = isKid(c.who) ? `<span class="chore-pic">${chorePic(c)}</span>` : "";
@@ -577,9 +579,8 @@ function localEventsAsOffsets() {
 }
 
 function eventsForOffset() {
-  // Dashboard-owned events + any optional iCal feed; fall back to samples.
-  let source = [...localEventsAsOffsets(), ...(liveEvents || [])];
-  if (!source.length) source = C.sampleEvents || [];
+  // Dashboard-owned events + any optional iCal feed (no fake sample events).
+  const source = [...localEventsAsOffsets(), ...(liveEvents || [])];
   const map = {};
   source.forEach(e => { (map[e.d] ||= []).push(e); });
   return map;
@@ -603,7 +604,7 @@ async function loadCalendar() {
       }
       return { d, time, title: ev.title, who: ev.who || null };
     }).filter(e => e.d >= 0 && e.d <= 7);
-    renderAgenda(); renderWeek();
+    renderAgenda(); renderMonth();
   } catch { /* keep samples on failure */ }
 }
 
@@ -638,14 +639,17 @@ function birthdayBanner() {
   </div>`;
 }
 
+// Home: a compact look at the next 3 days (shows empty days too).
 function renderAgenda() {
   const map = eventsForOffset();
-  const offsets = Object.keys(map).map(Number).sort((a, b) => a - b).slice(0, 4);
-  const today = new Date(); today.setHours(0,0,0,0);
-  const events = offsets.map(off => {
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  let html = "";
+  for (let off = 0; off < 3; off++) {
     const dt = new Date(today); dt.setDate(dt.getDate() + off);
     const label = off === 0 ? "Today" : off === 1 ? "Tomorrow" : DOW[dt.getDay()];
-    const rows = map[off].map(e => {
+    const dateStr = `${MON[dt.getMonth()].slice(0, 3)} ${dt.getDate()}`;
+    const evs = map[off] || [];
+    const rows = evs.length ? evs.map(e => {
       const col = e.who ? color(e.who) : "var(--accent)";
       const badge = e.who ? `<span class="ev-who" style="background:${col}22;color:${col}">${e.who}</span>` : "";
       return `<div class="event">
@@ -654,31 +658,111 @@ function renderAgenda() {
         <span class="ev-title">${escapeHtml(e.title)}</span>
         ${badge}
       </div>`;
-    }).join("");
-    return `<div class="agenda-day-label ${off === 0 ? "today" : ""}">${label}</div>${rows}`;
-  }).join("");
-  $("agenda").innerHTML = birthdayBanner() + events;
+    }).join("") : `<div class="agenda-empty">Nothing planned</div>`;
+    html += `<div class="agenda-day-label ${off === 0 ? "today" : ""}">${label} <span class="agenda-date">${dateStr}</span></div>${rows}`;
+  }
+  $("agenda").innerHTML = birthdayBanner() + html;
 }
 
-function renderWeek() {
-  const map = eventsForOffset();
-  const today = new Date(); today.setHours(0,0,0,0);
-  let html = "";
-  for (let off = 0; off < 7; off++) {
-    const dt = new Date(today); dt.setDate(dt.getDate() + off);
-    const evs = map[off] || [];
-    const body = evs.length
-      ? evs.map(e => {
-          const col = e.who ? color(e.who) : "var(--accent)";
-          const who = e.who ? ` · ${e.who}` : "";
-          return `<div class="wk-ev" style="border-left-color:${col}"><b>${escapeHtml(e.title)}</b><span>${e.time}${who}</span></div>`;
-        }).join("")
-      : `<div class="empty">No events</div>`;
-    html += `<div class="weekcol ${off === 0 ? "today" : ""}">
-      <h3>${DOWS[dt.getDay()]}<small>${MON[dt.getMonth()].slice(0,3)} ${dt.getDate()}</small></h3>${body}</div>`;
-  }
-  $("weekGrid").innerHTML = html;
+/* ---- month calendar (Calendar tab) — tap a day to add, an event to edit ---- */
+function ymd(dt) { return `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, "0")}-${String(dt.getDate()).padStart(2, "0")}`; }
+function fmtEvTime(t) {
+  if (!t || !/^\d{1,2}:\d{2}$/.test(t)) return "";
+  let [hh, mm] = t.split(":").map(Number); const ap = hh >= 12 ? "p" : "a"; hh = hh % 12 || 12;
+  return `${hh}:${String(mm).padStart(2, "0")}${ap}`;
 }
+let calMonth = null;   // Date = first day of the displayed month
+function renderMonth() {
+  const grid = $("monthGrid"); if (!grid) return;
+  const now = new Date();
+  if (!calMonth) calMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const year = calMonth.getFullYear(), month = calMonth.getMonth();
+  $("calTitle").textContent = `${MON[month]} ${year}`;
+  $("calDow").innerHTML = DOWS.map(d => `<div class="cal-dow-cell">${d}</div>`).join("");
+
+  const byDate = {};
+  (STATE.events || []).forEach(e => { if (e && e.date) (byDate[e.date] ||= []).push(e); });
+  const todayStr = ymd(now);
+  const startDow = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+  let cells = "";
+  for (let i = 0; i < startDow; i++) cells += `<div class="cal-cell blank"></div>`;
+  for (let d = 1; d <= daysInMonth; d++) {
+    const ds = `${year}-${String(month + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+    const evs = (byDate[ds] || []).slice().sort((a, b) => (a.time || "0").localeCompare(b.time || "0"));
+    const chips = evs.slice(0, 3).map(e => {
+      const col = e.who ? color(e.who) : "var(--accent)";
+      const t = fmtEvTime(e.time);
+      return `<div class="cal-ev" data-eid="${e.id}" style="border-left-color:${col}">${t ? `<b>${t}</b> ` : ""}${escapeHtml(e.title)}</div>`;
+    }).join("");
+    const more = evs.length > 3 ? `<div class="cal-more">+${evs.length - 3} more</div>` : "";
+    cells += `<div class="cal-cell ${ds === todayStr ? "today" : ""}" data-date="${ds}">
+      <div class="cal-daynum">${d}</div>${chips}${more}</div>`;
+  }
+  grid.innerHTML = cells;
+}
+
+/* ---- event editor (touch) ---- */
+let editingEventId = null, editingEventDate = null;
+function prettyDate(ds) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(ds || ""); if (!m) return "";
+  const dt = new Date(+m[1], +m[2] - 1, +m[3]);
+  return `${DOW[dt.getDay()]}, ${MON[dt.getMonth()].slice(0, 3)} ${dt.getDate()}`;
+}
+function openEventEditor(date, eventId) {
+  let ev = null;
+  if (eventId) { ev = (STATE.events || []).find(x => x.id === eventId); if (!ev) return; date = ev.date; }
+  editingEventId = eventId || null; editingEventDate = date;
+  $("eventModalTitle").textContent = eventId ? "Edit event" : "New event";
+  $("evDateLabel").textContent = prettyDate(date);
+  $("evTitle").value = ev ? ev.title : "";
+  $("evWho").innerHTML = `<option value="">Anyone</option>` +
+    Object.keys(C.people || {}).map(n => `<option value="${escapeHtml(n)}" ${ev && ev.who === n ? "selected" : ""}>${escapeHtml(n)}</option>`).join("");
+  const allDay = ev ? !ev.time : false;
+  $("evAllDay").checked = allDay;
+  $("evTime").value = (ev && ev.time) ? ev.time : "";
+  $("evTime").disabled = allDay;
+  $("evDelete").hidden = !eventId;
+  $("eventModal").hidden = false;
+  setTimeout(() => { try { $("evTitle").focus(); } catch {} }, 60);
+}
+function closeEventEditor() { $("eventModal").hidden = true; }
+function saveEvent() {
+  const title = $("evTitle").value.trim();
+  if (!title) { $("evTitle").focus(); return; }
+  const allDay = $("evAllDay").checked;
+  const time = allDay ? null : ($("evTime").value || null);
+  const who = $("evWho").value || null;
+  STATE.events = STATE.events || [];
+  if (editingEventId) {
+    const ev = STATE.events.find(x => x.id === editingEventId);
+    if (ev) { ev.title = title; ev.time = time; ev.who = who; ev.date = editingEventDate; }
+  } else {
+    STATE.events.push({ id: "ev" + Date.now().toString(36), date: editingEventDate, time, title, who });
+  }
+  saveState(); closeEventEditor(); renderMonth(); renderAgenda();
+}
+function deleteEvent() {
+  if (editingEventId) STATE.events = (STATE.events || []).filter(x => x.id !== editingEventId);
+  saveState(); closeEventEditor(); renderMonth(); renderAgenda();
+}
+
+$("monthGrid").addEventListener("click", (e) => {
+  const evEl = e.target.closest(".cal-ev");
+  if (evEl) { e.stopPropagation(); return openEventEditor(null, evEl.dataset.eid); }
+  const cell = e.target.closest(".cal-cell[data-date]");
+  if (cell) openEventEditor(cell.dataset.date, null);
+});
+$("calPrev").addEventListener("click", () => { calMonth = new Date(calMonth.getFullYear(), calMonth.getMonth() - 1, 1); renderMonth(); });
+$("calNext").addEventListener("click", () => { calMonth = new Date(calMonth.getFullYear(), calMonth.getMonth() + 1, 1); renderMonth(); });
+$("calToday").addEventListener("click", () => { calMonth = null; renderMonth(); });
+$("evAllDay").addEventListener("change", () => { $("evTime").disabled = $("evAllDay").checked; });
+$("evSave").addEventListener("click", saveEvent);
+$("evDelete").addEventListener("click", deleteEvent);
+$("evCancel").addEventListener("click", closeEventEditor);
+$("eventModal").addEventListener("click", (e) => { if (e.target.id === "eventModal") closeEventEditor(); });
+$("evTitle").addEventListener("keydown", (e) => { if (e.key === "Enter") saveEvent(); });
 
 /* ---------------------------------------------------------------- state I/O */
 async function loadState() {
@@ -710,6 +794,7 @@ $("tabs").addEventListener("click", (e) => {
   document.querySelectorAll(".tab").forEach(t => t.classList.toggle("is-active", t === btn));
   const view = btn.dataset.view;
   document.querySelectorAll(".view").forEach(v => v.classList.toggle("is-active", v.id === `view-${view}`));
+  if (view === "calendar") renderMonth();   // fresh month each time it opens
 });
 
 /* ---------------------------------------------------------------- love note
@@ -833,7 +918,7 @@ async function sendVoiceCommand(text) {
     if (data.ok) {
       voiceShow("done", data.summary || "Done!", "");
       await loadState(); ensureWeek();
-      renderHomeChores(); renderChart(); renderGrocery(); renderAgenda(); renderWeek();
+      renderHomeChores(); renderChart(); renderGrocery(); renderAgenda(); renderMonth();
       setTimeout(() => { if ($("voiceModal").dataset.state === "done") voiceHide(); }, 6000);
     } else {
       voiceShow("error", "Hmm", data.error || "Couldn't do that.");
@@ -858,7 +943,7 @@ async function boot() {
   renderChart();
   renderGrocery();
   renderAgenda();
-  renderWeek();
+  renderMonth();
   await loadWeather();
   loadCalendar();
   if (!showLoveNow()) maybeShowLove();   // surprise note wins; else the daily one
@@ -874,7 +959,7 @@ async function boot() {
     if (editingChores) return;                                 // don't clobber an edit in progress
     if (document.activeElement === $("groceryInput")) return;  // don't clobber typing
     await loadState(); ensureWeek(); renderHomeChores(); renderChart(); renderGrocery();
-    renderAgenda(); renderWeek();                               // pick up voice/Claude-added events
+    renderAgenda(); renderMonth();                               // pick up voice/Claude-added events
   }, 1000 * 20);
   // watch for a new code version (after a git pull) and reload automatically
   watchVersion();

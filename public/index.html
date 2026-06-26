@@ -28,7 +28,7 @@
   <!-- ───────── Tabs ───────── -->
   <nav class="tabs" id="tabs">
     <button class="tab is-active" data-view="home"><span>Home</span></button>
-    <button class="tab" data-view="week"><span>Week</span></button>
+    <button class="tab" data-view="calendar"><span>Calendar</span></button>
     <button class="tab" data-view="chores"><span>Chores</span></button>
     <button class="tab" data-view="grocery"><span>Grocery</span></button>
   </nav>
@@ -88,11 +88,18 @@
       </div>
     </section>
 
-    <!-- ============ WEEK ============ -->
-    <section class="view" id="view-week">
-      <div class="card week-card">
-        <div class="card-head"><h2>This week</h2><span class="card-sub">All events</span></div>
-        <div class="weekgrid" id="weekGrid"></div>
+    <!-- ============ CALENDAR (month) ============ -->
+    <section class="view" id="view-calendar">
+      <div class="card cal-card">
+        <div class="cal-head">
+          <button class="cal-nav" id="calPrev" type="button" aria-label="Previous month">‹</button>
+          <h2 id="calTitle">—</h2>
+          <button class="cal-nav" id="calNext" type="button" aria-label="Next month">›</button>
+          <button class="cal-today-btn" id="calToday" type="button">Today</button>
+          <span class="cal-hint">Tap a day to add · tap an event to edit</span>
+        </div>
+        <div class="cal-dow" id="calDow"></div>
+        <div class="month-grid" id="monthGrid"></div>
       </div>
     </section>
 
@@ -152,6 +159,28 @@
     <div class="love-eyebrow" id="loveEyebrow">Good morning, my love</div>
     <div class="love-msg" id="loveMsg"></div>
     <button class="love-close" id="loveClose" type="button">xoxo &nbsp;💋</button>
+  </div>
+</div>
+
+<!-- Calendar event editor -->
+<div id="eventModal" class="event-modal" hidden>
+  <div class="event-card">
+    <div class="event-modal-head">
+      <div class="event-modal-title" id="eventModalTitle">New event</div>
+      <div class="event-modal-date" id="evDateLabel"></div>
+    </div>
+    <input id="evTitle" class="ev-input" type="text" placeholder="What's happening?" autocomplete="off" />
+    <div class="ev-row">
+      <input id="evTime" class="ev-input ev-time" type="time" />
+      <label class="ev-allday"><input id="evAllDay" type="checkbox" /> All day</label>
+    </div>
+    <select id="evWho" class="ev-input"></select>
+    <div class="ev-actions">
+      <button id="evDelete" class="ev-btn ev-del" type="button" hidden>Delete</button>
+      <span class="ev-spacer"></span>
+      <button id="evCancel" class="ev-btn ev-cancel" type="button">Cancel</button>
+      <button id="evSave" class="ev-btn ev-save" type="button">Save</button>
+    </div>
   </div>
 </div>
 
