@@ -112,8 +112,19 @@ function dewPointF(tF, rh) {
   return ((b * g) / (a - g)) * 9 / 5 + 32;
 }
 
+// Map a condition string to a sky-tint key for the weather-reactive background.
+function skyFromCondition(cond = "") {
+  const c = cond.toLowerCase();
+  if (c.includes("rain") || c.includes("shower") || c.includes("storm") || c.includes("drizzle")) return "rainy";
+  if (c.includes("snow") || c.includes("sleet") || c.includes("flurr")) return "snow";
+  if (c.includes("part") || c.includes("few")) return "partly";
+  if (c.includes("cloud") || c.includes("overcast") || c.includes("fog") || c.includes("mist")) return "cloudy";
+  return "sunny";
+}
+
 function renderWeather(w) {
   const r = v => (v == null || isNaN(v)) ? null : Math.round(v);
+  document.documentElement.setAttribute("data-sky", skyFromCondition(w.condition));
   $("tempNow").innerHTML = `${r(w.temperature_F) ?? "--"}<span class="deg">°</span>`;
   $("tempCond").textContent = w.condition || "—";
   $("tempLoc").textContent = C.location || "Outside";

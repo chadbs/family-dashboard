@@ -16,8 +16,8 @@
 
 /* ---------- LIGHT (default) ---------- */
 html[data-theme="light"] {
-  --bg:        #E9ECF2;
-  --bg-2:      #E1E5ED;
+  --bg:        #E4EAE1;
+  --bg-2:      #D8E1D7;
   --card:      #FFFFFF;
   --card-2:    #F5F7FA;
   --ink:       #14161B;
@@ -56,16 +56,39 @@ html[data-theme="dark"] {
   --sky-2:     #131A28;
 }
 
+/* ---------- Weather-reactive sky tint ----------
+   A soft glow is layered over the sage base; its color is driven by the live
+   condition via data-sky on <html> (set in app.js skyFromCondition).
+   No data-sky → transparent → just the calm sage gradient. */
+@property --sky-tint {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+html[data-theme="light"][data-sky="sunny"]  { --sky-tint: rgba(244, 200, 120, .42); }
+html[data-theme="light"][data-sky="partly"] { --sky-tint: rgba(244, 206, 142, .34); }
+html[data-theme="light"][data-sky="cloudy"] { --sky-tint: rgba(150, 166, 184, .38); }
+html[data-theme="light"][data-sky="rainy"]  { --sky-tint: rgba(96, 134, 178, .44); }
+html[data-theme="light"][data-sky="snow"]   { --sky-tint: rgba(198, 216, 234, .50); }
+html[data-theme="dark"][data-sky="sunny"]  { --sky-tint: rgba(150, 116, 64, .24); }
+html[data-theme="dark"][data-sky="partly"] { --sky-tint: rgba(110, 98, 72, .24); }
+html[data-theme="dark"][data-sky="cloudy"] { --sky-tint: rgba(72, 86, 106, .30); }
+html[data-theme="dark"][data-sky="rainy"]  { --sky-tint: rgba(48, 86, 132, .36); }
+html[data-theme="dark"][data-sky="snow"]   { --sky-tint: rgba(120, 150, 186, .30); }
+
 * { margin: 0; padding: 0; box-sizing: border-box; }
 html, body { height: 100%; }
 body {
-  background: var(--bg);
+  background:
+    radial-gradient(135% 116% at 86% -14%, var(--sky-tint, transparent) 0%, transparent 56%),
+    linear-gradient(158deg, var(--bg) 0%, var(--bg-2) 100%);
+  background-attachment: fixed;
   color: var(--ink);
   font-family: var(--font);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   overflow: hidden;
-  transition: background .6s var(--ease), color .6s var(--ease);
+  transition: --sky-tint 1.2s var(--ease), background .6s var(--ease), color .6s var(--ease);
 }
 
 .app {
