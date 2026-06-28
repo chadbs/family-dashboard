@@ -123,7 +123,7 @@ window.CONFIG = {
 
   // One-time SURPRISE note: shows immediately (once) the moment the screen
   // gets this update — on top of the daily 7am ones. Set back to null to clear.
-  loveNow: "Kenzie — official notice: this wall is now permanently mounted upstairs for ONE reason — to remind you every single day that you're the most breathtaking woman in any room, your green eyes are illegal in several states, and I'm hopelessly in love with you. (The palm trees remain jealous.) 🌴💚",
+  loveNow: "Kenzie — your garden flowers are absolutely stunning, but they have an unfair advantage: they're standing next to YOU. Those blooms work overtime trying to be the most beautiful thing outside, and they lose every single time. You grow beauty with your hands AND you ARE beauty — green eyes that make tulips weep with envy, a smile brighter than any sunflower, and a gift for making living things flourish that honestly should be illegal. The roses are gorgeous. You're more gorgeous. The garden knows it. I know it. The whole neighborhood suspects it. Most talented gardener. Most beautiful human. Most hopelessly loved woman alive. 🌸🌺💚",
 
   // ── Look & feel ──────────────────────────────────────────────────────
   // "auto" switches to a dark theme in the evening; or force "light" / "dark".
