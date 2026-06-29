@@ -46,17 +46,38 @@ window.CONFIG = {
   kids: ["Addison", "Sophie"],
 
   // Reward: finish this many chore check-offs in a week to earn the treat.
+  // (This is the shared TEAM treat — both kids' check-offs add together.)
   rewardGoal: 7,
   rewardEmoji: "🍦",
   rewardName: "ice cream",
+
+  // ── Star rewards (each kid's own points jar) ─────────────────────────
+  // Kids earn ⭐ for doing chores (and "kindness stars" you hand out for good
+  // attitude / sharing), save them up, and cash them in for the treats below.
+  // Star balances live on the Surface and survive every update.
+  starEmoji: "⭐",
+  starName: "star",
+  defaultChoreStars: 2,         // a chore is worth this many ⭐ unless it sets its own
+  // A soft parent lock: redeeming a reward and giving kindness stars ask for
+  // this 4-digit PIN (so a little one can't drain the jar solo). Set to ""
+  // to turn the lock off entirely.
+  parentPin: "1234",
+  // The reward shop. Tap a reward on the Rewards tab to cash stars in for it.
+  rewards: [
+    { id: "candy",    name: "Candy",          emoji: "🍬", cost: 5  },
+    { id: "stayup",   name: "Stay up late",   emoji: "🌙", cost: 10 },
+    { id: "tv",       name: "Watch TV 30 min", emoji: "📺", cost: 12 },
+    { id: "icecream", name: "Ice cream",      emoji: "🍦", cost: 15 },
+    { id: "park",     name: "Park trip",      emoji: "🌳", cost: 20 },
+  ],
 
   // These are just the STARTING chores. Add/edit/delete them right on the
   // touchscreen with the "Edit" button on the Chores tab — your changes are
   // saved on the device and survive every update. "pic" is optional: kid
   // chores without one get a picture auto-picked from the name.
   chores: [
-    { id: "windows", name: "Wash windows",   who: "Addison", cadence: "weekly", pic: "🪟" },
-    { id: "shoes",   name: "Clean up shoes", who: "Sophie",  cadence: "weekly", pic: "👟" },
+    { id: "windows", name: "Wash windows",   who: "Addison", cadence: "weekly", pic: "🪟", stars: 3 },
+    { id: "shoes",   name: "Clean up shoes", who: "Sophie",  cadence: "weekly", pic: "👟", stars: 3 },
   ],
 
   // ── Calendar ─────────────────────────────────────────────────────────

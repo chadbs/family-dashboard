@@ -11,7 +11,7 @@ const DOW  = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Satur
 const DOWS = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 const MON  = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 
-let STATE = { choreDone: {}, choreWeek: null, grocery: [], events: [] };
+let STATE = { choreDone: {}, choreWeek: null, grocery: [], events: [], stars: {} };
 
 /* ---------------------------------------------------------------- helpers */
 function color(who) { return (C.people && C.people[who]) || "#8A93A6"; }
@@ -225,13 +225,29 @@ function rewardCount(who) {
   return n;
 }
 
+// ── Star economy (each kid's own points jar) ────────────────────────────
+function starsOf(who) { return Math.max(0, Math.round((STATE.stars || {})[who] || 0)); }
+function choreStars(c) { return (c && typeof c.stars === "number") ? c.stars : (C.defaultChoreStars ?? 2); }
+function addStars(who, n) {
+  STATE.stars = STATE.stars || {};
+  STATE.stars[who] = Math.max(0, (STATE.stars[who] || 0) + n);
+}
+// The cheapest reward a kid can't afford yet — what their jar is filling toward.
+function nextReward(bal) {
+  const shop = (C.rewards || []).slice().sort((a, b) => a.cost - b.cost);
+  return shop.find(r => r.cost > bal) || null;
+}
+
 // Flip a checkbox; returns true if it just became DONE (so we can celebrate).
+// Kid chores also move stars into (or back out of) that kid's jar.
 function toggleSlot(id, slot) {
   STATE.choreDone[id] = STATE.choreDone[id] || {};
   let nowDone;
   if (STATE.choreDone[id][slot]) { delete STATE.choreDone[id][slot]; nowDone = false; }
   else { STATE.choreDone[id][slot] = true; nowDone = true; }
   if (!Object.keys(STATE.choreDone[id]).length) delete STATE.choreDone[id];
+  const c = choreById(id);
+  if (c && isKid(c.who)) { addStars(c.who, (nowDone ? 1 : -1) * choreStars(c)); renderJars(); }
   renderHomeChores(); renderChart();
   saveState();
   return nowDone;
@@ -388,7 +404,7 @@ function rewardHTML() {
 }
 function renderRewards() {
   const html = rewardHTML();
-  for (const id of ["rewardBar", "rewardBarHome"]) {
+  for (const id of ["rewardBar", "rewardBarHome", "rewardBarRewards"]) {
     const host = $(id); if (!host) continue;
     if (!html) { host.hidden = true; host.innerHTML = ""; }
     else { host.hidden = false; host.innerHTML = html; }
@@ -417,6 +433,186 @@ function iceCreamParty(who) {
   fx.appendChild(banner);
   setTimeout(() => banner.remove(), 3200);
 }
+
+/* ---- the Rewards tab: star jars + shop + kindness stars ---- */
+// Each kid's jar: balance + a bar filling toward their next reward.
+function jarsHTML() {
+  const kids = C.kids || [];
+  if (!kids.length) return "";
+  const star = C.starEmoji || "⭐";
+  return kids.map(k => {
+    const bal = starsOf(k);
+    const nxt = nextReward(bal);
+    const pct = nxt ? Math.min(100, Math.round(bal / nxt.cost * 100)) : 100;
+    const col = color(k);
+    const ava = avatarOf(k) || initials(k);
+    const sub = nxt
+      ? `${nxt.cost - bal} to ${escapeHtml(nxt.name)} ${nxt.emoji}`
+      : `everything unlocked!`;
+    return `<div class="jar" style="--kidcol:${col}">
+      <div class="jar-top">
+        <span class="jar-ava ${avatarOf(k) ? "emoji" : ""}" style="background:${col}">${ava}</span>
+        <span class="jar-name">${escapeHtml(k)}</span>
+        <span class="jar-bal">${bal} <span class="jar-star">${star}</span></span>
+      </div>
+      <div class="jar-track"><div class="jar-fill" style="width:${pct}%"></div></div>
+      <div class="jar-sub">${sub}</div>
+    </div>`;
+  }).join("");
+}
+function renderJars() {
+  const html = jarsHTML();
+  for (const id of ["jars", "jarsHome"]) {
+    const host = $(id); if (!host) continue;
+    host.innerHTML = html;
+    host.hidden = !html;
+  }
+}
+
+// The shop: tap a reward to cash a kid's stars in for it.
+function renderShop() {
+  const host = $("rewardShop"); if (!host) return;
+  const kids = C.kids || [];
+  const star = C.starEmoji || "⭐";
+  host.innerHTML = (C.rewards || []).map(rw => {
+    const canAny = kids.some(k => starsOf(k) >= rw.cost);
+    return `<div class="shop-item ${canAny ? "ready" : "locked"}" data-rid="${rw.id}">
+      <div class="shop-emoji">${rw.emoji || "🎁"}</div>
+      <div class="shop-name">${escapeHtml(rw.name)}</div>
+      <div class="shop-cost">${canAny ? "" : "🔒 "}${rw.cost} ${star}</div>
+    </div>`;
+  }).join("");
+}
+
+// "Give a kindness star" — a parent hands out a ⭐ for good attitude / sharing.
+function renderKindness() {
+  const host = $("kindnessRow"); if (!host) return;
+  const kids = C.kids || [];
+  if (!kids.length) { host.innerHTML = ""; return; }
+  const star = C.starEmoji || "⭐";
+  host.innerHTML = `<span class="kindness-label">Good attitude? Give a ${star}:</span>` +
+    kids.map(k => `<button class="kindness-btn" data-kid="${escapeHtml(k)}" type="button" style="--kidcol:${color(k)}">
+      <span class="kindness-ava ${avatarOf(k) ? "emoji" : ""}">${avatarOf(k) || initials(k)}</span>${escapeHtml(k)} +${star}</button>`).join("");
+}
+
+function renderRewardTab() { renderJars(); renderShop(); renderKindness(); renderRewards(); }
+
+/* ---- redeeming a reward (with the parent PIN) ---- */
+let pendingRedeem = null;   // the reward chosen, awaiting a kid pick
+function openRedeem(rid) {
+  const rw = (C.rewards || []).find(r => r.id === rid); if (!rw) return;
+  const kids = (C.kids || []);
+  const affordable = kids.filter(k => starsOf(k) >= rw.cost);
+  if (!affordable.length) return;   // nobody can afford it — the card is locked anyway
+  pendingRedeem = rw;
+  $("redeemEmoji").textContent = rw.emoji || "🎁";
+  $("redeemTitle").textContent = rw.name;
+  $("redeemCost").textContent = `${rw.cost} ${C.starEmoji || "⭐"}`;
+  $("redeemKids").innerHTML = kids.map(k => {
+    const ok = starsOf(k) >= rw.cost;
+    return `<button class="redeem-kid ${ok ? "" : "disabled"}" data-kid="${escapeHtml(k)}" type="button" ${ok ? "" : "disabled"} style="--kidcol:${color(k)}">
+      <span class="redeem-ava ${avatarOf(k) ? "emoji" : ""}">${avatarOf(k) || initials(k)}</span>
+      <span class="redeem-kidname">${escapeHtml(k)}</span>
+      <span class="redeem-kidbal">${starsOf(k)} ${C.starEmoji || "⭐"}</span>
+    </button>`;
+  }).join("");
+  $("redeemModal").hidden = false;
+}
+function closeRedeem() { $("redeemModal").hidden = true; pendingRedeem = null; }
+
+function doRedeem(kid) {
+  const rw = pendingRedeem; if (!rw) return;
+  if (starsOf(kid) < rw.cost) return;
+  requirePin(() => {
+    addStars(kid, -rw.cost);
+    renderRewardTab(); saveState();
+    closeRedeem();
+    treatParty(rw.emoji || "🎁", `${kid} got ${rw.name}!`);
+  });
+}
+
+// A celebratory shower of the reward's emoji + a banner (reuses the fx layer).
+function treatParty(emoji, label) {
+  const fx = $("fx"); if (!fx) return;
+  for (let i = 0; i < 24; i++) {
+    const e = document.createElement("div");
+    e.className = "icecream";
+    e.textContent = emoji;
+    e.style.left = (Math.random() * 100) + "%";
+    e.style.fontSize = (24 + Math.random() * 28) + "px";
+    e.style.animationDelay = (Math.random() * 0.9) + "s";
+    e.style.animationDuration = (1.9 + Math.random() * 1.5) + "s";
+    fx.appendChild(e);
+    setTimeout(() => e.remove(), 3600);
+  }
+  const banner = document.createElement("div");
+  banner.className = "ice-banner";
+  banner.textContent = `${emoji} ${label} ${emoji}`;
+  fx.appendChild(banner);
+  setTimeout(() => banner.remove(), 3200);
+}
+
+/* ---- parent PIN pad (soft lock for redeem + kindness stars) ---- */
+let pinTarget = null, pinEntry = "";
+function requirePin(onOk) {
+  const pin = (C.parentPin || "").toString();
+  if (!pin) { onOk(); return; }            // lock disabled
+  pinTarget = onOk; pinEntry = "";
+  renderPinDots();
+  $("pinModal").hidden = false;
+}
+function renderPinDots() {
+  const pin = (C.parentPin || "").toString();
+  const len = Math.max(pin.length, 4);
+  $("pinDots").innerHTML = Array.from({ length: len }, (_, i) =>
+    `<span class="pin-dot ${i < pinEntry.length ? "on" : ""}"></span>`).join("");
+}
+function closePin() { $("pinModal").hidden = true; pinTarget = null; pinEntry = ""; $("pinDots").classList.remove("bad"); }
+function pinKey(k) {
+  const pin = (C.parentPin || "").toString();
+  if (k === "c") return closePin();
+  if (k === "x") { pinEntry = pinEntry.slice(0, -1); return renderPinDots(); }
+  if (!/^\d$/.test(k)) return;
+  if (pinEntry.length >= pin.length) return;
+  pinEntry += k; renderPinDots();
+  if (pinEntry.length === pin.length) {
+    if (pinEntry === pin) {
+      const cb = pinTarget; closePin(); if (cb) cb();
+    } else {
+      $("pinDots").classList.add("bad");
+      setTimeout(() => { pinEntry = ""; renderPinDots(); $("pinDots").classList.remove("bad"); }, 600);
+    }
+  }
+}
+
+// Wire the Rewards tab interactions.
+$("rewardShop")?.addEventListener("click", (e) => {
+  const it = e.target.closest(".shop-item.ready");
+  if (it) openRedeem(it.dataset.rid);
+});
+$("redeemKids")?.addEventListener("click", (e) => {
+  const b = e.target.closest(".redeem-kid:not(.disabled)");
+  if (b) doRedeem(b.dataset.kid);
+});
+$("redeemCancel")?.addEventListener("click", closeRedeem);
+$("redeemModal")?.addEventListener("click", (e) => { if (e.target.id === "redeemModal") closeRedeem(); });
+$("kindnessRow")?.addEventListener("click", (e) => {
+  const b = e.target.closest(".kindness-btn");
+  if (!b) return;
+  const kid = b.dataset.kid;
+  requirePin(() => {
+    addStars(kid, 1);
+    renderRewardTab(); saveState();
+    const r = b.getBoundingClientRect();
+    celebrate(r.left + r.width / 2, r.top + r.height / 2, color(kid), kid);
+    starPop(r.left + r.width / 2, r.top, 1);
+  });
+});
+$("pinPad")?.addEventListener("click", (e) => {
+  const b = e.target.closest("button[data-k]");
+  if (b) pinKey(b.dataset.k);
+});
+$("pinModal")?.addEventListener("click", (e) => { if (e.target.id === "pinModal") closePin(); });
 
 /* ---- editing the chore list (touchscreen) ---- */
 let editingChores = false;
@@ -484,8 +680,22 @@ $("choreEditBtn").addEventListener("click", () => {
 function onChoreChecked(id, x, y) {
   const who = choreWho(id);
   celebrate(x, y, color(who), who);
+  if (isKid(who)) starPop(x, y, choreStars(choreById(id)));
   // The kids' COMBINED total just crossed the line? Make it rain ice cream.
   if (isKid(who) && teamCount() === (C.rewardGoal || 7)) iceCreamParty();
+}
+
+// A little "+3 ⭐" that floats up where the chore was tapped.
+function starPop(x, y, amount) {
+  const fx = $("fx"); if (!fx || !amount) return;
+  if (!x && !y) { x = window.innerWidth / 2; y = window.innerHeight / 2; }
+  const s = document.createElement("div");
+  s.className = "starpop";
+  s.textContent = `+${amount} ${C.starEmoji || "⭐"}`;
+  s.style.left = x + "px";
+  s.style.top = (y - 34) + "px";
+  fx.appendChild(s);
+  setTimeout(() => s.remove(), 1400);
 }
 $("choreChart").addEventListener("click", (e) => {
   const cell = e.target.closest(".cc-cell");
@@ -798,11 +1008,12 @@ async function loadState() {
   try {
     const r = await fetch("/api/state", { cache: "no-store" });
     const s = await r.json();
-    STATE = Object.assign({ choreDone: {}, choreWeek: null, grocery: [], events: [] }, s);
+    STATE = Object.assign({ choreDone: {}, choreWeek: null, grocery: [], events: [], stars: {} }, s);
     STATE.choreDone = STATE.choreDone || {};
     STATE.grocery = STATE.grocery || [];
     STATE.events = STATE.events || [];
-  } catch { STATE = { choreDone: {}, choreWeek: null, grocery: [], events: [] }; }
+    STATE.stars = STATE.stars || {};
+  } catch { STATE = { choreDone: {}, choreWeek: null, grocery: [], events: [], stars: {} }; }
 }
 
 let saveTimer = null;
@@ -824,6 +1035,7 @@ $("tabs").addEventListener("click", (e) => {
   const view = btn.dataset.view;
   document.querySelectorAll(".view").forEach(v => v.classList.toggle("is-active", v.id === `view-${view}`));
   if (view === "calendar") renderMonth();   // fresh month each time it opens
+  if (view === "rewards") renderRewardTab();
 });
 
 /* ---------------------------------------------------------------- love note
@@ -947,7 +1159,7 @@ async function sendVoiceCommand(text) {
     if (data.ok) {
       voiceShow("done", data.summary || "Done!", "");
       await loadState(); ensureWeek();
-      renderHomeChores(); renderChart(); renderGrocery(); renderAgenda(); renderMonth();
+      renderHomeChores(); renderChart(); renderRewardTab(); renderGrocery(); renderAgenda(); renderMonth();
       setTimeout(() => { if ($("voiceModal").dataset.state === "done") voiceHide(); }, 6000);
     } else {
       voiceShow("error", "Hmm", data.error || "Couldn't do that.");
@@ -970,6 +1182,7 @@ async function boot() {
   ensureWeek();
   renderHomeChores();
   renderChart();
+  renderRewardTab();
   renderGrocery();
   renderAgenda();
   renderMonth();
@@ -987,7 +1200,8 @@ async function boot() {
   setInterval(async () => {
     if (editingChores) return;                                 // don't clobber an edit in progress
     if (document.activeElement === $("groceryInput")) return;  // don't clobber typing
-    await loadState(); ensureWeek(); renderHomeChores(); renderChart(); renderGrocery();
+    if ($("pinModal") && !$("pinModal").hidden) return;        // don't disrupt a PIN entry
+    await loadState(); ensureWeek(); renderHomeChores(); renderChart(); renderRewardTab(); renderGrocery();
     renderAgenda(); renderMonth();                               // pick up voice/Claude-added events
   }, 1000 * 20);
   // watch for a new code version (after a git pull) and reload automatically

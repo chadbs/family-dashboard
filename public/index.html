@@ -29,6 +29,7 @@
   <nav class="tabs" id="tabs">
     <button class="tab is-active" data-view="home"><span>Home</span></button>
     <button class="tab" data-view="calendar"><span>Calendar</span></button>
+    <button class="tab" data-view="rewards"><span>Rewards</span></button>
     <button class="tab" data-view="chores"><span>Chores</span></button>
     <button class="tab" data-view="grocery"><span>Grocery</span></button>
   </nav>
@@ -72,6 +73,7 @@
             <h2>Chores</h2>
             <span class="card-sub" id="choreProgress">—</span>
           </div>
+          <div class="jars home" id="jarsHome"></div>
           <div class="reward-bar home" id="rewardBarHome"></div>
           <div class="chore-list" id="choreList"></div>
         </div>
@@ -100,6 +102,21 @@
         </div>
         <div class="cal-dow" id="calDow"></div>
         <div class="month-grid" id="monthGrid"></div>
+      </div>
+    </section>
+
+    <!-- ============ REWARDS ============ -->
+    <section class="view" id="view-rewards">
+      <div class="card rewards-full">
+        <div class="card-head">
+          <h2>Rewards</h2>
+          <span class="card-sub">Earn ⭐ · save up · cash in</span>
+        </div>
+        <div class="jars" id="jars"></div>
+        <div class="reward-bar" id="rewardBarRewards"></div>
+        <div class="shop-head">Reward shop</div>
+        <div class="reward-shop" id="rewardShop"></div>
+        <div class="kindness" id="kindnessRow"></div>
       </div>
     </section>
 
@@ -180,6 +197,32 @@
       <span class="ev-spacer"></span>
       <button id="evCancel" class="ev-btn ev-cancel" type="button">Cancel</button>
       <button id="evSave" class="ev-btn ev-save" type="button">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Reward redeem chooser: pick which kid is cashing in -->
+<div id="redeemModal" class="redeem-modal" hidden>
+  <div class="redeem-card">
+    <div class="redeem-emoji" id="redeemEmoji">🍦</div>
+    <div class="redeem-title" id="redeemTitle">Ice cream</div>
+    <div class="redeem-cost" id="redeemCost">15 ⭐</div>
+    <div class="redeem-who-label">Who's cashing in?</div>
+    <div class="redeem-kids" id="redeemKids"></div>
+    <button class="redeem-cancel" id="redeemCancel" type="button">Never mind</button>
+  </div>
+</div>
+
+<!-- Parent PIN pad: soft lock on redeeming + giving kindness stars -->
+<div id="pinModal" class="pin-modal" hidden>
+  <div class="pin-card">
+    <div class="pin-title" id="pinTitle">Parent PIN</div>
+    <div class="pin-dots" id="pinDots"></div>
+    <div class="pin-pad" id="pinPad">
+      <button type="button" data-k="1">1</button><button type="button" data-k="2">2</button><button type="button" data-k="3">3</button>
+      <button type="button" data-k="4">4</button><button type="button" data-k="5">5</button><button type="button" data-k="6">6</button>
+      <button type="button" data-k="7">7</button><button type="button" data-k="8">8</button><button type="button" data-k="9">9</button>
+      <button type="button" data-k="x" class="pin-clear">⌫</button><button type="button" data-k="0">0</button><button type="button" data-k="c" class="pin-close">✕</button>
     </div>
   </div>
 </div>
