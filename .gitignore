@@ -6,6 +6,9 @@ data/*.tmp
 # Secrets (Gmail app password, etc.) — NEVER commit these
 data/secrets.json
 
+# Family photos for the wall slideshow — PRIVATE, must NEVER be pushed to GitHub
+data/photos/
+
 # Screenshots the Surface posts for agent monitoring (optional, can be large)
 screenshots/*.png
 
