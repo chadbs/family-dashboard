@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f6b06a"/><stop offset="32%" stop-color="#ef8f84"/>
+      <stop offset="58%" stop-color="#bd789f"/><stop offset="80%" stop-color="#6b69a4"/>
+      <stop offset="100%" stop-color="#3a4170"/>
+    </linearGradient>
+    <radialGradient id="sun" cx="72%" cy="34%" r="26%">
+      <stop offset="0%" stop-color="#ffe9b8"/><stop offset="55%" stop-color="#ffce8e" stop-opacity=".55"/>
+      <stop offset="100%" stop-color="#ffce8e" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="sea" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#9a7fb0"/><stop offset="100%" stop-color="#2c3358"/>
+    </linearGradient>
+  </defs>
+  <rect width="1600" height="1000" fill="url(#sky)"/>
+  <rect width="1600" height="1000" fill="url(#sun)"/>
+  <circle cx="1152" cy="360" r="74" fill="#ffeec2" opacity=".92"/>
+  <rect y="660" width="1600" height="340" fill="url(#sea)"/>
+  <ellipse cx="1152" cy="662" rx="120" ry="14" fill="#ffe6b0" opacity=".5"/>
+  <path d="M1130 720 q12 8 8 30 q40-14 80-6 q-36-22-44-46 q22 4 40-6 q-30-2-44-18 q6 20-2 38 q-20-14-38-12z" fill="#1d2238" opacity=".85"/>
+  <g fill="#11162a" opacity=".88">
+    <rect x="186" y="560" width="10" height="300"/>
+    <path d="M191 560 q-70-22-118-4 q56-6 96 22 q-58-40-120-30 q66 0 100 34 q-40-44-104-46 q70 8 96 40 q-30-44-82-58 q66 22 82 52z"/>
+  </g>
+  <g fill="#0d1124" opacity=".9">
+    <rect x="1416" y="600" width="12" height="320"/>
+    <path d="M1422 600 q84-26 142-4 q-66-6-116 26 q70-48 144-36 q-78 0-118 40 q48-52 124-54 q-84 8-114 46 q36-52 98-68 q-78 26-98 62z"/>
+  </g>
+</svg>

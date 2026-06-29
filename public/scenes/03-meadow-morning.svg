@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="gsky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#bfe2ec"/><stop offset="48%" stop-color="#dceee2"/>
+      <stop offset="100%" stop-color="#f3ecd2"/>
+    </linearGradient>
+    <linearGradient id="field" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#a9c878"/><stop offset="100%" stop-color="#6f9a4c"/>
+    </linearGradient>
+    <radialGradient id="gsun" cx="26%" cy="26%" r="22%">
+      <stop offset="0%" stop-color="#fff7dd"/><stop offset="100%" stop-color="#fff7dd" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1600" height="1000" fill="url(#gsky)"/>
+  <rect width="1600" height="1000" fill="url(#gsun)"/>
+  <circle cx="420" cy="250" r="52" fill="#fff3c9" opacity=".85"/>
+  <path d="M0 660 q400-60 800 0 t800 0 L1600 1000 L0 1000 Z" fill="url(#field)"/>
+  <path d="M0 760 q420-50 800 6 t800-6 L1600 1000 L0 1000 Z" fill="#5d8740" opacity=".7"/>
+  <g fill="#f4d65a" opacity=".9">
+    <circle cx="250" cy="800" r="7"/><circle cx="540" cy="860" r="6"/><circle cx="900" cy="810" r="7"/>
+    <circle cx="1180" cy="870" r="6"/><circle cx="1380" cy="800" r="7"/><circle cx="700" cy="900" r="6"/>
+  </g>
+</svg>

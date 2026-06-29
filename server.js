@@ -443,13 +443,19 @@ const server = http.createServer(async (req, res) => {
   // Lists image files dropped into data/photos/ (gitignored). The dashboard
   // crossfades through them as the wallpaper when the photo theme is on.
   if (pathname === "/api/photos") {
-    try {
-      const exts = new Set([".jpg", ".jpeg", ".png", ".webp", ".gif", ".svg"]);
-      const files = fs.readdirSync(PHOTOS)
-        .filter(f => exts.has(path.extname(f).toLowerCase()) && !f.startsWith("."))
-        .sort();
-      return sendJSON(res, 200, { photos: files.map(f => "/photos/" + encodeURIComponent(f)) });
-    } catch { return sendJSON(res, 200, { photos: [] }); }
+    const exts = new Set([".jpg", ".jpeg", ".png", ".webp", ".gif", ".svg"]);
+    const list = (dir, prefix) => {
+      try {
+        return fs.readdirSync(dir)
+          .filter(f => exts.has(path.extname(f).toLowerCase()) && !f.startsWith("."))
+          .sort().map(f => prefix + encodeURIComponent(f));
+      } catch { return []; }
+    };
+    // Your private photos win; if you haven't added any yet, fall back to the
+    // tracked default scenes in public/scenes/ so the wall still has a backdrop.
+    let photos = list(PHOTOS, "/photos/");
+    if (!photos.length) photos = list(path.join(PUBLIC, "scenes"), "/scenes/");
+    return sendJSON(res, 200, { photos });
   }
 
   // ---- Serve a photo file from data/photos/ (outside /public) ------------
