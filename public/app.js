@@ -81,15 +81,6 @@ function weatherIcon(cond = "") {
       <path d="M18 44a11 11 0 0 1 .7-22A15 15 0 0 1 47 26a10 10 0 0 1-1 18H18z" fill="${cloud}" opacity=".25"/>
       <path d="M18 44a11 11 0 0 1 .7-22A15 15 0 0 1 47 26a10 10 0 0 1-1 18H18z" stroke="${cloud}" stroke-width="2.5"/></svg>`;
   }
-  if (c.includes("part") || c.includes("few")) {
-    return `<svg viewBox="0 0 64 64" fill="none">
-      <circle cx="24" cy="22" r="9" fill="${sun}" opacity=".9"/>
-      <g stroke="${sun}" stroke-width="2.6" stroke-linecap="round">
-        <line x1="24" y1="5" x2="24" y2="10"/><line x1="9" y1="22" x2="14" y2="22"/>
-        <line x1="12" y1="10" x2="15.5" y2="13.5"/><line x1="36" y1="10" x2="32.5" y2="13.5"/></g>
-      <path d="M28 46a10 10 0 0 1 .6-20A13 13 0 0 1 52 30a8.5 8.5 0 0 1-1 16H28z" fill="${cloud}" opacity=".28"/>
-      <path d="M28 46a10 10 0 0 1 .6-20A13 13 0 0 1 52 30a8.5 8.5 0 0 1-1 16H28z" stroke="${cloud}" stroke-width="2.5"/></svg>`;
-  }
   // clear / sunny
   return `<svg viewBox="0 0 64 64" fill="none">
     <circle cx="32" cy="32" r="13" fill="${sun}"/>
@@ -168,6 +159,99 @@ function renderWeather(w) {
   const total = r12.reduce((a, b) => a + b, 0);
   $("trendTotal").textContent = `${total.toFixed(2)}" total`;
 }
+
+/* ---------------------------------------------------------------- forecast
+   A free 7-day outlook from Open-Meteo (no API key). "Now" stays the backyard
+   sensor; this adds the days ahead. Tap a day for its hourly detail.          */
+let forecastData = null;
+function fcDate(iso) { const p = iso.split("-").map(Number); return new Date(p[0], p[1] - 1, p[2]); }
+function fcClock(iso) {
+  if (!iso || iso.length < 16) return "";
+  let h = +iso.slice(11, 13); const m = iso.slice(14, 16);
+  const ap = h >= 12 ? "pm" : "am"; h = h % 12 || 12;
+  return `${h}:${m}${ap}`;
+}
+// WMO weather code -> a label our weatherIcon() understands.
+function wmoLabel(code) {
+  if (code === 0) return "Clear";
+  if (code === 1) return "Mainly clear";
+  if (code === 2) return "Partly cloudy";
+  if (code === 3) return "Overcast";
+  if (code === 45 || code === 48) return "Fog";
+  if (code >= 51 && code <= 57) return "Drizzle";
+  if (code >= 61 && code <= 67) return "Rain";
+  if (code >= 71 && code <= 77) return "Snow";
+  if (code >= 80 && code <= 82) return "Rain showers";
+  if (code >= 85 && code <= 86) return "Snow showers";
+  if (code >= 95) return "Thunderstorm";
+  return "—";
+}
+
+async function loadForecast() {
+  if (C.lat == null || C.lon == null) return;
+  try {
+    const r = await fetch(`/api/forecast?lat=${C.lat}&lon=${C.lon}`, { cache: "no-store" });
+    const d = await r.json();
+    if (d && d.daily && Array.isArray(d.daily.time)) { forecastData = d; renderForecast(d); }
+  } catch { /* keep whatever we have */ }
+}
+function renderForecast(d) {
+  const host = $("forecast"); if (!host) return;
+  const dl = d.daily, n = Math.min(7, dl.time.length);
+  let html = "";
+  for (let i = 0; i < n; i++) {
+    const dow = i === 0 ? "Today" : DOWS[fcDate(dl.time[i]).getDay()];
+    const cond = wmoLabel(dl.weather_code[i]);
+    const hi = Math.round(dl.temperature_2m_max[i]);
+    const lo = Math.round(dl.temperature_2m_min[i]);
+    const pop = Math.round(dl.precipitation_probability_max[i] ?? 0);
+    html += `<button class="fc-day ${i === 0 ? "is-today" : ""}" data-i="${i}" type="button">
+      <span class="fc-dow">${dow}</span>
+      <span class="fc-ic">${weatherIcon(cond)}</span>
+      <span class="fc-t"><b>${hi}°</b><i>${lo}°</i></span>
+      <span class="fc-pop ${pop >= 15 ? "" : "dry"}">${pop >= 15 ? "💧" + pop + "%" : ""}</span>
+    </button>`;
+  }
+  host.innerHTML = html;
+}
+function openForecastDay(i) {
+  const d = forecastData; if (!d || !d.daily || !d.daily.time[i]) return;
+  const dl = d.daily, date = dl.time[i], dt = fcDate(date);
+  $("fcTitle").textContent = `${i === 0 ? "Today · " : ""}${DOW[dt.getDay()]}, ${MON[dt.getMonth()].slice(0, 3)} ${dt.getDate()}`;
+  $("fcPlace").textContent = C.forecastPlace || "";
+  const hi = Math.round(dl.temperature_2m_max[i]), lo = Math.round(dl.temperature_2m_min[i]);
+  const pop = Math.round(dl.precipitation_probability_max[i] ?? 0), cond = wmoLabel(dl.weather_code[i]);
+  $("fcSummary").innerHTML =
+    `<span class="fcs-ic">${weatherIcon(cond)}</span>
+     <span class="fcs-cond">${cond}</span>
+     <span class="fcs-temps"><b>${hi}°</b> <i>${lo}°</i></span>
+     <span class="fcs-pop">💧 ${pop}%</span>
+     <span class="fcs-sun">↑ ${fcClock(dl.sunrise[i])} &nbsp; ↓ ${fcClock(dl.sunset[i])}</span>`;
+  const hr = d.hourly, rows = [];
+  if (hr && Array.isArray(hr.time)) {
+    for (let j = 0; j < hr.time.length; j++) {
+      if (hr.time[j].slice(0, 10) === date) rows.push({ t: hr.time[j], temp: hr.temperature_2m[j], pop: hr.precipitation_probability[j], code: hr.weather_code[j] });
+    }
+  }
+  const show = rows.filter((_, k) => k % 2 === 0);   // every 2 hours keeps it tidy
+  const temps = show.map(r => r.temp), tmin = Math.min(...temps), tmax = Math.max(...temps);
+  $("fcHours").innerHTML = show.map(r => {
+    const h = +r.t.slice(11, 13), ap = h >= 12 ? "p" : "a", h12 = h % 12 || 12;
+    const pct = tmax > tmin ? (r.temp - tmin) / (tmax - tmin) : 0.5;
+    return `<div class="fch">
+      <span class="fch-time">${h12}${ap}</span>
+      <span class="fch-ic">${weatherIcon(wmoLabel(r.code))}</span>
+      <span class="fch-temp">${Math.round(r.temp)}°</span>
+      <span class="fch-bar"><i style="height:${Math.round(26 + pct * 64)}%"></i></span>
+      <span class="fch-pop ${r.pop >= 15 ? "" : "dry"}">${r.pop >= 15 ? r.pop + "%" : ""}</span>
+    </div>`;
+  }).join("");
+  $("forecastModal").hidden = false;
+}
+function closeForecast() { $("forecastModal").hidden = true; }
+$("forecast").addEventListener("click", (e) => { const b = e.target.closest(".fc-day"); if (b) openForecastDay(+b.dataset.i); });
+$("fcClose").addEventListener("click", closeForecast);
+$("forecastModal").addEventListener("click", (e) => { if (e.target.id === "forecastModal") closeForecast(); });
 
 /* ---------------------------------------------------------------- chores
    A weekly chore chart: rows are chores, columns are Mon–Sun. Daily chores
@@ -1136,7 +1220,7 @@ function maybeShowLove() {
   showLove();
 }
 $("loveModal").addEventListener("click", hideLove);
-document.addEventListener("keydown", (e) => { if (e.key === "Escape") hideLove(); });
+document.addEventListener("keydown", (e) => { if (e.key === "Escape") { hideLove(); closeForecast(); } });
 
 /* ---------------------------------------------------------------- voice assistant
    Tap the mic → speak → the command goes to /api/voice, which lets Claude Code
@@ -1287,6 +1371,7 @@ async function boot() {
   renderAgenda();
   renderMonth();
   await loadWeather();
+  loadForecast();                        // 7-day outlook (free Open-Meteo)
   loadCalendar();
   loadPhotos();                          // start the photo reel if it's enabled
   if (!showLoveNow()) maybeShowLove();   // surprise note wins; else the daily one
@@ -1295,6 +1380,7 @@ async function boot() {
   setInterval(renderClock, 1000 * 10);
   setInterval(applyTheme, 1000 * 60 * 5);
   setInterval(loadWeather, 1000 * 30);
+  setInterval(loadForecast, 1000 * 60 * 30);   // refresh the outlook every 30 min
   setInterval(loadCalendar, 1000 * 60 * 15);
   setInterval(loadPhotos, 1000 * 60 * 5);   // pick up newly-added photos
   setInterval(() => { ensureWeek(); renderHomeChores(); renderChart(); }, 1000 * 60 * 5);
