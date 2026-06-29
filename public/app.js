@@ -1206,7 +1206,18 @@ $("voiceModal").addEventListener("click", (e) => { if (e.target.id === "voiceMod
    Only turns on when config.photoTheme is true AND there are photos; otherwise
    the calm sage / weather-reactive background stays exactly as it was.        */
 let reelPhotos = [], reelIdx = 0, reelLayer = 0, reelTimer = null;
-function glassOn() { return !!C.photoTheme && reelPhotos.length > 0; }
+// Whether the photo theme is on. config.photoTheme is the real switch, but
+// ?glass=1 / ?glass=0 in the URL forces it on/off for previewing on a PC
+// without changing what the wall does.
+function photoThemeOn() {
+  try {
+    const g = new URLSearchParams(location.search).get("glass");
+    if (g === "1") return true;
+    if (g === "0") return false;
+  } catch {}
+  return !!C.photoTheme;
+}
+function glassOn() { return photoThemeOn() && reelPhotos.length > 0; }
 
 async function loadPhotos() {
   try {

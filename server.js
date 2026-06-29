@@ -427,7 +427,7 @@ const server = http.createServer(async (req, res) => {
   // crossfades through them as the wallpaper when the photo theme is on.
   if (pathname === "/api/photos") {
     try {
-      const exts = new Set([".jpg", ".jpeg", ".png", ".webp", ".gif"]);
+      const exts = new Set([".jpg", ".jpeg", ".png", ".webp", ".gif", ".svg"]);
       const files = fs.readdirSync(PHOTOS)
         .filter(f => exts.has(path.extname(f).toLowerCase()) && !f.startsWith("."))
         .sort();
