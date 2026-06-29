@@ -878,30 +878,57 @@ function birthdayBanner() {
   </div>`;
 }
 
-// Home: a compact look at the next 3 days (shows empty days too).
-function renderAgenda() {
-  const map = eventsForOffset();
-  const today = new Date(); today.setHours(0, 0, 0, 0);
-  let html = "";
-  for (let off = 0; off < 3; off++) {
-    const dt = new Date(today); dt.setDate(dt.getDate() + off);
-    const label = off === 0 ? "Today" : off === 1 ? "Tomorrow" : DOW[dt.getDay()];
-    const dateStr = `${MON[dt.getMonth()].slice(0, 3)} ${dt.getDate()}`;
-    const evs = map[off] || [];
-    const rows = evs.length ? evs.map(e => {
-      const col = e.who ? color(e.who) : "var(--accent)";
-      const badge = e.who ? `<span class="ev-who" style="background:${col}22;color:${col}">${e.who}</span>` : "";
-      return `<div class="event">
-        <span class="ev-bar" style="background:${col}"></span>
-        <span class="ev-time">${e.time}</span>
-        <span class="ev-title">${escapeHtml(e.title)}</span>
-        ${badge}
-      </div>`;
-    }).join("") : `<div class="agenda-empty">Nothing planned</div>`;
-    html += `<div class="agenda-day-label ${off === 0 ? "today" : ""}">${label} <span class="agenda-date">${dateStr}</span></div>${rows}`;
-  }
-  $("agenda").innerHTML = birthdayBanner() + html;
+// Parse a formatted time label ("9:00a", "12:30p") to minutes; -1 if none.
+function labelMins(lbl) {
+  const m = /^(\d{1,2}):(\d{2})\s*([ap])/i.exec(lbl || "");
+  if (!m) return -1;
+  let h = (+m[1]) % 12; if (m[3].toLowerCase() === "p") h += 12;
+  return h * 60 + (+m[2]);
 }
+// Merge dashboard-owned events (absolute dates) + the iCal feed (offsets) into
+// a map keyed by YYYY-MM-DD, each a list of { timeLabel, title, who, mins }.
+function buildWeekEvents() {
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const byDate = {};
+  const add = (ds, e) => { (byDate[ds] ||= []).push(e); };
+  (STATE.events || []).forEach(ev => {
+    if (!ev || !ev.date) return;
+    const tl = fmtEvTime(ev.time);
+    add(ev.date, { timeLabel: tl, title: ev.title, who: ev.who, mins: ev.time ? labelMins(tl) : -1 });
+  });
+  (liveEvents || []).forEach(e => {
+    const dt = new Date(today); dt.setDate(dt.getDate() + e.d);
+    const allDay = e.time === "All day";
+    add(ymd(dt), { timeLabel: allDay ? "" : e.time, title: e.title, who: e.who, mins: allDay ? -1 : labelMins(e.time) });
+  });
+  return byDate;
+}
+
+// Home: a week-planner strip — one column per day (Mon–Sun), today highlighted,
+// events as color-coded pills. Tap any day to add an event right on the screen.
+function renderAgenda() {
+  const ws = weekStartDate(), ti = todayIndex();
+  const byDate = buildWeekEvents();
+  let cols = "";
+  for (let i = 0; i < 7; i++) {
+    const dt = new Date(ws); dt.setDate(dt.getDate() + i);
+    const ds = ymd(dt);
+    const evs = (byDate[ds] || []).slice().sort((a, b) => a.mins - b.mins);
+    const pills = evs.length ? evs.map(e => {
+      const col = e.who ? color(e.who) : "var(--accent)";
+      return `<div class="ws-ev" style="border-left-color:${col};background:color-mix(in srgb, ${col} 13%, var(--card))">
+        ${e.timeLabel ? `<span class="ws-evtime">${e.timeLabel}</span>` : ""}<span class="ws-evtitle">${escapeHtml(e.title)}</span></div>`;
+    }).join("") : `<div class="ws-empty"></div>`;
+    cols += `<div class="ws-col ${i === ti ? "today" : ""} ${i < ti ? "past" : ""}" data-date="${ds}">
+      <div class="ws-dow">${DAY_ABBR[i]}</div><div class="ws-date">${dt.getDate()}</div>
+      <div class="ws-evs">${pills}</div></div>`;
+  }
+  $("agenda").innerHTML = birthdayBanner() + `<div class="weekstrip">${cols}</div>`;
+}
+$("agenda").addEventListener("click", (e) => {
+  const col = e.target.closest(".ws-col[data-date]");
+  if (col) openEventEditor(col.dataset.date, null);
+});
 
 /* ---- month calendar (Calendar tab) — tap a day to add, an event to edit ---- */
 function ymd(dt) { return `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, "0")}-${String(dt.getDate()).padStart(2, "0")}`; }

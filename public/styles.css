@@ -186,6 +186,26 @@ body {
 .event .ev-title { font-size: clamp(14px, 1.35vw, 19px); font-weight: 500; flex: 1; }
 .event .ev-who { font-size: clamp(11px, 1vw, 14px); font-weight: 700; padding: 4px 11px; border-radius: 999px; }
 
+/* ---------- Week strip (Home "This week") — a column per day ---------- */
+.weekstrip { flex: 1; min-height: 0; display: grid; grid-template-columns: repeat(7, 1fr); gap: clamp(4px, .55vw, 8px); }
+.ws-col { background: var(--card-2); border: 1.5px solid transparent; border-radius: var(--r-sm);
+  padding: clamp(5px, .7vw, 9px) clamp(3px, .45vw, 6px); display: flex; flex-direction: column; gap: 4px;
+  min-height: 0; overflow: hidden; cursor: pointer; transition: background .2s var(--ease), border-color .2s var(--ease); }
+.ws-col:active { transform: scale(.985); }
+.ws-col.today { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 8%, var(--card-2)); }
+.ws-col.past { opacity: .5; }
+.ws-dow { text-align: center; font-size: clamp(9px, .9vw, 12px); font-weight: 700; color: var(--muted);
+  text-transform: uppercase; letter-spacing: .5px; }
+.ws-col.today .ws-dow { color: var(--accent); }
+.ws-date { text-align: center; font-size: clamp(14px, 1.5vw, 21px); font-weight: 700; line-height: 1; margin-bottom: 2px; }
+.ws-col.today .ws-date { color: var(--accent); }
+.ws-evs { display: flex; flex-direction: column; gap: 3px; overflow: hidden; min-height: 0; }
+.ws-ev { font-size: clamp(9px, .92vw, 13px); line-height: 1.2; border-left: 3px solid var(--accent);
+  border-radius: 0 5px 5px 0; padding: 3px 5px; overflow: hidden; }
+.ws-evtime { font-weight: 700; color: var(--muted); margin-right: 3px; font-variant-numeric: tabular-nums; }
+.ws-evtitle { font-weight: 600; }
+.ws-empty { flex: 1; }
+
 /* ---------- Chores ---------- */
 .chore-list, .chore-board { display: flex; flex-direction: column; gap: 9px; }
 .chore-list { overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; }
