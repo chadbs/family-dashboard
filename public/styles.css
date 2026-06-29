@@ -717,3 +717,51 @@ body {
   cursor: pointer; transition: transform .1s var(--ease), background .15s var(--ease); }
 .pin-pad button:active { transform: scale(.93); background: var(--line); }
 .pin-pad .pin-clear, .pin-pad .pin-close { color: var(--muted); font-size: clamp(16px, 1.8vw, 22px); }
+
+/* ============================================================================
+   Photo reel + glass theme (opt-in via config.photoTheme)
+   The reel sits behind everything; the "glass" skin re-tints the shared theme
+   variables so every card becomes frosted, dark, white-text glass — readable
+   over any family photo. When off, nothing here applies (sage look stays).
+   ========================================================================== */
+.photo-reel { position: fixed; inset: 0; z-index: 0; overflow: hidden; display: none; }
+html[data-skin="glass"] .photo-reel { display: block; }
+.reel-img { position: absolute; inset: 0; background-size: cover; background-position: center;
+  opacity: 0; transition: opacity 2.2s var(--ease); will-change: opacity, transform; }
+.reel-img.show { opacity: 1; }
+.reel-img.kb { animation: kenburns 62s ease-out forwards; }
+@keyframes kenburns { from { transform: scale(1.05); } to { transform: scale(1.17); } }
+.reel-scrim { position: absolute; inset: 0; pointer-events: none;
+  background:
+    radial-gradient(130% 120% at 82% 8%, var(--sky-tint, transparent) 0%, transparent 55%),
+    linear-gradient(180deg, rgba(0,0,0,.34) 0%, transparent 24%, transparent 58%, rgba(0,0,0,.46) 100%); }
+/* Evening: the photo fades to an ambient glow so the cards stay front-and-center */
+html[data-skin="glass"][data-theme="dark"] .photo-reel { filter: brightness(.5) saturate(.9); }
+
+/* Keep the whole app above the reel */
+html[data-skin="glass"] .app { position: relative; z-index: 1; }
+
+/* The glass skin: dark frosted cards + white text, derived by overriding the
+   shared variables — so the existing layout/components adapt automatically. */
+html[data-skin="glass"] {
+  --card:     rgba(18, 22, 30, .34);
+  --card-2:   rgba(18, 22, 30, .26);
+  --ink:      #FFFFFF;
+  --ink-soft: rgba(255, 255, 255, .88);
+  --muted:    rgba(255, 255, 255, .68);
+  --line:     rgba(255, 255, 255, .16);
+  --line-2:   rgba(255, 255, 255, .28);
+  --shadow:   0 12px 36px rgba(0, 0, 0, .30);
+  --shadow-sm:0 2px 10px rgba(0, 0, 0, .24);
+}
+html[data-skin="glass"] body { background: #20242E; }   /* shows for a beat while a photo loads */
+html[data-skin="glass"] .card { -webkit-backdrop-filter: blur(15px); backdrop-filter: blur(15px); }
+html[data-skin="glass"] .hero { background: var(--card); }   /* drop the sky radial under glass */
+html[data-skin="glass"] .tabs { -webkit-backdrop-filter: blur(15px); backdrop-filter: blur(15px); }
+/* Bare text that sits directly over the photo gets a shadow for legibility */
+html[data-skin="glass"] .topbar, html[data-skin="glass"] .statusbar { text-shadow: 0 1px 4px rgba(0, 0, 0, .5); }
+/* Modals stay near-solid so they're always readable over a photo */
+html[data-skin="glass"] .event-card,
+html[data-skin="glass"] .redeem-card,
+html[data-skin="glass"] .pin-card { background: rgba(20, 24, 32, .95); }
+@media (prefers-reduced-motion: reduce) { .reel-img.kb { animation: none; } }

@@ -151,4 +151,13 @@ window.CONFIG = {
   theme: "auto",
   darkFromHour: 19,   // 7pm
   darkUntilHour: 7,   // 7am
+
+  // ── Photo reel + glass theme ─────────────────────────────────────────
+  // Turn the wall into a slow family-photo slideshow with frosted-glass cards
+  // floating on top. Drop photos into data/photos/ on the Surface (they stay
+  // private — they never leave the device and are never pushed to GitHub).
+  // Set photoTheme to true to switch it on; false keeps the calm sage look.
+  // With it on but no photos yet, it safely falls back to the sage look too.
+  photoTheme: false,
+  photoIntervalSec: 45,   // seconds each photo shows before a slow crossfade
 };

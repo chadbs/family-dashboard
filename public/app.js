@@ -1200,6 +1200,53 @@ $("voiceBtn").addEventListener("click", startVoice);
 $("voiceCancel").addEventListener("click", () => { voiceStop(); voiceHide(); });
 $("voiceModal").addEventListener("click", (e) => { if (e.target.id === "voiceModal") { voiceStop(); voiceHide(); } });
 
+/* ---------------------------------------------------------------- photo reel
+   A slow family-photo slideshow behind frosted-glass cards. Reads the photo
+   list from /api/photos (files dropped into data/photos/ on the Surface).
+   Only turns on when config.photoTheme is true AND there are photos; otherwise
+   the calm sage / weather-reactive background stays exactly as it was.        */
+let reelPhotos = [], reelIdx = 0, reelLayer = 0, reelTimer = null;
+function glassOn() { return !!C.photoTheme && reelPhotos.length > 0; }
+
+async function loadPhotos() {
+  try {
+    const r = await fetch("/api/photos", { cache: "no-store" });
+    const d = await r.json();
+    const next = Array.isArray(d.photos) ? d.photos : [];
+    const changed = next.join("|") !== reelPhotos.join("|");
+    reelPhotos = next;
+    if (changed) applySkin();
+  } catch { /* keep whatever we have */ }
+}
+function applySkin() {
+  const on = glassOn();
+  document.documentElement.setAttribute("data-skin", on ? "glass" : "plain");
+  if (on) startReel(); else stopReel();
+}
+function showPhoto(src) {
+  const layers = [$("reelA"), $("reelB")];
+  const next = layers[reelLayer ^ 1];
+  next.style.backgroundImage = `url("${src}")`;
+  next.classList.remove("kb"); void next.offsetWidth; next.classList.add("kb", "show");
+  layers[reelLayer].classList.remove("show");
+  reelLayer ^= 1;
+}
+function nextPhoto() {
+  if (reelPhotos.length < 2) return;
+  reelIdx = (reelIdx + 1) % reelPhotos.length;
+  showPhoto(reelPhotos[reelIdx]);
+}
+function startReel() {
+  if (!reelPhotos.length) return;
+  reelIdx = 0; showPhoto(reelPhotos[0]);
+  clearInterval(reelTimer);
+  reelTimer = setInterval(nextPhoto, Math.max(8, (C.photoIntervalSec || 45)) * 1000);
+}
+function stopReel() {
+  clearInterval(reelTimer); reelTimer = null;
+  ["reelA", "reelB"].forEach(id => { const l = $(id); if (l) { l.classList.remove("show", "kb"); l.style.backgroundImage = ""; } });
+}
+
 /* ---------------------------------------------------------------- boot */
 async function boot() {
   applyTheme();
@@ -1215,6 +1262,7 @@ async function boot() {
   renderMonth();
   await loadWeather();
   loadCalendar();
+  loadPhotos();                          // start the photo reel if it's enabled
   if (!showLoveNow()) maybeShowLove();   // surprise note wins; else the daily one
 
   setInterval(maybeShowLove, 1000 * 60);   // check each minute so it pops at loveHour
@@ -1222,6 +1270,7 @@ async function boot() {
   setInterval(applyTheme, 1000 * 60 * 5);
   setInterval(loadWeather, 1000 * 30);
   setInterval(loadCalendar, 1000 * 60 * 15);
+  setInterval(loadPhotos, 1000 * 60 * 5);   // pick up newly-added photos
   setInterval(() => { ensureWeek(); renderHomeChores(); renderChart(); }, 1000 * 60 * 5);
   // re-pull state periodically so edits from other devices show up
   setInterval(async () => {

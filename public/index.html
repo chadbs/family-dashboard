@@ -11,6 +11,15 @@
 <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
+
+<!-- Photo reel: a slow family-photo slideshow behind the glass cards.
+     Hidden unless config.photoTheme is on AND photos exist in data/photos/. -->
+<div id="photoReel" class="photo-reel" aria-hidden="true">
+  <div class="reel-img" id="reelA"></div>
+  <div class="reel-img" id="reelB"></div>
+  <div class="reel-scrim"></div>
+</div>
+
 <div class="app">
 
   <!-- ───────── Top bar ───────── -->

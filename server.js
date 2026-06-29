@@ -27,9 +27,11 @@ const DATA_DIR  = path.join(ROOT, "data");
 const STATE     = path.join(DATA_DIR, "state.json");
 const WEATHER   = path.join(DATA_DIR, "weather.json");
 const SECRETS   = path.join(DATA_DIR, "secrets.json");   // gitignored: Gmail creds etc.
+const PHOTOS    = path.join(DATA_DIR, "photos");          // gitignored: family photos for the reel
 
-// Make sure the data folder exists.
+// Make sure the data + photos folders exist.
 if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
+if (!fs.existsSync(PHOTOS)) fs.mkdirSync(PHOTOS, { recursive: true });
 
 // Seed state.json from the example the first time only (never overwrites).
 if (!fs.existsSync(STATE)) {
@@ -46,6 +48,9 @@ const MIME = {
   ".svg":  "image/svg+xml",
   ".png":  "image/png",
   ".jpg":  "image/jpeg",
+  ".jpeg": "image/jpeg",
+  ".webp": "image/webp",
+  ".gif":  "image/gif",
   ".ico":  "image/x-icon",
   ".woff2":"font/woff2",
 };
@@ -415,6 +420,32 @@ const server = http.createServer(async (req, res) => {
         updated: null,
       });
     }
+  }
+
+  // ---- API: photos (the background reel reads this list) ----------------
+  // Lists image files dropped into data/photos/ (gitignored). The dashboard
+  // crossfades through them as the wallpaper when the photo theme is on.
+  if (pathname === "/api/photos") {
+    try {
+      const exts = new Set([".jpg", ".jpeg", ".png", ".webp", ".gif"]);
+      const files = fs.readdirSync(PHOTOS)
+        .filter(f => exts.has(path.extname(f).toLowerCase()) && !f.startsWith("."))
+        .sort();
+      return sendJSON(res, 200, { photos: files.map(f => "/photos/" + encodeURIComponent(f)) });
+    } catch { return sendJSON(res, 200, { photos: [] }); }
+  }
+
+  // ---- Serve a photo file from data/photos/ (outside /public) ------------
+  if (pathname.startsWith("/photos/")) {
+    const name = decodeURIComponent(pathname.slice("/photos/".length));
+    const photoPath = path.join(PHOTOS, name);
+    if (!photoPath.startsWith(PHOTOS + path.sep)) { res.writeHead(403); return res.end(); }
+    return fs.readFile(photoPath, (err, content) => {
+      if (err) { res.writeHead(404); return res.end("Not found"); }
+      const ext = path.extname(photoPath).toLowerCase();
+      res.writeHead(200, { "Content-Type": MIME[ext] || "application/octet-stream", "Cache-Control": "no-store" });
+      res.end(content);
+    });
   }
 
   // ---- Static files ------------------------------------------------------
