@@ -51,20 +51,24 @@
 
         <!-- Weather hero -->
         <div class="card hero" id="hero">
-          <div class="hero-main">
-            <div class="hero-icon" id="heroIcon"></div>
-            <div class="hero-temp">
-              <div class="temp-now" id="tempNow">--</div>
-              <div class="temp-cond" id="tempCond">—</div>
-              <div class="temp-loc" id="tempLoc">Backyard</div>
+          <div class="hero-top">
+            <div class="hero-main">
+              <div class="hero-icon" id="heroIcon"></div>
+              <div class="hero-temp">
+                <div class="temp-now" id="tempNow">--</div>
+                <div class="temp-cond" id="tempCond">—</div>
+                <div class="temp-loc" id="tempLoc">Backyard</div>
+              </div>
+            </div>
+            <div class="hero-side">
+              <div class="metric"><span class="m-label">High / Low</span><span class="m-val" id="mHiLo">--</span></div>
+              <div class="metric"><span class="m-label">Humidity</span><span class="m-val" id="mHum">--</span></div>
+              <div class="metric"><span class="m-label">Rain today</span><span class="m-val rain" id="mRain">--</span></div>
+              <div class="metric"><span class="m-label" id="mIndoorLabel">Indoor</span><span class="m-val" id="mIndoor">--</span></div>
             </div>
           </div>
-          <div class="hero-side">
-            <div class="metric"><span class="m-label">High / Low</span><span class="m-val" id="mHiLo">--</span></div>
-            <div class="metric"><span class="m-label">Humidity</span><span class="m-val" id="mHum">--</span></div>
-            <div class="metric"><span class="m-label">Rain today</span><span class="m-val rain" id="mRain">--</span></div>
-            <div class="metric"><span class="m-label" id="mIndoorLabel">Indoor</span><span class="m-val" id="mIndoor">--</span></div>
-          </div>
+          <!-- 7-day forecast (Open-Meteo) — tap a day for the hourly detail -->
+          <div class="forecast" id="forecast"></div>
         </div>
 
         <!-- Calendar -->
@@ -207,6 +211,21 @@
       <button id="evCancel" class="ev-btn ev-cancel" type="button">Cancel</button>
       <button id="evSave" class="ev-btn ev-save" type="button">Save</button>
     </div>
+  </div>
+</div>
+
+<!-- Forecast detail: the tapped day's hourly outlook -->
+<div id="forecastModal" class="fc-modal" hidden>
+  <div class="fc-card">
+    <div class="fc-modal-head">
+      <div>
+        <div class="fc-modal-title" id="fcTitle">—</div>
+        <div class="fc-modal-place" id="fcPlace"></div>
+      </div>
+      <button class="fc-close" id="fcClose" type="button" aria-label="Close">✕</button>
+    </div>
+    <div class="fc-modal-summary" id="fcSummary"></div>
+    <div class="fc-hours" id="fcHours"></div>
   </div>
 </div>
 

@@ -9,8 +9,14 @@ window.CONFIG = {
   // Shown in the top-left greeting.
   home: "The Solanyk family",
 
-  // Weather units + your location label.
+  // Weather units + your location label (shown under the live sensor temp).
   location: "Backyard",
+
+  // For the 7-day forecast (free, no API key — uses Open-Meteo).
+  // These are Hudsonville, MI. "Now" still comes from your backyard sensor.
+  lat: 42.8717,
+  lon: -85.8639,
+  forecastPlace: "Hudsonville, MI",
 
   // ── Family members and their colors ──────────────────────────────────
   people: {

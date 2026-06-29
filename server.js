@@ -405,6 +405,23 @@ const server = http.createServer(async (req, res) => {
     }
   }
 
+  // ---- API: forecast (free 7-day via Open-Meteo, no API key) ------------
+  if (pathname === "/api/forecast") {
+    const lat = parseFloat(url.searchParams.get("lat"));
+    const lon = parseFloat(url.searchParams.get("lon"));
+    if (!isFinite(lat) || !isFinite(lon)) return sendJSON(res, 400, { error: "lat/lon required" });
+    const api = "https://api.open-meteo.com/v1/forecast?latitude=" + lat + "&longitude=" + lon +
+      "&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,sunrise,sunset" +
+      "&hourly=temperature_2m,precipitation_probability,weather_code" +
+      "&temperature_unit=fahrenheit&precipitation_unit=inch&timezone=auto&forecast_days=7";
+    try {
+      const data = JSON.parse(await fetchText(api));
+      return sendJSON(res, 200, data);
+    } catch (e) {
+      return sendJSON(res, 200, { error: String(e && e.message || e) });
+    }
+  }
+
   // ---- API: weather (latest sensor reading) -----------------------------
   if (pathname === "/api/weather") {
     try {

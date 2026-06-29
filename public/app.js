@@ -53,7 +53,13 @@ function renderClock() {
 function weatherIcon(cond = "") {
   const c = cond.toLowerCase();
   const sun = '#F59E0B', cloud = 'var(--ink-soft)', rain = 'var(--rain)';
-  if (c.includes("rain") || c.includes("shower") || c.includes("storm")) {
+  if (c.includes("snow") || c.includes("sleet") || c.includes("flurr")) {
+    return `<svg viewBox="0 0 64 64" fill="none">
+      <path d="M18 40a11 11 0 0 1 .7-22A15 15 0 0 1 47 22a10 10 0 0 1-1 18H18z" fill="${cloud}" opacity=".24"/>
+      <path d="M18 40a11 11 0 0 1 .7-22A15 15 0 0 1 47 22a10 10 0 0 1-1 18H18z" stroke="${cloud}" stroke-width="2.5"/>
+      <g fill="${rain}"><circle cx="24" cy="49" r="2.4"/><circle cx="34" cy="53" r="2.4"/><circle cx="44" cy="49" r="2.4"/></g></svg>`;
+  }
+  if (c.includes("rain") || c.includes("shower") || c.includes("storm") || c.includes("drizzle")) {
     return `<svg viewBox="0 0 64 64" fill="none">
       <path d="M20 34a10 10 0 0 1 .6-19.9A14 14 0 0 1 47 18a9 9 0 0 1-1 18H20z" fill="${cloud}" opacity=".22"/>
       <path d="M20 34a10 10 0 0 1 .6-19.9A14 14 0 0 1 47 18a9 9 0 0 1-1 18H20z" stroke="${cloud}" stroke-width="2.5"/>
@@ -61,7 +67,16 @@ function weatherIcon(cond = "") {
         <line x1="24" y1="42" x2="21" y2="52"/><line x1="34" y1="42" x2="31" y2="54"/><line x1="44" y1="42" x2="41" y2="52"/>
       </g></svg>`;
   }
-  if (c.includes("cloud") && !c.includes("part")) {
+  if (c.includes("part") || c.includes("few")) {
+    return `<svg viewBox="0 0 64 64" fill="none">
+      <circle cx="24" cy="22" r="9" fill="${sun}" opacity=".9"/>
+      <g stroke="${sun}" stroke-width="2.6" stroke-linecap="round">
+        <line x1="24" y1="5" x2="24" y2="10"/><line x1="9" y1="22" x2="14" y2="22"/>
+        <line x1="12" y1="10" x2="15.5" y2="13.5"/><line x1="36" y1="10" x2="32.5" y2="13.5"/></g>
+      <path d="M28 46a10 10 0 0 1 .6-20A13 13 0 0 1 52 30a8.5 8.5 0 0 1-1 16H28z" fill="${cloud}" opacity=".28"/>
+      <path d="M28 46a10 10 0 0 1 .6-20A13 13 0 0 1 52 30a8.5 8.5 0 0 1-1 16H28z" stroke="${cloud}" stroke-width="2.5"/></svg>`;
+  }
+  if (c.includes("cloud") || c.includes("overcast") || c.includes("fog") || c.includes("mist")) {
     return `<svg viewBox="0 0 64 64" fill="none">
       <path d="M18 44a11 11 0 0 1 .7-22A15 15 0 0 1 47 26a10 10 0 0 1-1 18H18z" fill="${cloud}" opacity=".25"/>
       <path d="M18 44a11 11 0 0 1 .7-22A15 15 0 0 1 47 26a10 10 0 0 1-1 18H18z" stroke="${cloud}" stroke-width="2.5"/></svg>`;
