@@ -11,7 +11,7 @@ const DOW  = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Satur
 const DOWS = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 const MON  = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 
-let STATE = { choreDone: {}, choreWeek: null, grocery: [], events: [], stars: {} };
+let STATE = { choreDone: {}, choreWeek: null, grocery: [], events: [], stars: {}, streak: {} };
 
 /* ---------------------------------------------------------------- helpers */
 function color(who) { return (C.people && C.people[who]) || "#8A93A6"; }
@@ -315,15 +315,6 @@ function chorePic(c) {
   return "⭐";                                              // friendly fallback
 }
 
-// How many chore check-offs a person has this week (for the reward).
-function rewardCount(who) {
-  let n = 0;
-  effectiveChores().forEach(c => {
-    if (c.who === who && STATE.choreDone[c.id]) n += Object.keys(STATE.choreDone[c.id]).length;
-  });
-  return n;
-}
-
 // ── Star economy (each kid's own points jar) ────────────────────────────
 function starsOf(who) { return Math.max(0, Math.round((STATE.stars || {})[who] || 0)); }
 function choreStars(c) { return (c && typeof c.stars === "number") ? c.stars : (C.defaultChoreStars ?? 1); }
@@ -508,7 +499,6 @@ function renderChart() {
   }).join("");
 
   $("choreChart").innerHTML = head + rows;
-  renderRewards();
 
   // Per-person tally of boxes checked this week.
   const tally = {};
@@ -520,42 +510,7 @@ function renderChart() {
   $("choreProgress2").textContent = summary || "Tap a box to check it off";
 }
 
-// Ice-cream reward bar: each kid's progress toward C.rewardGoal chores.
-// The kids earn the treat as a TEAM: their chore check-offs are combined.
-function teamCount() {
-  return (C.kids || []).reduce((sum, k) => sum + rewardCount(k), 0);
-}
-
-// One shared "team treat" bar (rendered on both the Chores tab and Home).
-function rewardHTML() {
-  const goal = C.rewardGoal || 7;
-  const kids = (C.kids || []).filter(k => effectiveChores().some(c => c.who === k));
-  if (!kids.length) return null;
-  const n = teamCount();
-  const earned = n >= goal;
-  const avatars = kids.map(k => avatarOf(k) || initials(k)).join("");
-  const pips = Array.from({ length: goal }, (_, i) => `<span class="pip ${i < n ? "on" : ""}"></span>`).join("");
-  const ice = C.rewardEmoji || "🍦";
-  return `<div class="reward team ${earned ? "earned" : ""}">
-    <div class="reward-who"><span class="reward-ava">${avatars}</span><span class="reward-name">Team treat</span></div>
-    <div class="reward-pips">${pips}</div>
-    <div class="reward-goal">
-      <span class="reward-count">${Math.min(n, goal)}/${goal}</span>
-      <span class="reward-ice">${ice}</span>
-    </div>
-    <div class="reward-earned-tag">${ice} ${escapeHtml(C.rewardName || "ice cream")} earned — great teamwork! ${ice}</div>
-  </div>`;
-}
-function renderRewards() {
-  const html = rewardHTML();
-  for (const id of ["rewardBar", "rewardBarHome", "rewardBarRewards"]) {
-    const host = $(id); if (!host) continue;
-    if (!html) { host.hidden = true; host.innerHTML = ""; }
-    else { host.hidden = false; host.innerHTML = html; }
-  }
-}
-
-// A big (non-blocking) ice-cream shower when a kid hits the reward goal.
+// A big (non-blocking) ice-cream shower when a kid redeems ice cream.
 function iceCreamParty(who) {
   const fx = $("fx"); if (!fx) return;
   const scoops = ["🍦", "🍨", "🍧"];
@@ -593,10 +548,13 @@ function jarsHTML() {
     const sub = nxt
       ? `${nxt.cost - bal} to ${escapeHtml(nxt.name)} ${nxt.emoji}`
       : `everything unlocked!`;
+    const st = streakOf(k);
+    const streak = st >= 2 ? `<span class="jar-streak" title="${st}-day streak">🔥 ${st}</span>` : "";
     return `<div class="jar" style="--kidcol:${col}">
       <div class="jar-top">
         <span class="jar-ava ${avatarOf(k) ? "emoji" : ""}" style="background:${col}">${ava}</span>
         <span class="jar-name">${escapeHtml(k)}</span>
+        ${streak}
         <span class="jar-bal">${bal} <span class="jar-star">${star}</span></span>
       </div>
       <div class="jar-track"><div class="jar-fill" style="width:${pct}%"></div></div>
@@ -634,12 +592,12 @@ function renderKindness() {
   const kids = C.kids || [];
   if (!kids.length) { host.innerHTML = ""; return; }
   const star = C.starEmoji || "⭐";
-  host.innerHTML = `<span class="kindness-label">Good attitude? Give a ${star}:</span>` +
+  host.innerHTML = `<span class="kindness-label">Helped, kind, or good behavior? Give a ${star}:</span>` +
     kids.map(k => `<button class="kindness-btn" data-kid="${escapeHtml(k)}" type="button" style="--kidcol:${color(k)}">
       <span class="kindness-ava ${avatarOf(k) ? "emoji" : ""}">${avatarOf(k) || initials(k)}</span>${escapeHtml(k)} +${star}</button>`).join("");
 }
 
-function renderRewardTab() { renderJars(); renderShop(); renderKindness(); renderRewards(); }
+function renderRewardTab() { renderJars(); renderShop(); renderKindness(); }
 
 /* ---- redeeming a reward (with the parent PIN) ---- */
 let pendingRedeem = null;   // the reward chosen, awaiting a kid pick
@@ -671,7 +629,8 @@ function doRedeem(kid) {
     addStars(kid, -rw.cost);
     renderRewardTab(); saveState();
     closeRedeem();
-    treatParty(rw.emoji || "🎁", `${kid} got ${rw.name}!`);
+    if (rw.id === "icecream") iceCreamParty(kid);
+    else treatParty(rw.emoji || "🎁", `${kid} got ${rw.name}!`);
   });
 }
 
@@ -746,6 +705,7 @@ $("kindnessRow")?.addEventListener("click", (e) => {
   const kid = b.dataset.kid;
   requirePin(() => {
     addStars(kid, 1);
+    bumpStreak(kid);            // a kind/helpful act keeps the daily streak alive
     renderRewardTab(); saveState();
     const r = b.getBoundingClientRect();
     celebrate(r.left + r.width / 2, r.top + r.height / 2, color(kid), kid);
@@ -825,8 +785,6 @@ function onChoreChecked(id, x, y) {
   const who = choreWho(id);
   celebrate(x, y, color(who), who);
   if (isKid(who)) starPop(x, y, choreStars(choreById(id)));
-  // The kids' COMBINED total just crossed the line? Make it rain ice cream.
-  if (isKid(who) && teamCount() === (C.rewardGoal || 7)) iceCreamParty();
 }
 
 // A little "+3 ⭐" that floats up where the chore was tapped.
@@ -1179,12 +1137,13 @@ async function loadState() {
   try {
     const r = await fetch("/api/state", { cache: "no-store" });
     const s = await r.json();
-    STATE = Object.assign({ choreDone: {}, choreWeek: null, grocery: [], events: [], stars: {} }, s);
+    STATE = Object.assign({ choreDone: {}, choreWeek: null, grocery: [], events: [], stars: {}, streak: {} }, s);
     STATE.choreDone = STATE.choreDone || {};
     STATE.grocery = STATE.grocery || [];
     STATE.events = STATE.events || [];
     STATE.stars = STATE.stars || {};
-  } catch { STATE = { choreDone: {}, choreWeek: null, grocery: [], events: [], stars: {} }; }
+    STATE.streak = STATE.streak || {};
+  } catch { STATE = { choreDone: {}, choreWeek: null, grocery: [], events: [], stars: {}, streak: {} }; }
 }
 
 let saveTimer = null;

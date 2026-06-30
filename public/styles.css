@@ -692,6 +692,8 @@ body {
 .jar-ava { width: clamp(34px, 3vw, 44px); height: clamp(34px, 3vw, 44px); border-radius: 50%; display: grid; place-items: center;
   color: #fff; font-weight: 800; font-size: clamp(16px, 1.7vw, 23px); flex-shrink: 0; }
 .jar-name { font-weight: 700; font-size: clamp(15px, 1.5vw, 20px); }
+.jar-streak { font-size: clamp(11px, 1.05vw, 14px); font-weight: 700; color: #F97316; white-space: nowrap;
+  background: color-mix(in srgb, #F97316 18%, transparent); border-radius: 999px; padding: 2px 8px; margin-left: 4px; }
 .jar-bal { margin-left: auto; font-weight: 800; font-size: clamp(18px, 2vw, 26px); font-variant-numeric: tabular-nums; }
 .jar-star { font-size: .8em; }
 .jar-track { height: clamp(10px, 1.1vw, 14px); border-radius: 99px; background: var(--line); overflow: hidden; }
