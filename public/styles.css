@@ -833,5 +833,103 @@ html[data-skin="glass"] .topbar, html[data-skin="glass"] .statusbar { text-shado
 html[data-skin="glass"] .event-card,
 html[data-skin="glass"] .redeem-card,
 html[data-skin="glass"] .pin-card,
-html[data-skin="glass"] .fc-card { background: rgba(20, 24, 32, .95); }
+html[data-skin="glass"] .fc-card,
+html[data-skin="glass"] .dinner-card,
+html[data-skin="glass"] .pref-card { background: rgba(20, 24, 32, .95); }
 @media (prefers-reduced-motion: reduce) { .reel-img.kb { animation: none; } }
+
+/* ============================================================================
+   Meals & groceries (Meals tab)
+   ========================================================================== */
+.meals-full { overflow-y: auto; }
+.meals-head { display: flex; align-items: center; gap: clamp(10px, 1.4vw, 18px); flex-wrap: wrap; margin-bottom: clamp(12px, 1.5vw, 18px); }
+.meals-head h2 { font-size: clamp(16px, 1.7vw, 23px); font-weight: 700; letter-spacing: -.3px; }
+.meals-week-nav { display: flex; align-items: center; gap: clamp(6px, .9vw, 12px); }
+.meals-week-label { font-size: clamp(13px, 1.3vw, 17px); font-weight: 600; color: var(--ink-soft); min-width: clamp(140px, 15vw, 210px); text-align: center; }
+.meals-plan-btn { margin-left: auto; font-family: inherit; font-size: clamp(13px, 1.3vw, 17px); font-weight: 700; color: #fff; cursor: pointer;
+  background: linear-gradient(120deg, var(--accent), #8b5cf6); border: 0; border-radius: 999px; padding: clamp(9px, 1.1vw, 13px) clamp(16px, 1.8vw, 24px);
+  transition: transform .12s var(--ease); }
+.meals-plan-btn:active { transform: scale(.96); }
+
+.meal-week { display: flex; flex-direction: column; gap: clamp(6px, .8vw, 10px); margin-bottom: clamp(16px, 2vw, 26px); }
+.meal-night { font-family: inherit; display: flex; align-items: center; gap: clamp(12px, 1.6vw, 20px); text-align: left; cursor: pointer;
+  background: var(--card-2); border: 1.5px solid var(--line); border-radius: var(--r-md); padding: clamp(11px, 1.3vw, 17px) clamp(14px, 1.6vw, 20px);
+  transition: transform .12s var(--ease), border-color .2s var(--ease); color: var(--ink); }
+.meal-night:active { transform: scale(.99); }
+.meal-night.today { border-color: var(--accent); }
+.meal-night.out { opacity: .62; }
+.meal-night.empty .meal-dinner { color: var(--muted); }
+.meal-dow { flex: 0 0 auto; width: clamp(58px, 7vw, 92px); font-size: clamp(13px, 1.3vw, 17px); font-weight: 700; }
+.meal-dow small { display: block; font-size: .72em; font-weight: 600; color: var(--muted); }
+.meal-dinner { font-size: clamp(15px, 1.5vw, 20px); font-weight: 600; }
+.meal-empty { font-weight: 500; }
+
+.meals-subhead { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: clamp(8px, 1vw, 12px); }
+.meals-subhead h2 { font-size: clamp(15px, 1.5vw, 20px); font-weight: 700; }
+.shop-list { display: flex; flex-direction: column; gap: clamp(10px, 1.3vw, 16px); margin-bottom: clamp(16px, 2vw, 24px); }
+.shop-empty { font-size: clamp(13px, 1.2vw, 16px); color: var(--muted); font-style: italic; }
+.shop-store { background: var(--card-2); border: 1px solid var(--line); border-radius: var(--r-md); padding: clamp(10px, 1.2vw, 15px) clamp(12px, 1.4vw, 18px); }
+.shop-store-head { display: flex; align-items: center; gap: 8px; font-size: clamp(13px, 1.3vw, 17px); font-weight: 700; margin-bottom: clamp(8px, 1vw, 12px); }
+.shop-store-head small { color: var(--muted); font-weight: 600; }
+.store-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+.store-dot.meijer { background: #E87722; } .store-dot.aldi { background: #2A6EBB; }
+.gitem-store, .shop-row .store-dot { }
+.shop-row { display: flex; align-items: center; gap: 10px; padding: clamp(7px, .9vw, 11px) 0; border-top: 1px solid var(--line); }
+.shop-row:first-of-type { border-top: 0; }
+.shop-name { flex: 0 0 auto; min-width: clamp(110px, 16vw, 200px); font-size: clamp(13px, 1.3vw, 17px); font-weight: 600; }
+.shop-qty { font-weight: 700; color: var(--accent); font-size: .9em; }
+.shop-pref { flex: 1; font-size: clamp(11px, 1.1vw, 14px); color: var(--muted); font-weight: 500; }
+.shop-edit { flex: 0 0 auto; font-family: inherit; font-size: clamp(13px, 1.3vw, 16px); color: var(--ink-soft); cursor: pointer;
+  background: var(--card); border: 1px solid var(--line-2); border-radius: 8px; width: clamp(30px, 3vw, 38px); height: clamp(30px, 3vw, 38px);
+  transition: transform .12s var(--ease); }
+.shop-edit:active { transform: scale(.92); }
+
+.pantry-block { border-top: 1px solid var(--line); padding-top: clamp(12px, 1.5vw, 18px); }
+.pantry-head { font-size: clamp(14px, 1.4vw, 18px); font-weight: 700; margin-bottom: clamp(8px, 1vw, 12px); }
+.pantry-sub { font-size: clamp(11px, 1vw, 14px); font-weight: 500; color: var(--muted); }
+.pantry-check { display: flex; flex-wrap: wrap; gap: clamp(6px, .8vw, 10px); }
+.pantry-item { font-family: inherit; font-size: clamp(12px, 1.15vw, 15px); font-weight: 600; color: var(--ink-soft); cursor: pointer;
+  background: var(--card-2); border: 1.5px solid var(--line-2); border-radius: 999px; padding: clamp(7px, .9vw, 11px) clamp(13px, 1.5vw, 18px);
+  transition: all .15s var(--ease); }
+.pantry-item.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+.gitem-store { font-size: clamp(10px, .95vw, 12px); font-weight: 700; color: #fff; border-radius: 6px; padding: 2px 7px; margin-left: 9px; vertical-align: 1px; }
+.gitem-store.meijer { background: #E87722; } .gitem-store.aldi { background: #2A6EBB; }
+.gitem-pref { display: block; font-size: clamp(11px, 1.05vw, 13px); color: var(--muted); font-weight: 500; margin-top: 2px; }
+
+/* Dinner picker modal */
+.dinner-modal { position: fixed; inset: 0; z-index: 117; display: grid; place-items: center; padding: clamp(16px, 4vw, 40px);
+  background: rgba(4,6,9,.6); -webkit-backdrop-filter: blur(7px); backdrop-filter: blur(7px); animation: love-in .35s var(--ease); }
+.dinner-modal[hidden] { display: none; }
+.dinner-card { width: min(520px, 95vw); background: var(--card); border: 1px solid var(--line-2); border-radius: var(--r-lg);
+  box-shadow: 0 30px 80px rgba(0,0,0,.5); padding: clamp(20px, 3vw, 30px); }
+.dinner-modal-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: clamp(14px, 1.8vw, 20px); }
+.dinner-title { font-size: clamp(18px, 2vw, 25px); font-weight: 700; }
+.dinner-options { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(8px, 1vw, 12px); margin-bottom: clamp(12px, 1.5vw, 18px); }
+.dinner-opt { font-family: inherit; font-size: clamp(14px, 1.4vw, 18px); font-weight: 600; color: var(--ink); cursor: pointer; text-align: left;
+  background: var(--card-2); border: 1.5px solid var(--line); border-radius: var(--r-md); padding: clamp(12px, 1.4vw, 17px) clamp(13px, 1.5vw, 18px);
+  transition: transform .12s var(--ease), border-color .2s var(--ease); }
+.dinner-opt:active { transform: scale(.96); }
+.dinner-opt.special { border-style: dashed; }
+.dinner-opt.out { color: var(--muted); }
+.dinner-actions { display: flex; justify-content: flex-end; margin-top: clamp(10px, 1.2vw, 14px); }
+.dinner-clear { font-family: inherit; font-size: clamp(13px, 1.3vw, 16px); font-weight: 600; color: #E5484D; cursor: pointer;
+  background: transparent; border: 1px solid color-mix(in srgb, #E5484D 40%, transparent); border-radius: 999px; padding: clamp(9px, 1.1vw, 13px) clamp(18px, 2vw, 26px); }
+
+/* Preference modal */
+.pref-modal { position: fixed; inset: 0; z-index: 118; display: grid; place-items: center; padding: clamp(16px, 4vw, 40px);
+  background: rgba(4,6,9,.6); -webkit-backdrop-filter: blur(7px); backdrop-filter: blur(7px); animation: love-in .35s var(--ease); }
+.pref-modal[hidden] { display: none; }
+.pref-card { width: min(420px, 94vw); background: var(--card); border: 1px solid var(--line-2); border-radius: var(--r-lg);
+  box-shadow: 0 30px 80px rgba(0,0,0,.5); padding: clamp(20px, 3vw, 30px); display: flex; flex-direction: column; gap: clamp(12px, 1.5vw, 16px); }
+.pref-title { font-size: clamp(17px, 1.8vw, 23px); font-weight: 700; }
+.pref-stores { display: flex; gap: 10px; }
+.pref-store { flex: 1; font-family: inherit; font-size: clamp(14px, 1.4vw, 17px); font-weight: 700; color: var(--ink-soft); cursor: pointer;
+  background: var(--card-2); border: 1.5px solid var(--line-2); border-radius: var(--r-md); padding: clamp(10px, 1.2vw, 14px); transition: all .15s var(--ease); }
+.pref-store.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+.pref-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 2px; }
+.pref-cancel, .pref-save { font-family: inherit; font-size: clamp(14px, 1.4vw, 17px); font-weight: 600; border-radius: 999px;
+  padding: clamp(10px, 1.2vw, 14px) clamp(18px, 2vw, 26px); cursor: pointer; border: 1px solid transparent; transition: transform .12s var(--ease); }
+.pref-cancel:active, .pref-save:active { transform: scale(.95); }
+.pref-save { background: var(--accent); color: #fff; }
+.pref-cancel { background: var(--card-2); color: var(--ink-soft); border-color: var(--line-2); }

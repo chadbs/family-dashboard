@@ -11,7 +11,7 @@ const DOW  = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Satur
 const DOWS = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 const MON  = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 
-let STATE = { choreDone: {}, choreWeek: null, grocery: [], events: [], stars: {}, streak: {} };
+let STATE = { choreDone: {}, choreWeek: null, grocery: [], events: [], stars: {}, streak: {}, mealPlan: {}, itemPrefs: {}, pantryNeed: {} };
 
 /* ---------------------------------------------------------------- helpers */
 function color(who) { return (C.people && C.people[who]) || "#8A93A6"; }
@@ -837,11 +837,14 @@ function renderGrocery() {
   if (!list.length) {
     host.innerHTML = `<div class="grocery-empty">Nothing on the list yet — add something above.</div>`;
   } else {
-    host.innerHTML = list.map(g => `<div class="gitem ${g.done ? "done" : ""}" data-id="${g.id}">
+    host.innerHTML = list.map(g => {
+      const store = g.store ? `<span class="gitem-store ${g.store === "Aldi" ? "aldi" : "meijer"}">${escapeHtml(g.store)}</span>` : "";
+      const pref = g.pref ? `<span class="gitem-pref">${escapeHtml(g.pref)}</span>` : "";
+      return `<div class="gitem ${g.done ? "done" : ""}" data-id="${g.id}">
       <div class="chk gchk"><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg></div>
-      <div class="gitem-text">${escapeHtml(g.text)}</div>
+      <div class="gitem-text">${escapeHtml(g.text)}${store}${pref}</div>
       <div class="gitem-x" data-remove="${g.id}" title="Remove">&times;</div>
-    </div>`).join("");
+    </div>`; }).join("");
   }
   const left = list.filter(g => !g.done).length;
   $("groceryCount").textContent = list.length ? `${left} to buy` : "empty";
@@ -1137,13 +1140,16 @@ async function loadState() {
   try {
     const r = await fetch("/api/state", { cache: "no-store" });
     const s = await r.json();
-    STATE = Object.assign({ choreDone: {}, choreWeek: null, grocery: [], events: [], stars: {}, streak: {} }, s);
+    STATE = Object.assign({ choreDone: {}, choreWeek: null, grocery: [], events: [], stars: {}, streak: {}, mealPlan: {}, itemPrefs: {}, pantryNeed: {} }, s);
     STATE.choreDone = STATE.choreDone || {};
     STATE.grocery = STATE.grocery || [];
     STATE.events = STATE.events || [];
     STATE.stars = STATE.stars || {};
     STATE.streak = STATE.streak || {};
-  } catch { STATE = { choreDone: {}, choreWeek: null, grocery: [], events: [], stars: {}, streak: {} }; }
+    STATE.mealPlan = STATE.mealPlan || {};
+    STATE.itemPrefs = STATE.itemPrefs || {};
+    STATE.pantryNeed = STATE.pantryNeed || {};
+  } catch { STATE = { choreDone: {}, choreWeek: null, grocery: [], events: [], stars: {}, streak: {}, mealPlan: {}, itemPrefs: {}, pantryNeed: {} }; }
 }
 
 let saveTimer = null;
@@ -1166,6 +1172,7 @@ $("tabs").addEventListener("click", (e) => {
   document.querySelectorAll(".view").forEach(v => v.classList.toggle("is-active", v.id === `view-${view}`));
   if (view === "calendar") renderMonth();   // fresh month each time it opens
   if (view === "rewards") renderRewardTab();
+  if (view === "meals") renderMeals();
 });
 
 /* ---------------------------------------------------------------- love note
@@ -1361,6 +1368,214 @@ function stopReel() {
   ["reelA", "reelB"].forEach(id => { const l = $(id); if (l) { l.classList.remove("show", "kb"); l.style.backgroundImage = ""; } });
 }
 
+/* ---------------------------------------------------------------- meals & groceries
+   Kenzie plans dinners for the week; the app builds the grocery list from the
+   recipes + weekly staples, split by store, with remembered preferences.      */
+let mealOffset = 0;   // 0 = this week, +1 = next week …
+function mealsCfg() { return C.meals || {}; }
+function recipeById(id) { return (mealsCfg().recipes || []).find(r => r.id === id) || null; }
+function mealWeekStart() { const d = new Date(); d.setDate(d.getDate() + mealOffset * 7); return weekStartDate(d); }
+function mealWeekKey() { return weekKeyOf(mealWeekStart()); }
+function pantrySet() { return new Set((mealsCfg().pantry || []).map(s => s.toLowerCase())); }
+function mealPlanFor(wk) { return ((STATE.mealPlan || {})[wk]) || {}; }
+function setNight(wk, day, val) {
+  STATE.mealPlan = STATE.mealPlan || {};
+  STATE.mealPlan[wk] = STATE.mealPlan[wk] || {};
+  if (val == null) delete STATE.mealPlan[wk][day];
+  else STATE.mealPlan[wk][day] = val;
+  saveState();
+}
+
+// Remembered preferences (per item) — what brand/product the family likes.
+function prefFor(item) { return (STATE.itemPrefs || {})[item.toLowerCase()] || null; }
+function setPref(item, pref, store) {
+  STATE.itemPrefs = STATE.itemPrefs || {};
+  STATE.itemPrefs[item.toLowerCase()] = { pref: pref || "", store: store || null };
+  saveState();
+}
+function itemStore(item, baseStore) { const p = prefFor(item); return (p && p.store) || baseStore || "Meijer"; }
+function itemPrefText(item, store) { const p = prefFor(item); return (p && p.pref) ? p.pref : `${store} brand`; }
+
+// Build the week's shopping list: weekly staples + non-pantry recipe items.
+function buildShoppingList(wk) {
+  const plan = mealPlanFor(wk), pan = pantrySet(), map = {};
+  function add(name, baseStore, qty, source) {
+    const key = name.toLowerCase(), store = itemStore(name, baseStore);
+    if (!map[key]) map[key] = { name, store, qty: qty || "", sources: [] };
+    if (qty && !map[key].qty) map[key].qty = qty;
+    if (source && !map[key].sources.includes(source)) map[key].sources.push(source);
+  }
+  (mealsCfg().weekly || []).forEach(w => add(w.item, w.store, w.qty, "weekly"));
+  Object.values(plan).forEach(night => {
+    if (!night || night.out || !night.recipeId) return;
+    const r = recipeById(night.recipeId); if (!r) return;
+    (r.ingredients || []).forEach(ing => {
+      if (ing.pantry || pan.has(ing.item.toLowerCase())) return;   // assumed on-hand
+      add(ing.item, ing.store, "", r.name);
+    });
+  });
+  return Object.values(map);
+}
+
+function mealWeekLabelText(ws) {
+  const end = new Date(ws); end.setDate(end.getDate() + 6);
+  const tag = mealOffset === 0 ? " · this week" : mealOffset === 1 ? " · next week" : "";
+  return `${MON[ws.getMonth()].slice(0, 3)} ${ws.getDate()} – ${MON[end.getMonth()].slice(0, 3)} ${end.getDate()}${tag}`;
+}
+function renderMealWeek() {
+  const host = $("mealWeek"); if (!host) return;
+  const ws = mealWeekStart(), wk = mealWeekKey(), plan = mealPlanFor(wk);
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  $("mealWeekLabel").textContent = mealWeekLabelText(ws);
+  let html = "";
+  for (let i = 0; i < 7; i++) {
+    const dt = new Date(ws); dt.setDate(dt.getDate() + i);
+    const night = plan[i];
+    let label, cls = "";
+    if (night && night.out) { label = "🚗 Out / away"; cls = "out"; }
+    else if (night && night.dinner) label = `${night.emoji ? night.emoji + " " : ""}${escapeHtml(night.dinner)}`;
+    else { label = `<span class="meal-empty">Tap to choose…</span>`; cls = "empty"; }
+    html += `<button class="meal-night ${dt.getTime() === today.getTime() ? "today" : ""} ${cls}" data-day="${i}" type="button">
+      <span class="meal-dow">${DAY_ABBR[i]} <small>${dt.getMonth() + 1}/${dt.getDate()}</small></span>
+      <span class="meal-dinner">${label}</span>
+    </button>`;
+  }
+  host.innerHTML = html;
+}
+function renderShopList() {
+  const host = $("shopList"); if (!host) return;
+  const items = buildShoppingList(mealWeekKey());
+  if (!items.length) { host.innerHTML = `<div class="shop-empty">Plan some dinners above and your list builds itself.</div>`; return; }
+  let html = "";
+  ["Meijer", "Aldi"].forEach(store => {
+    const its = items.filter(x => x.store === store);
+    if (!its.length) return;
+    html += `<div class="shop-store"><div class="shop-store-head"><span class="store-dot ${store === "Aldi" ? "aldi" : "meijer"}"></span>${store}<small>${its.length}</small></div>`;
+    html += its.map(it => `<div class="shop-row">
+        <span class="shop-name">${escapeHtml(it.name)}${it.qty ? ` <span class="shop-qty">${escapeHtml(it.qty)}</span>` : ""}</span>
+        <span class="shop-pref">${escapeHtml(itemPrefText(it.name, it.store))}</span>
+        <button class="shop-edit" data-item="${escapeHtml(it.name)}" data-store="${it.store}" type="button" aria-label="Set what we like">✎</button>
+      </div>`).join("");
+    html += `</div>`;
+  });
+  host.innerHTML = html;
+}
+function renderPantryCheck() {
+  const host = $("pantryCheck"); if (!host) return;
+  const need = STATE.pantryNeed || {};
+  host.innerHTML = (mealsCfg().pantry || []).map(it =>
+    `<button class="pantry-item ${need[it.toLowerCase()] ? "on" : ""}" data-pan="${escapeHtml(it)}" type="button">${escapeHtml(it)}</button>`).join("");
+}
+function renderMeals() { renderMealWeek(); renderShopList(); renderPantryCheck(); }
+
+// "✨ Plan my week" — fill a sensible draft she can edit.
+function planMyWeek() {
+  const wk = mealWeekKey(), ws = mealWeekStart(), m = mealsCfg();
+  const isSummer = ws.getMonth() >= 5 && ws.getMonth() <= 7;
+  const targetHome = isSummer ? (m.homeDinnersSummer || 4) : (m.homeDinners || 5);
+  const pizzaDay = (m.pizzaDay != null) ? m.pizzaDay : 5;
+  const plan = {};
+  plan[pizzaDay] = { dinner: m.pizzaName || "Pizza night 🍕", recipeId: "pizza", out: false };
+  const prevStart = new Date(ws); prevStart.setDate(prevStart.getDate() - 7);
+  const prev = mealPlanFor(weekKeyOf(prevStart));
+  const usedLastWeek = new Set(Object.values(prev).map(n => n && n.dinner).filter(Boolean));
+  let recipes = (m.recipes || []).slice().sort(() => Math.random() - 0.5);
+  recipes.sort((a, b) => (usedLastWeek.has(a.name) ? 1 : 0) - (usedLastWeek.has(b.name) ? 1 : 0));
+  let cookSlots = targetHome - 1;                    // minus pizza
+  const picks = [];
+  const ideas = (m.newIdeas || []).slice().sort(() => Math.random() - 0.5);
+  if (ideas.length && cookSlots > 1) { picks.push({ dinner: ideas[0], out: false }); cookSlots--; }   // one fresh idea
+  for (const r of recipes) { if (cookSlots <= 0) break; picks.push({ dinner: r.name, emoji: r.emoji, recipeId: r.id, out: false }); cookSlots--; }
+  let pi = 0;
+  for (let d = 0; d < 7; d++) {
+    if (d === pizzaDay) continue;
+    plan[d] = (pi < picks.length) ? picks[pi++] : { out: true };
+  }
+  STATE.mealPlan = STATE.mealPlan || {};
+  STATE.mealPlan[wk] = plan;
+  saveState(); renderMeals();
+}
+
+// Push the built list (+ any "running low" pantry items) into the grocery tab.
+function sendShopToGrocery() {
+  const items = buildShoppingList(mealWeekKey());
+  const need = STATE.pantryNeed || {};
+  (mealsCfg().pantry || []).forEach(it => { if (need[it.toLowerCase()]) items.push({ name: it, store: itemStore(it, "Meijer"), qty: "", sources: ["pantry"] }); });
+  STATE.grocery = STATE.grocery || [];
+  let added = 0;
+  items.forEach(it => {
+    const text = it.name + (it.qty ? ` (${it.qty})` : "");
+    if (STATE.grocery.some(g => (g.text || "").toLowerCase() === text.toLowerCase() && !g.done)) return;
+    STATE.grocery.push({ id: "g" + Date.now().toString(36) + Math.floor(Math.random() * 1000), text, done: false, store: it.store, pref: itemPrefText(it.name, it.store) });
+    added++;
+  });
+  STATE.pantryNeed = {};
+  saveState(); renderGrocery(); renderPantryCheck();
+  const st = $("mealShopStatus");
+  if (st) { st.className = "share-status ok"; st.textContent = `Added ${added} item${added === 1 ? "" : "s"} to the grocery list ✓`; setTimeout(() => { st.textContent = ""; st.className = "share-status"; }, 6000); }
+}
+
+/* ---- dinner picker ---- */
+let dinnerDay = null;
+function openDinner(day) {
+  dinnerDay = day;
+  const ws = mealWeekStart(); const dt = new Date(ws); dt.setDate(dt.getDate() + day);
+  $("dinnerTitle").textContent = `${DOW[dt.getDay()]}'s dinner`;
+  const recipes = mealsCfg().recipes || [];
+  let opts = recipes.map(r => `<button class="dinner-opt" data-rid="${r.id}" type="button">${r.emoji || "🍽️"} ${escapeHtml(r.name)}</button>`).join("");
+  opts += `<button class="dinner-opt special" data-special="pizza" type="button">${escapeHtml(mealsCfg().pizzaName || "Pizza night 🍕")}</button>`;
+  opts += `<button class="dinner-opt special" data-special="idea" type="button">🎲 New idea</button>`;
+  opts += `<button class="dinner-opt special out" data-special="out" type="button">🚗 Out / away</button>`;
+  $("dinnerOptions").innerHTML = opts;
+  $("dinnerCustom").value = "";
+  $("dinnerModal").hidden = false;
+}
+function chooseDinner(val) { setNight(mealWeekKey(), dinnerDay, val); closeDinner(); renderMeals(); }
+function closeDinner() { $("dinnerModal").hidden = true; dinnerDay = null; }
+
+/* ---- preference editor ---- */
+let prefItem = null, prefStore = null;
+function updatePrefStores() { document.querySelectorAll("#prefStores .pref-store").forEach(b => b.classList.toggle("on", b.dataset.store === prefStore)); }
+function openPref(item, store) {
+  prefItem = item; const p = prefFor(item);
+  prefStore = (p && p.store) || store || "Meijer";
+  $("prefTitle").textContent = item;
+  $("prefInput").value = (p && p.pref) || "";
+  updatePrefStores();
+  $("prefModal").hidden = false;
+  setTimeout(() => { try { $("prefInput").focus(); } catch {} }, 60);
+}
+function savePref() { setPref(prefItem, $("prefInput").value.trim(), prefStore); $("prefModal").hidden = true; renderShopList(); renderGrocery(); }
+function closePref() { $("prefModal").hidden = true; }
+
+$("mealWeek")?.addEventListener("click", e => { const b = e.target.closest(".meal-night"); if (b) openDinner(+b.dataset.day); });
+$("mealPrev")?.addEventListener("click", () => { mealOffset--; renderMeals(); });
+$("mealNext")?.addEventListener("click", () => { mealOffset++; renderMeals(); });
+$("mealPlanBtn")?.addEventListener("click", planMyWeek);
+$("mealToGrocery")?.addEventListener("click", sendShopToGrocery);
+$("dinnerOptions")?.addEventListener("click", e => {
+  const b = e.target.closest(".dinner-opt"); if (!b) return;
+  if (b.dataset.rid) { const r = recipeById(b.dataset.rid); if (r) chooseDinner({ dinner: r.name, emoji: r.emoji, recipeId: r.id, out: false }); }
+  else if (b.dataset.special === "pizza") chooseDinner({ dinner: mealsCfg().pizzaName || "Pizza night 🍕", recipeId: "pizza", out: false });
+  else if (b.dataset.special === "out") chooseDinner({ out: true });
+  else if (b.dataset.special === "idea") { const ideas = mealsCfg().newIdeas || []; chooseDinner({ dinner: ideas[Math.floor(Math.random() * ideas.length)] || "Something new", out: false }); }
+});
+$("dinnerCustom")?.addEventListener("keydown", e => { if (e.key === "Enter") { const v = e.target.value.trim(); if (v) chooseDinner({ dinner: v, out: false }); } });
+$("dinnerClose")?.addEventListener("click", closeDinner);
+$("dinnerClear")?.addEventListener("click", () => chooseDinner(null));
+$("dinnerModal")?.addEventListener("click", e => { if (e.target.id === "dinnerModal") closeDinner(); });
+$("shopList")?.addEventListener("click", e => { const b = e.target.closest(".shop-edit"); if (b) openPref(b.dataset.item, b.dataset.store); });
+$("pantryCheck")?.addEventListener("click", e => {
+  const b = e.target.closest(".pantry-item"); if (!b) return;
+  const k = b.dataset.pan.toLowerCase();
+  STATE.pantryNeed = STATE.pantryNeed || {}; STATE.pantryNeed[k] = !STATE.pantryNeed[k];
+  b.classList.toggle("on"); saveState();
+});
+$("prefStores")?.addEventListener("click", e => { const b = e.target.closest(".pref-store"); if (b) { prefStore = b.dataset.store; updatePrefStores(); } });
+$("prefSave")?.addEventListener("click", savePref);
+$("prefCancel")?.addEventListener("click", closePref);
+$("prefModal")?.addEventListener("click", e => { if (e.target.id === "prefModal") closePref(); });
+
 /* ---------------------------------------------------------------- boot */
 async function boot() {
   applyTheme();
@@ -1372,6 +1587,7 @@ async function boot() {
   renderChart();
   renderRewardTab();
   renderGrocery();
+  renderMeals();
   renderAgenda();
   renderMonth();
   await loadWeather();
