@@ -326,7 +326,7 @@ function rewardCount(who) {
 
 // ── Star economy (each kid's own points jar) ────────────────────────────
 function starsOf(who) { return Math.max(0, Math.round((STATE.stars || {})[who] || 0)); }
-function choreStars(c) { return (c && typeof c.stars === "number") ? c.stars : (C.defaultChoreStars ?? 2); }
+function choreStars(c) { return (c && typeof c.stars === "number") ? c.stars : (C.defaultChoreStars ?? 1); }
 function addStars(who, n) {
   STATE.stars = STATE.stars || {};
   STATE.stars[who] = Math.max(0, (STATE.stars[who] || 0) + n);
@@ -335,6 +335,47 @@ function addStars(who, n) {
 function nextReward(bal) {
   const shop = (C.rewards || []).slice().sort((a, b) => a.cost - b.cost);
   return shop.find(r => r.cost > bal) || null;
+}
+
+// ── Streaks: consecutive days a kid earns at least one star ──────────────
+function ymdLocal(d = new Date()) { return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; }
+// The streak that's still "alive" (last active today or yesterday), else 0.
+function streakOf(who) {
+  const s = (STATE.streak || {})[who]; if (!s || !s.last) return 0;
+  const y = new Date(); y.setDate(y.getDate() - 1);
+  return (s.last === ymdLocal() || s.last === ymdLocal(y)) ? s.count : 0;
+}
+// Count today toward the streak (once per day); every Nth day earns a bonus.
+function bumpStreak(who) {
+  STATE.streak = STATE.streak || {};
+  const today = ymdLocal();
+  const y = new Date(); y.setDate(y.getDate() - 1); const yest = ymdLocal(y);
+  const s = STATE.streak[who] || { count: 0, last: null };
+  if (s.last === today) return;                       // already counted today
+  s.count = (s.last === yest) ? s.count + 1 : 1;      // continue, or restart
+  s.last = today;
+  STATE.streak[who] = s;
+  const every = C.streakBonusEvery || 0, bonus = C.streakBonus || 0;
+  if (every > 0 && bonus > 0 && s.count >= 2 && s.count % every === 0) {
+    addStars(who, bonus);
+    streakCelebrate(who, s.count, bonus);
+  }
+  renderJars();
+}
+function streakCelebrate(who, count, bonus) {
+  const fx = $("fx"); if (!fx) return;
+  for (let i = 0; i < 14; i++) {
+    const e = document.createElement("div");
+    e.className = "icecream"; e.textContent = "🔥";
+    e.style.left = (Math.random() * 100) + "%";
+    e.style.fontSize = (22 + Math.random() * 22) + "px";
+    e.style.animationDelay = (Math.random() * 0.8) + "s";
+    fx.appendChild(e); setTimeout(() => e.remove(), 3200);
+  }
+  const banner = document.createElement("div");
+  banner.className = "ice-banner";
+  banner.textContent = `🔥 ${who} — ${count}-day streak! +${bonus} ⭐`;
+  fx.appendChild(banner); setTimeout(() => banner.remove(), 3000);
 }
 
 // Flip a checkbox; returns true if it just became DONE (so we can celebrate).
@@ -346,7 +387,11 @@ function toggleSlot(id, slot) {
   else { STATE.choreDone[id][slot] = true; nowDone = true; }
   if (!Object.keys(STATE.choreDone[id]).length) delete STATE.choreDone[id];
   const c = choreById(id);
-  if (c && isKid(c.who)) { addStars(c.who, (nowDone ? 1 : -1) * choreStars(c)); renderJars(); }
+  if (c && isKid(c.who)) {
+    addStars(c.who, (nowDone ? 1 : -1) * choreStars(c));
+    if (nowDone) bumpStreak(c.who);
+    renderJars();
+  }
   renderHomeChores(); renderChart();
   saveState();
   return nowDone;
