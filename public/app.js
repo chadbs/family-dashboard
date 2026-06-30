@@ -11,7 +11,7 @@ const DOW  = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Satur
 const DOWS = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 const MON  = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 
-let STATE = { choreDone: {}, choreWeek: null, grocery: [], events: [], stars: {}, streak: {}, mealPlan: {}, itemPrefs: {}, pantryNeed: {} };
+let STATE = { choreDone: {}, choreWeek: null, grocery: [], events: [], stars: {}, streak: {}, mealPlan: {}, itemPrefs: {}, pantryNeed: {}, mealTarget: {} };
 
 /* ---------------------------------------------------------------- helpers */
 function color(who) { return (C.people && C.people[who]) || "#8A93A6"; }
@@ -1142,7 +1142,7 @@ async function loadState() {
   try {
     const r = await fetch("/api/state", { cache: "no-store" });
     const s = await r.json();
-    STATE = Object.assign({ choreDone: {}, choreWeek: null, grocery: [], events: [], stars: {}, streak: {}, mealPlan: {}, itemPrefs: {}, pantryNeed: {} }, s);
+    STATE = Object.assign({ choreDone: {}, choreWeek: null, grocery: [], events: [], stars: {}, streak: {}, mealPlan: {}, itemPrefs: {}, pantryNeed: {}, mealTarget: {} }, s);
     STATE.choreDone = STATE.choreDone || {};
     STATE.grocery = STATE.grocery || [];
     STATE.events = STATE.events || [];
@@ -1151,7 +1151,8 @@ async function loadState() {
     STATE.mealPlan = STATE.mealPlan || {};
     STATE.itemPrefs = STATE.itemPrefs || {};
     STATE.pantryNeed = STATE.pantryNeed || {};
-  } catch { STATE = { choreDone: {}, choreWeek: null, grocery: [], events: [], stars: {}, streak: {}, mealPlan: {}, itemPrefs: {}, pantryNeed: {} }; }
+    STATE.mealTarget = STATE.mealTarget || {};
+  } catch { STATE = { choreDone: {}, choreWeek: null, grocery: [], events: [], stars: {}, streak: {}, mealPlan: {}, itemPrefs: {}, pantryNeed: {}, mealTarget: {} }; }
 }
 
 let saveTimer = null;
@@ -1468,29 +1469,90 @@ function renderPantryCheck() {
   host.innerHTML = (mealsCfg().pantry || []).map(it =>
     `<button class="pantry-item ${need[it.toLowerCase()] ? "on" : ""}" data-pan="${escapeHtml(it)}" type="button">${escapeHtml(it)}</button>`).join("");
 }
-function renderMeals() { renderMealWeek(); renderShopList(); renderPantryCheck(); }
+function renderMeals() {
+  renderMealWeek(); renderShopList(); renderPantryCheck();
+  const v = $("mealTargetVal"); if (v) v.textContent = mealTarget(mealWeekKey());
+  primeIdeas();   // warm fresh ideas in the background so taps stay instant
+}
 
-// "✨ Plan my week" — fill a sensible draft she can edit.
+// How many home-cooked dinners to aim for this week (Kenzie can set it; the
+// default follows the season). Pizza counts as one.
+function currentSeason() {
+  const m = new Date().getMonth();
+  if (m >= 5 && m <= 7) return "summer";
+  if (m >= 8 && m <= 10) return "fall";
+  if (m === 11 || m <= 1) return "winter";
+  return "spring";
+}
+function mealTarget(wk) {
+  const t = (STATE.mealTarget || {})[wk];
+  if (t != null) return t;
+  const ws = mealWeekStart(), isSummer = ws.getMonth() >= 5 && ws.getMonth() <= 7;
+  return isSummer ? (mealsCfg().homeDinnersSummer || 4) : (mealsCfg().homeDinners || 5);
+}
+function setMealTarget(wk, n) {
+  STATE.mealTarget = STATE.mealTarget || {};
+  STATE.mealTarget[wk] = Math.max(0, Math.min(7, n));
+  saveState();
+}
+
+// Fresh dinner ideas — live from Claude (seasonal + weather-aware) when it's
+// signed in here, else a season-tagged fallback list. Cached for the session.
+let ideaCache = [];
+async function fetchMealIdeas(n) {
+  try {
+    const w = lastWeather || {};
+    const qs = `n=${n}&season=${currentSeason()}&temp=${w.temperature_F != null ? Math.round(w.temperature_F) : ""}&cond=${encodeURIComponent(w.condition || "")}`;
+    const ctrl = new AbortController();
+    const to = setTimeout(() => ctrl.abort(), 35000);
+    const r = await fetch(`/api/meal-ideas?${qs}`, { cache: "no-store", signal: ctrl.signal });
+    clearTimeout(to);
+    const d = await r.json();
+    if (d && d.ok && Array.isArray(d.ideas) && d.ideas.length) return d.ideas;
+  } catch {}
+  const m = mealsCfg();   // fall back to the seasonal bank
+  const pool = (m.seasonalIdeas && m.seasonalIdeas[currentSeason()]) || m.newIdeas || [];
+  return pool.slice().sort(() => Math.random() - 0.5).slice(0, n);
+}
+// An instant seasonal idea (no network) for snappy taps.
+function instantIdea() {
+  const m = mealsCfg();
+  const pool = (m.seasonalIdeas && m.seasonalIdeas[currentSeason()]) || m.newIdeas || [];
+  return pool[Math.floor(Math.random() * pool.length)] || "Something new";
+}
+// Warm the cache in the background (one in-flight fetch at a time). When Claude
+// is signed in here, the cache fills with live ideas; taps stay instant.
+let ideaFetching = false;
+function primeIdeas() {
+  if (ideaFetching || ideaCache.length >= 3) return;
+  ideaFetching = true;
+  fetchMealIdeas(6).then(list => { (list || []).forEach(x => { if (!ideaCache.includes(x)) ideaCache.push(x); }); }).finally(() => { ideaFetching = false; });
+}
+// Never blocks: a cached (Claude) idea if we have one, else an instant seasonal one.
+function nextIdeaInstant() { primeIdeas(); return ideaCache.length ? ideaCache.shift() : instantIdea(); }
+
+// "✨ Plan my week" — instantly fill a sensible draft she can edit. Honors the
+// dinner target, puts pizza on Saturday, mixes in seasonal ideas, and avoids
+// last week's meals. (The live-Claude ideas power the 🎲 New idea button.)
 function planMyWeek() {
   const wk = mealWeekKey(), ws = mealWeekStart(), m = mealsCfg();
-  const isSummer = ws.getMonth() >= 5 && ws.getMonth() <= 7;
-  const targetHome = isSummer ? (m.homeDinnersSummer || 4) : (m.homeDinners || 5);
+  const targetHome = mealTarget(wk);
   const pizzaDay = (m.pizzaDay != null) ? m.pizzaDay : 5;
   const plan = {};
-  plan[pizzaDay] = { dinner: m.pizzaName || "Pizza night 🍕", recipeId: "pizza", out: false };
+  let cookSlots = targetHome;
+  if (targetHome >= 1) { plan[pizzaDay] = { dinner: m.pizzaName || "Pizza night 🍕", recipeId: "pizza", out: false }; cookSlots--; }
   const prevStart = new Date(ws); prevStart.setDate(prevStart.getDate() - 7);
-  const prev = mealPlanFor(weekKeyOf(prevStart));
-  const usedLastWeek = new Set(Object.values(prev).map(n => n && n.dinner).filter(Boolean));
+  const usedLastWeek = new Set(Object.values(mealPlanFor(weekKeyOf(prevStart))).map(n => n && n.dinner).filter(Boolean));
   let recipes = (m.recipes || []).slice().sort(() => Math.random() - 0.5);
   recipes.sort((a, b) => (usedLastWeek.has(a.name) ? 1 : 0) - (usedLastWeek.has(b.name) ? 1 : 0));
-  let cookSlots = targetHome - 1;                    // minus pizza
   const picks = [];
-  const ideas = (m.newIdeas || []).slice().sort(() => Math.random() - 0.5);
-  if (ideas.length && cookSlots > 1) { picks.push({ dinner: ideas[0], out: false }); cookSlots--; }   // one fresh idea
+  const ideaCount = cookSlots >= 4 ? 2 : (cookSlots >= 2 ? 1 : 0);
+  const pool = (ideaCache.length ? ideaCache.slice() : ((m.seasonalIdeas && m.seasonalIdeas[currentSeason()]) || m.newIdeas || [])).slice().sort(() => Math.random() - 0.5);
+  for (let i = 0; i < ideaCount && i < pool.length; i++) { picks.push({ dinner: pool[i], out: false }); cookSlots--; }
   for (const r of recipes) { if (cookSlots <= 0) break; picks.push({ dinner: r.name, emoji: r.emoji, recipeId: r.id, out: false }); cookSlots--; }
   let pi = 0;
   for (let d = 0; d < 7; d++) {
-    if (d === pizzaDay) continue;
+    if (plan[d]) continue;                 // pizza day already set
     plan[d] = (pi < picks.length) ? picks[pi++] : { out: true };
   }
   STATE.mealPlan = STATE.mealPlan || {};
@@ -1553,6 +1615,8 @@ function closePref() { $("prefModal").hidden = true; }
 $("mealWeek")?.addEventListener("click", e => { const b = e.target.closest(".meal-night"); if (b) openDinner(+b.dataset.day); });
 $("mealPrev")?.addEventListener("click", () => { mealOffset--; renderMeals(); });
 $("mealNext")?.addEventListener("click", () => { mealOffset++; renderMeals(); });
+$("mealTargetUp")?.addEventListener("click", () => { const wk = mealWeekKey(); setMealTarget(wk, mealTarget(wk) + 1); renderMeals(); });
+$("mealTargetDown")?.addEventListener("click", () => { const wk = mealWeekKey(); setMealTarget(wk, mealTarget(wk) - 1); renderMeals(); });
 $("mealPlanBtn")?.addEventListener("click", planMyWeek);
 $("mealToGrocery")?.addEventListener("click", sendShopToGrocery);
 $("dinnerOptions")?.addEventListener("click", e => {
@@ -1560,7 +1624,7 @@ $("dinnerOptions")?.addEventListener("click", e => {
   if (b.dataset.rid) { const r = recipeById(b.dataset.rid); if (r) chooseDinner({ dinner: r.name, emoji: r.emoji, recipeId: r.id, out: false }); }
   else if (b.dataset.special === "pizza") chooseDinner({ dinner: mealsCfg().pizzaName || "Pizza night 🍕", recipeId: "pizza", out: false });
   else if (b.dataset.special === "out") chooseDinner({ out: true });
-  else if (b.dataset.special === "idea") { const ideas = mealsCfg().newIdeas || []; chooseDinner({ dinner: ideas[Math.floor(Math.random() * ideas.length)] || "Something new", out: false }); }
+  else if (b.dataset.special === "idea") chooseDinner({ dinner: nextIdeaInstant(), out: false });
 });
 $("dinnerCustom")?.addEventListener("keydown", e => { if (e.key === "Enter") { const v = e.target.value.trim(); if (v) chooseDinner({ dinner: v, out: false }); } });
 $("dinnerClose")?.addEventListener("click", closeDinner);
