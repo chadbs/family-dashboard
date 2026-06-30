@@ -40,6 +40,7 @@
     <button class="tab" data-view="calendar"><span>Calendar</span></button>
     <button class="tab" data-view="rewards"><span>Rewards</span></button>
     <button class="tab" data-view="chores"><span>Chores</span></button>
+    <button class="tab" data-view="meals"><span>Meals</span></button>
     <button class="tab" data-view="grocery"><span>Grocery</span></button>
   </nav>
 
@@ -150,6 +151,34 @@
       </div>
     </section>
 
+    <!-- ============ MEALS ============ -->
+    <section class="view" id="view-meals">
+      <div class="card meals-full">
+        <div class="meals-head">
+          <h2>Dinner plan</h2>
+          <div class="meals-week-nav">
+            <button class="cal-nav" id="mealPrev" type="button" aria-label="Previous week">‹</button>
+            <span class="meals-week-label" id="mealWeekLabel">—</span>
+            <button class="cal-nav" id="mealNext" type="button" aria-label="Next week">›</button>
+          </div>
+          <button class="meals-plan-btn" id="mealPlanBtn" type="button">✨ Plan my week</button>
+        </div>
+        <div class="meal-week" id="mealWeek"></div>
+
+        <div class="meals-subhead">
+          <h2>Shopping list</h2>
+          <button class="share-btn" id="mealToGrocery" type="button">📋 Send to grocery list</button>
+        </div>
+        <span class="share-status" id="mealShopStatus"></span>
+        <div class="shop-list" id="shopList"></div>
+
+        <div class="pantry-block">
+          <div class="pantry-head">Running low? <span class="pantry-sub">tap the big staples you need this trip</span></div>
+          <div class="pantry-check" id="pantryCheck"></div>
+        </div>
+      </div>
+    </section>
+
     <!-- ============ GROCERY ============ -->
     <section class="view" id="view-grocery">
       <div class="card grocery-full">
@@ -227,6 +256,37 @@
     </div>
     <div class="fc-modal-summary" id="fcSummary"></div>
     <div class="fc-hours" id="fcHours"></div>
+  </div>
+</div>
+
+<!-- Dinner picker: choose what's for dinner on a given night -->
+<div id="dinnerModal" class="dinner-modal" hidden>
+  <div class="dinner-card">
+    <div class="dinner-modal-head">
+      <div class="dinner-title" id="dinnerTitle">Dinner</div>
+      <button class="fc-close" id="dinnerClose" type="button" aria-label="Close">✕</button>
+    </div>
+    <div class="dinner-options" id="dinnerOptions"></div>
+    <input id="dinnerCustom" class="ev-input" type="text" placeholder="…or type your own dinner" autocomplete="off" />
+    <div class="dinner-actions">
+      <button class="dinner-clear" id="dinnerClear" type="button">Clear this night</button>
+    </div>
+  </div>
+</div>
+
+<!-- Preference editor: what brand/product we like for an item (it's remembered) -->
+<div id="prefModal" class="pref-modal" hidden>
+  <div class="pref-card">
+    <div class="pref-title" id="prefTitle">What we like</div>
+    <input id="prefInput" class="ev-input" type="text" placeholder="e.g. Meijer 2% — gallon" autocomplete="off" />
+    <div class="pref-stores" id="prefStores">
+      <button type="button" data-store="Meijer" class="pref-store">Meijer</button>
+      <button type="button" data-store="Aldi" class="pref-store">Aldi</button>
+    </div>
+    <div class="pref-actions">
+      <button class="pref-cancel" id="prefCancel" type="button">Cancel</button>
+      <button class="pref-save" id="prefSave" type="button">Save</button>
+    </div>
   </div>
 </div>
 

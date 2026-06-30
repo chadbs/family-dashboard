@@ -85,6 +85,67 @@ window.CONFIG = {
     { id: "shoes",   name: "Clean up shoes", who: "Sophie",  cadence: "weekly", pic: "👟" },
   ],
 
+  // ── Meals & groceries ────────────────────────────────────────────────
+  // Kenzie plans dinners for the week; the app builds the grocery list from
+  // the recipes + the weekly staples, split by store. Edit freely — the
+  // ingredient lists are a starting point, correct them as you go.
+  meals: {
+    // ALWAYS on the cart every week, no matter the dinners.
+    weekly: [
+      { item: "Whole milk",   qty: "3 gallons", store: "Meijer" },
+      { item: "Greek yogurt", qty: "5 tubs",    store: "Meijer" },
+    ],
+    // Big / occasional staples — bought every once in a while, NOT weekly.
+    // Shown as a "running low?" checklist so Kenzie ticks what to restock.
+    pantry: [
+      "Flour", "Salt", "Sugar", "Cooking oil", "Soy sauce", "Rice",
+      "Dried pasta", "Marinara sauce", "BBQ sauce", "Ketchup", "Mustard",
+      "Yeast", "Broth / miso", "Cornstarch", "Spices", "Parmesan",
+    ],
+    // Saturday is homemade pizza night.
+    pizzaDay: 5,                                   // Mon=0 … Sat=5, Sun=6
+    pizzaName: "Pizza night 🍕 (homemade dough)",
+    // Roughly how many home-cooked dinners to aim for (pizza counts as one).
+    homeDinnersSummer: 4,
+    homeDinners: 5,
+    // A few fresh ideas the planner can sprinkle in (and the "🎲 New idea"
+    // button). Name-only for now — add them as full recipes anytime.
+    newIdeas: ["Tacos", "Stir fry", "Breakfast for dinner", "Sheet-pan salmon",
+      "Chili", "Fajitas", "Soup & grilled cheese", "Curry", "Pot roast", "Quesadillas"],
+    // The staple dinners. "pantry: true" on an ingredient means it's assumed
+    // on-hand (a big/occasional staple) and skipped on the weekly list.
+    recipes: [
+      { id: "cashew-chicken", name: "Cashew chicken", emoji: "🍗", ingredients: [
+        { item: "Chicken breast", store: "Meijer" }, { item: "Cashews", store: "Meijer" },
+        { item: "Broccoli", store: "Aldi" }, { item: "Bell pepper", store: "Aldi" },
+        { item: "Rice", store: "Meijer", pantry: true }, { item: "Soy sauce", store: "Meijer", pantry: true },
+      ] },
+      { id: "bbq-chicken", name: "BBQ chicken", emoji: "🍗", ingredients: [
+        { item: "Chicken thighs", store: "Meijer" }, { item: "BBQ sauce", store: "Meijer", pantry: true },
+        { item: "Potatoes", store: "Aldi" }, { item: "Corn", store: "Aldi" },
+      ] },
+      { id: "spaghetti", name: "Spaghetti", emoji: "🍝", ingredients: [
+        { item: "Ground beef", store: "Meijer" }, { item: "Marinara sauce", store: "Meijer", pantry: true },
+        { item: "Spaghetti noodles", store: "Meijer", pantry: true }, { item: "Parmesan", store: "Meijer", pantry: true },
+      ] },
+      { id: "burgers", name: "Burgers (homemade buns)", emoji: "🍔", ingredients: [
+        { item: "Ground beef", store: "Meijer" }, { item: "Cheese slices", store: "Meijer" },
+        { item: "Lettuce", store: "Aldi" }, { item: "Tomato", store: "Aldi" }, { item: "Onion", store: "Aldi" },
+        { item: "Flour", store: "Meijer", pantry: true }, { item: "Yeast", store: "Meijer", pantry: true },
+      ] },
+      { id: "ramen", name: "Ramen", emoji: "🍜", ingredients: [
+        { item: "Ramen noodles", store: "Meijer" }, { item: "Eggs", store: "Meijer" },
+        { item: "Green onion", store: "Aldi" }, { item: "Mushrooms", store: "Aldi" },
+        { item: "Pork", store: "Meijer" }, { item: "Broth / miso", store: "Meijer", pantry: true },
+      ] },
+      { id: "sausage-pasta", name: "Sausage pasta", emoji: "🍝", ingredients: [
+        { item: "Italian sausage", store: "Meijer" }, { item: "Penne pasta", store: "Meijer", pantry: true },
+        { item: "Heavy cream", store: "Meijer" }, { item: "Bell pepper", store: "Aldi" },
+        { item: "Onion", store: "Aldi" }, { item: "Parmesan", store: "Meijer", pantry: true },
+      ] },
+    ],
+  },
+
   // ── Calendar ─────────────────────────────────────────────────────────
   // To pull your real Google Calendar: in Google Calendar settings, copy the
   // "Secret address in iCal format" and paste it below. Leave null to use the
