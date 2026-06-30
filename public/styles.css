@@ -88,7 +88,7 @@ body {
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   overflow: hidden;
-  transition: --sky-tint 1.2s var(--ease), background .6s var(--ease), color .6s var(--ease);
+  transition: --sky-tint 1.2s var(--ease), background .6s var(--ease);
 }
 
 .app {
@@ -139,13 +139,13 @@ body {
   grid-template-areas:
     "hero   hero"
     "cal    chores"
-    "trend  chores";
+    "stars  chores";
   gap: var(--gap);
 }
 .hero   { grid-area: hero; }
 .calendar { grid-area: cal; }
 .chores { grid-area: chores; }
-.trend  { grid-area: trend; }
+.stars  { grid-area: stars; }
 
 /* ---------- Weather hero ---------- */
 .hero {
@@ -154,7 +154,14 @@ body {
     radial-gradient(120% 160% at 100% 0%, var(--sky-1) 0%, transparent 55%),
     var(--card);
 }
-.hero-top { display: flex; align-items: center; justify-content: space-between; }
+.hero-top { display: flex; align-items: center; justify-content: space-between; gap: clamp(14px, 2vw, 32px); }
+/* Rain trend tucked beside the big temperature */
+.hero-rain { flex: 1; min-width: 0; max-width: clamp(180px, 26vw, 360px); display: flex; flex-direction: column;
+  gap: 6px; align-self: stretch; justify-content: center; }
+.hero-rain-head { display: flex; align-items: baseline; justify-content: space-between;
+  font-size: clamp(11px, 1.05vw, 14px); font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .8px; }
+.hero-rain-total { color: var(--rain); font-weight: 700; letter-spacing: 0; text-transform: none; font-variant-numeric: tabular-nums; }
+.hero-rain .rainchart { min-height: clamp(40px, 5vw, 74px); }
 .hero-main { display: flex; align-items: center; gap: clamp(14px, 2vw, 36px); }
 .hero-icon { width: clamp(72px, 8vw, 132px); height: clamp(72px, 8vw, 132px); flex-shrink: 0; }
 .temp-now { font-size: clamp(58px, 8.5vw, 132px); font-weight: 300; line-height: .9; letter-spacing: -4px; font-variant-numeric: tabular-nums; }
@@ -523,7 +530,7 @@ body {
 /* ---------- Portrait / small screens ---------- */
 @media (max-aspect-ratio: 1/1), (max-width: 760px) {
   .home-grid { grid-template-columns: 1fr; grid-template-rows: auto auto auto auto;
-    grid-template-areas: "hero" "chores" "cal" "trend"; overflow-y: auto; }
+    grid-template-areas: "hero" "chores" "cal" "stars"; overflow-y: auto; }
   .hero { flex-direction: column; align-items: flex-start; gap: 16px; }
   .hero-side { border-left: 0; padding-left: 0; border-top: 1px solid var(--line); padding-top: 12px; width: 100%; }
 }
@@ -801,18 +808,21 @@ html[data-skin="glass"] .app { position: relative; z-index: 1; }
 /* The glass skin: dark frosted cards + white text, derived by overriding the
    shared variables — so the existing layout/components adapt automatically. */
 html[data-skin="glass"] {
-  --card:     rgba(18, 22, 30, .34);
-  --card-2:   rgba(18, 22, 30, .26);
+  --card:     rgba(15, 19, 27, .56);
+  --card-2:   rgba(15, 19, 27, .48);
   --ink:      #FFFFFF;
-  --ink-soft: rgba(255, 255, 255, .88);
-  --muted:    rgba(255, 255, 255, .68);
-  --line:     rgba(255, 255, 255, .16);
-  --line-2:   rgba(255, 255, 255, .28);
-  --shadow:   0 12px 36px rgba(0, 0, 0, .30);
-  --shadow-sm:0 2px 10px rgba(0, 0, 0, .24);
+  --ink-soft: rgba(255, 255, 255, .90);
+  --muted:    rgba(255, 255, 255, .74);
+  --line:     rgba(255, 255, 255, .18);
+  --line-2:   rgba(255, 255, 255, .30);
+  --shadow:   0 12px 36px rgba(0, 0, 0, .34);
+  --shadow-sm:0 2px 10px rgba(0, 0, 0, .26);
 }
 html[data-skin="glass"] body { background: #20242E; }   /* shows for a beat while a photo loads */
-html[data-skin="glass"] .card { -webkit-backdrop-filter: blur(15px); backdrop-filter: blur(15px); }
+html[data-skin="glass"] .card { -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px); }
+/* a faint shadow keeps text crisp even where a photo is bright */
+html[data-skin="glass"] .card, html[data-skin="glass"] .reward, html[data-skin="glass"] .jar,
+html[data-skin="glass"] .ws-col, html[data-skin="glass"] .fc-day { text-shadow: 0 1px 2px rgba(0, 0, 0, .35); }
 html[data-skin="glass"] .hero { background: var(--card); }   /* drop the sky radial under glass */
 html[data-skin="glass"] .tabs { -webkit-backdrop-filter: blur(15px); backdrop-filter: blur(15px); }
 /* Bare text that sits directly over the photo gets a shadow for legibility */
