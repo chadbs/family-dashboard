@@ -128,7 +128,9 @@ function skyFromCondition(cond = "") {
   return "sunny";
 }
 
+let lastWeather = null;
 function renderWeather(w) {
+  lastWeather = w || null;
   const r = v => (v == null || isNaN(v)) ? null : Math.round(v);
   document.documentElement.setAttribute("data-sky", skyFromCondition(w.condition));
   $("tempNow").innerHTML = `${r(w.temperature_F) ?? "--"}<span class="deg">°</span>`;

@@ -108,10 +108,21 @@ window.CONFIG = {
     // Roughly how many home-cooked dinners to aim for (pizza counts as one).
     homeDinnersSummer: 4,
     homeDinners: 5,
-    // A few fresh ideas the planner can sprinkle in (and the "🎲 New idea"
-    // button). Name-only for now — add them as full recipes anytime.
+    // Fresh ideas the planner sprinkles in (and the "🎲 New idea" button).
+    // When Claude Code is signed in here it suggests live, trending, weather-
+    // aware ideas; otherwise it falls back to this season-tagged list.
     newIdeas: ["Tacos", "Stir fry", "Breakfast for dinner", "Sheet-pan salmon",
       "Chili", "Fajitas", "Soup & grilled cheese", "Curry", "Pot roast", "Quesadillas"],
+    seasonalIdeas: {
+      summer: ["Grilled chicken & veggies", "BBQ ribs", "Fish tacos", "Caprese pasta",
+        "Shrimp skewers", "Cobb salad", "Street-corn bowls", "Grilled veggie flatbread"],
+      fall: ["Chili", "Pot roast", "Butternut squash soup", "Sheet-pan sausage & veggies",
+        "Shepherd's pie", "Baked ziti", "Pork chops & apples", "Chicken & wild rice soup"],
+      winter: ["Beef stew", "Chicken pot pie", "Lasagna", "Tomato soup & grilled cheese",
+        "Coconut curry", "Meatloaf & mashed potatoes", "White chicken chili", "Beef & broccoli"],
+      spring: ["Lemon herb chicken", "Asparagus pasta", "Stir fry", "Salmon rice bowls",
+        "Fajitas", "Spring veggie risotto", "Greek chicken pitas", "Pesto pasta"],
+    },
     // The staple dinners. "pantry: true" on an ingredient means it's assumed
     // on-hand (a big/occasional staple) and skipped on the weekly list.
     recipes: [

@@ -422,6 +422,37 @@ const server = http.createServer(async (req, res) => {
     }
   }
 
+  // ---- API: meal ideas (Claude suggests fresh, seasonal dinners) --------
+  // Loopback-only (it shells out to Claude). Read-only tools (web search).
+  // Returns { ok, ideas:[...] }; the client falls back to a seasonal list.
+  if (pathname === "/api/meal-ideas") {
+    const ra = req.socket.remoteAddress || "";
+    if (!(ra === "127.0.0.1" || ra === "::1" || ra === "::ffff:127.0.0.1"))
+      return sendJSON(res, 200, { ok: false, error: "local only" });
+    const n = Math.max(3, Math.min(10, parseInt(url.searchParams.get("n") || "6", 10)));
+    const season = (url.searchParams.get("season") || "this season").replace(/[^\w ]/g, "").slice(0, 20);
+    const temp = (url.searchParams.get("temp") || "").replace(/[^\d-]/g, "").slice(0, 4);
+    const cond = (url.searchParams.get("cond") || "").replace(/[^\w ]/g, "").slice(0, 40);
+    const prompt = `Suggest ${n} easy, family-friendly DINNER ideas that suit ${season}` +
+      (temp ? ` weather (around ${temp}°F${cond ? ", " + cond : ""})` : "") +
+      `. Mix in a couple of currently popular/trending ones — you may web search for fresh inspiration. Realistic for a busy family with young kids. Reply with ONLY a JSON array of short dinner names (max ~4 words each) and nothing else, e.g. ["Sheet-pan fajitas","Teriyaki salmon bowls"].`;
+    const { spawn } = require("child_process");
+    const child = spawn("claude", ["-p", "--output-format", "text", "--allowedTools", "WebSearch WebFetch"], { cwd: ROOT, shell: true });
+    let out = "", done = false;
+    const finish = (obj) => { if (done) return; done = true; clearTimeout(timer); sendJSON(res, 200, obj); };
+    const timer = setTimeout(() => { try { child.kill(); } catch {} finish({ ok: false, error: "timeout" }); }, 45000);
+    child.on("error", () => finish({ ok: false, error: "claude unavailable" }));
+    child.stdout.on("data", d => out += d.toString());
+    child.on("close", () => {
+      let ideas = [];
+      try { const m = out.match(/\[[\s\S]*\]/); if (m) ideas = JSON.parse(m[0]); } catch {}
+      ideas = (Array.isArray(ideas) ? ideas : []).filter(x => typeof x === "string" && x.trim()).map(x => x.trim().slice(0, 40)).slice(0, n);
+      finish(ideas.length ? { ok: true, ideas } : { ok: false, error: "no ideas" });
+    });
+    try { child.stdin.write(prompt); child.stdin.end(); } catch {}
+    return;
+  }
+
   // ---- API: weather (latest sensor reading) -----------------------------
   if (pathname === "/api/weather") {
     try {
