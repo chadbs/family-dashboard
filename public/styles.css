@@ -490,6 +490,7 @@ body {
   padding: clamp(8px, 1vw, 12px) clamp(14px, 1.6vw, 22px); transition: transform .12s var(--ease), opacity .2s; }
 .share-btn:active { transform: scale(.96); }
 .share-btn:disabled { opacity: .55; cursor: default; }
+.share-btn.keep-btn { background: #FBBC04; color: #3c2f00; margin-right: 8px; }   /* Google Keep yellow */
 .share-status { display: block; min-height: 1.2em; margin: 6px 2px 0; font-size: clamp(12px, 1.1vw, 15px);
   font-weight: 600; color: var(--muted); }
 .share-status.ok { color: var(--good); }

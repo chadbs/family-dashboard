@@ -903,6 +903,23 @@ $("grocerySend")?.addEventListener("click", async () => {
   setTimeout(() => { status.textContent = ""; status.className = "share-status"; }, 7000);
 });
 
+// Push the grocery list to Google Keep (syncs to Kenzie's phone).
+$("groceryKeep")?.addEventListener("click", async () => {
+  const btn = $("groceryKeep"), status = $("grocerySendStatus");
+  btn.disabled = true;
+  status.className = "share-status"; status.textContent = "Sending to Keep…";
+  try {
+    const r = await fetch("/api/keep-grocery", { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" });
+    const d = await r.json();
+    if (d.ok) { status.classList.add("ok"); status.textContent = `Sent ${d.count} item${d.count === 1 ? "" : "s"} to Keep ✓`; }
+    else { status.classList.add("err"); status.textContent = d.error || "Couldn't send to Keep."; }
+  } catch {
+    status.classList.add("err"); status.textContent = "Couldn't reach the server.";
+  }
+  setTimeout(() => { btn.disabled = false; }, 1200);
+  setTimeout(() => { status.textContent = ""; status.className = "share-status"; }, 8000);
+});
+
 /* ---------------------------------------------------------------- calendar */
 let liveEvents = null;   // set if an optional iCal feed is configured
 

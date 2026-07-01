@@ -321,6 +321,31 @@ const server = http.createServer(async (req, res) => {
     }
   }
 
+  // ---- API: push the grocery list to Google Keep (syncs to Kenzie's phone) ----
+  if (pathname === "/api/keep-grocery" && req.method === "POST") {
+    let secrets;
+    try { secrets = JSON.parse(fs.readFileSync(SECRETS, "utf8")); }
+    catch { return sendJSON(res, 200, { ok: false, error: "Google Keep isn't set up yet — see scripts/KEEP-SETUP.md." }); }
+    const { gkeepEmail, gkeepMasterToken } = secrets;
+    if (!gkeepEmail || !gkeepMasterToken) {
+      return sendJSON(res, 200, { ok: false, error: "data/secrets.json is missing gkeepEmail or gkeepMasterToken (see scripts/KEEP-SETUP.md)." });
+    }
+    let grocery = [];
+    try { grocery = (JSON.parse(fs.readFileSync(STATE, "utf8")).grocery) || []; } catch {}
+    const toBuy = grocery.filter(g => g && !g.done).map(g => g.text);
+    if (!toBuy.length) return sendJSON(res, 200, { ok: false, error: "The grocery list is empty." });
+    try {
+      const keep = require("./scripts/keep-client.js");
+      const token = await keep.getAccessToken(gkeepEmail, gkeepMasterToken);
+      const label = secrets.keepListTitle || "Groceries";
+      const title = `${label} — ${new Date().toLocaleDateString("en-US", { month: "short", day: "numeric" })}`;
+      await keep.createGroceryList(token, title, toBuy);
+      return sendJSON(res, 200, { ok: true, count: toBuy.length });
+    } catch (e) {
+      return sendJSON(res, 200, { ok: false, error: "Couldn't send to Keep: " + ((e && e.message) || e) });
+    }
+  }
+
   // ---- API: voice assistant — drives Claude Code to do what was asked ----
   if (pathname === "/api/voice" && req.method === "POST") {
     // Only the wall itself (the kiosk on localhost) may issue voice commands —
