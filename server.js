@@ -334,16 +334,37 @@ const server = http.createServer(async (req, res) => {
     try { grocery = (JSON.parse(fs.readFileSync(STATE, "utf8")).grocery) || []; } catch {}
     const toBuy = grocery.filter(g => g && !g.done).map(g => g.text);
     if (!toBuy.length) return sendJSON(res, 200, { ok: false, error: "The grocery list is empty." });
-    try {
+    const label = secrets.keepListTitle || "Groceries";
+    const title = `${label} — ${new Date().toLocaleDateString("en-US", { month: "short", day: "numeric" })}`;
+
+    // The Node client is the no-Python fallback (unofficial, less reliable).
+    const viaNode = async () => {
       const keep = require("./scripts/keep-client.js");
       const token = await keep.getAccessToken(gkeepEmail, gkeepMasterToken);
-      const label = secrets.keepListTitle || "Groceries";
-      const title = `${label} — ${new Date().toLocaleDateString("en-US", { month: "short", day: "numeric" })}`;
       await keep.createGroceryList(token, title, toBuy);
-      return sendJSON(res, 200, { ok: true, count: toBuy.length });
-    } catch (e) {
-      return sendJSON(res, 200, { ok: false, error: "Couldn't send to Keep: " + ((e && e.message) || e) });
-    }
+      return { ok: true, count: toBuy.length };
+    };
+
+    // Prefer the battle-tested Python gkeepapi helper if Python is available.
+    const { spawn } = require("child_process");
+    const payload = JSON.stringify({ email: gkeepEmail, masterToken: gkeepMasterToken, listTitle: label, title, items: toBuy });
+    const py = spawn("python", [path.join(ROOT, "scripts", "keep_push.py")], { cwd: ROOT });
+    let out = "", err = "", done = false;
+    const finish = (obj) => { if (done) return; done = true; sendJSON(res, 200, obj); };
+    const fallbackToNode = () => viaNode().then(finish).catch(e => finish({ ok: false, error: "Couldn't send to Keep: " + ((e && e.message) || e) }));
+    py.on("error", fallbackToNode);   // python not spawnable
+    py.stdout.on("data", d => (out += d));
+    py.stderr.on("data", d => (err += d));
+    py.on("close", (code) => {
+      let parsed = null;
+      try { parsed = JSON.parse(out.trim().split("\n").filter(Boolean).pop()); } catch {}
+      if (parsed) return finish(parsed);
+      const all = out + " " + err;
+      if (/was not found|Microsoft Store|not recognized|no python/i.test(all)) return fallbackToNode();   // python missing on Windows
+      finish({ ok: false, error: "Keep push failed: " + (err.trim().slice(0, 200) || all.trim().slice(0, 160) || ("exit " + code)) });
+    });
+    try { py.stdin.write(payload); py.stdin.end(); } catch {}
+    return;
   }
 
   // ---- API: voice assistant — drives Claude Code to do what was asked ----

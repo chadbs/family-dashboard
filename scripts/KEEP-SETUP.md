@@ -5,10 +5,21 @@ Google Keep checklist, which then syncs to Kenzie's phone (the Keep app).
 
 Google has **no official consumer Keep API**, so this uses the same unofficial
 endpoints the community libraries use. It needs a one-time **master token** for
-the Google account whose Keep should receive the list. No Python required —
-there's a small Node helper.
+the Google account whose Keep should receive the list.
+
+The push runs through the battle-tested **`gkeepapi`** Python library when it's
+available (recommended — most reliable), and falls back to a pure-Node client
+if Python isn't installed.
 
 ## One-time setup
+
+**Step 0 (recommended): install the Python helper**
+```
+pip install gkeepapi
+```
+Make sure `python` runs from the command line (install from python.org and tick
+"Add Python to PATH"). If you skip this, the Node fallback is used automatically
+— but the Python path is more reliable.
 
 Do this on the machine that **runs the dashboard server** (the Surface, or this
 PC while testing). It's easiest to use the account you want the list to land in
