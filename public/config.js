@@ -217,6 +217,11 @@ window.CONFIG = {
     "Hot day forecast, but you're the real heat wave. Those emerald eyes could melt glaciers, Kenzie. 💚🌡️",
     "Watching you with Addy and Sophie — you're the most beautiful thing about every single day. 🐰🐢💚",
     "A summer breeze is lovely, but your laugh is better. Also your eyes. Also your everything. 🌴💚",
+    "Happy almost-4th! You're hotter than any fireworks show, prettier than any skyline, and louder than a finale — in the best way. 🎆💚",
+    "If they made fireworks that looked like your smile they'd close every other display. Happy July, gorgeous. 🎇🖤",
+    "July 4th fun fact: independence is great, but finding someone to be completely UN-independent from is better. That's you. 💚🎆",
+    "Sophie's birthday is almost here 🐢 — watching you be their mom is the best show on earth. You're incredible, Kenzie. 💚",
+    "Addy's 🐰 and Sophie's 🐢 have the most beautiful, creative, funniest, most patient mom alive. Lucky doesn't cover it. 💚🖤",
   ],
 
   // One-time SURPRISE note: shows immediately (once) the moment the screen
