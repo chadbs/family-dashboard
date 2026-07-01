@@ -970,17 +970,46 @@ function nextBirthday() {
   return best;
 }
 
+// Shows a small banner 0–3 days before major fixed-date holidays.
+function holidayBanner() {
+  const n = new Date(); n.setHours(0, 0, 0, 0);
+  const upcoming = [
+    { month: 1,  day: 1,  name: "New Year's Day", emoji: "🎊", col: "#8B5CF6" },
+    { month: 7,  day: 4,  name: "July 4th",       emoji: "🎆", col: "#EF4444" },
+    { month: 10, day: 31, name: "Halloween",       emoji: "🎃", col: "#F97316" },
+    { month: 12, day: 25, name: "Christmas",       emoji: "🎄", col: "#10B981" },
+  ];
+  for (const h of upcoming) {
+    const hd = new Date(n.getFullYear(), h.month - 1, h.day);
+    const days = Math.round((hd - n) / 86400000);
+    if (days < 0 || days > 3) continue;
+    const when = days === 0 ? "Today! 🎇" : days === 1 ? "Tomorrow!" : `in ${days} days`;
+    return `<div style="display:flex;align-items:center;gap:10px;background:${h.col}15;border:1px solid ${h.col}44;border-radius:var(--r-md);padding:9px 14px;margin-bottom:4px;">
+      <span style="font-size:1.5em;line-height:1;flex-shrink:0">${h.emoji}</span>
+      <div style="font-size:clamp(13px,1.25vw,16px);font-weight:600;">${h.name} — ${when}</div>
+    </div>`;
+  }
+  return "";
+}
+
 function birthdayBanner() {
   const b = nextBirthday();
   if (!b) return "";
   const col = color(b.name);
-  const when = b.days === 0 ? "today!" : b.days === 1 ? "tomorrow" : `in ${b.days} days`;
+  const soon = b.days <= 7;
+  const whenText = b.days === 0 ? "today!" : b.days === 1 ? "tomorrow" : `in ${b.days} days`;
+  const when = b.days === 0 ? `today! 🎉` : b.days <= 3 ? `${whenText} 🎈` : whenText;
   const dateStr = `${MON[b.date.getMonth()].slice(0,3)} ${b.date.getDate()}`;
-  const cake = `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="${col}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;">
-    <path d="M4 20h16v-7a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v7z"/><path d="M4 15c1.5 0 1.5 1 3 1s1.5-1 3-1 1.5 1 3 1 1.5-1 3-1 1.5 1 3 1"/>
-    <line x1="12" y1="4" x2="12" y2="8"/><circle cx="12" cy="3" r="1" fill="${col}" stroke="none"/></svg>`;
-  return `<div style="display:flex;align-items:center;gap:11px;background:${col}14;border:1px solid ${col}33;border-radius:var(--r-md);padding:11px 14px;margin-bottom:4px;">
-    ${cake}
+  const avatar = (C.avatars || {})[b.name];
+  const icon = avatar
+    ? `<span style="font-size:1.6em;line-height:1;flex-shrink:0">${avatar}</span>`
+    : `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="${col}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;">
+        <path d="M4 20h16v-7a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v7z"/><path d="M4 15c1.5 0 1.5 1 3 1s1.5-1 3-1 1.5 1 3 1 1.5-1 3-1 1.5 1 3 1"/>
+        <line x1="12" y1="4" x2="12" y2="8"/><circle cx="12" cy="3" r="1" fill="${col}" stroke="none"/></svg>`;
+  const bg = soon ? `${col}22` : `${col}14`;
+  const border = soon ? `1.5px solid ${col}55` : `1px solid ${col}33`;
+  return `<div style="display:flex;align-items:center;gap:11px;background:${bg};border:${border};border-radius:var(--r-md);padding:11px 14px;margin-bottom:4px;">
+    ${icon}
     <div style="flex:1;font-size:clamp(13px,1.25vw,17px);font-weight:600;">${b.name} turns ${b.turning} ${when}</div>
     <div style="font-size:clamp(11px,1vw,14px);font-weight:700;color:${col};">${dateStr}</div>
   </div>`;
@@ -1031,7 +1060,7 @@ function renderAgenda() {
       <div class="ws-dow">${DAY_ABBR[i]}</div><div class="ws-date">${dt.getDate()}</div>
       <div class="ws-evs">${pills}</div></div>`;
   }
-  $("agenda").innerHTML = birthdayBanner() + `<div class="weekstrip">${cols}</div>`;
+  $("agenda").innerHTML = holidayBanner() + birthdayBanner() + `<div class="weekstrip">${cols}</div>`;
 }
 $("agenda").addEventListener("click", (e) => {
   const col = e.target.closest(".ws-col[data-date]");
