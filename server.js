@@ -40,6 +40,28 @@ if (!fs.existsSync(STATE)) {
   fs.writeFileSync(STATE, initial);
 }
 
+// ---- State backups: a rotating safety net so family data is never lost ----
+// Before a save overwrites state.json, snapshot the CURRENT file into
+// data/backups/ (at most once an hour), keeping the newest 30. If anything
+// ever wipes the live state, the last-known-good copies are right there.
+const BACKUPS = path.join(DATA_DIR, "backups");
+let lastBackupHour = null;
+function backupState() {
+  try {
+    if (!fs.existsSync(STATE)) return;
+    const now = new Date();
+    const hourKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}-${String(now.getHours()).padStart(2, "0")}`;
+    if (lastBackupHour === hourKey) return;               // at most one per hour
+    if (!fs.existsSync(BACKUPS)) fs.mkdirSync(BACKUPS, { recursive: true });
+    const dest = path.join(BACKUPS, `state-${hourKey}.json`);
+    if (!fs.existsSync(dest)) fs.copyFileSync(STATE, dest);
+    lastBackupHour = hourKey;
+    // prune: keep only the newest 30 snapshots
+    const files = fs.readdirSync(BACKUPS).filter(f => /^state-.*\.json$/.test(f)).sort();
+    while (files.length > 30) fs.unlinkSync(path.join(BACKUPS, files.shift()));
+  } catch { /* a failed backup must never block a save */ }
+}
+
 const MIME = {
   ".html": "text/html; charset=utf-8",
   ".css":  "text/css; charset=utf-8",
@@ -285,6 +307,10 @@ const server = http.createServer(async (req, res) => {
       const body = await readBody(req);
       try {
         const parsed = JSON.parse(body);           // validate before writing
+        // must be a plain object — reject null/numbers/arrays that would nuke state
+        if (!parsed || typeof parsed !== "object" || Array.isArray(parsed))
+          return sendJSON(res, 400, { ok: false, error: "state must be an object" });
+        backupState();                             // rotating safety net (hourly)
         // atomic write: temp file then rename, so a crash can't corrupt state
         const tmp = STATE + ".tmp";
         fs.writeFileSync(tmp, JSON.stringify(parsed, null, 2));

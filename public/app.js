@@ -1184,11 +1184,25 @@ $("evCancel").addEventListener("click", closeEventEditor);
 $("eventModal").addEventListener("click", (e) => { if (e.target.id === "eventModal") closeEventEditor(); });
 $("evTitle").addEventListener("keydown", (e) => { if (e.key === "Enter") saveEvent(); });
 
-/* ---------------------------------------------------------------- state I/O */
+/* ---------------------------------------------------------------- state I/O
+   SAFETY: family data (chores, stars, meals, grocery) must never be lost.
+   - If the fetch fails, we KEEP the in-memory state we already have.
+   - If the server answers with an empty/near-empty object while we're holding
+     real data (a hiccup, not a reset), we keep ours instead of clobbering it.
+   The server also snapshots hourly backups to data/backups/ before saves.    */
+function hasMeaningfulData(s) {
+  if (!s || typeof s !== "object") return false;
+  return !!(Object.keys(s.stars || {}).length || (s.grocery || []).length ||
+    (s.events || []).length || Object.keys(s.mealPlan || {}).length ||
+    Object.keys(s.choreDone || {}).length || (s.chores || []).length ||
+    Object.keys(s.itemPrefs || {}).length);
+}
 async function loadState() {
   try {
     const r = await fetch("/api/state", { cache: "no-store" });
     const s = await r.json();
+    // Server hiccup returning {} while we hold real data? Don't wipe ourselves.
+    if (!hasMeaningfulData(s) && hasMeaningfulData(STATE)) return;
     STATE = Object.assign({ choreDone: {}, choreWeek: null, grocery: [], events: [], stars: {}, streak: {}, mealPlan: {}, itemPrefs: {}, pantryNeed: {}, mealTarget: {} }, s);
     STATE.choreDone = STATE.choreDone || {};
     STATE.grocery = STATE.grocery || [];
@@ -1199,7 +1213,7 @@ async function loadState() {
     STATE.itemPrefs = STATE.itemPrefs || {};
     STATE.pantryNeed = STATE.pantryNeed || {};
     STATE.mealTarget = STATE.mealTarget || {};
-  } catch { STATE = { choreDone: {}, choreWeek: null, grocery: [], events: [], stars: {}, streak: {}, mealPlan: {}, itemPrefs: {}, pantryNeed: {}, mealTarget: {} }; }
+  } catch { /* keep whatever state we already have — never reset to empty */ }
 }
 
 let saveTimer = null;
@@ -1721,9 +1735,12 @@ async function boot() {
   setInterval(async () => {
     if (editingChores) return;                                 // don't clobber an edit in progress
     if (document.activeElement === $("groceryInput")) return;  // don't clobber typing
-    if ($("pinModal") && !$("pinModal").hidden) return;        // don't disrupt a PIN entry
+    // any editor/modal open? leave the screen alone until it's closed
+    for (const id of ["pinModal", "eventModal", "dinnerModal", "prefModal", "redeemModal"]) {
+      const m = $(id); if (m && !m.hidden) return;
+    }
     await loadState(); ensureWeek(); renderHomeChores(); renderChart(); renderRewardTab(); renderGrocery();
-    renderAgenda(); renderMonth();                               // pick up voice/Claude-added events
+    renderAgenda(); renderMonth(); renderMeals();                // pick up voice/Claude-added edits
   }, 1000 * 20);
   // watch for a new code version (after a git pull) and reload automatically
   watchVersion();
