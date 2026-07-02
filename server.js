@@ -285,6 +285,8 @@ const server = http.createServer(async (req, res) => {
       const body = await readBody(req);
       try {
         const parsed = JSON.parse(body);           // validate before writing
+        // keep a one-deep backup so a bad save can be recovered manually
+        if (fs.existsSync(STATE)) fs.copyFileSync(STATE, STATE + ".bak");
         // atomic write: temp file then rename, so a crash can't corrupt state
         const tmp = STATE + ".tmp";
         fs.writeFileSync(tmp, JSON.stringify(parsed, null, 2));

@@ -1185,25 +1185,38 @@ $("eventModal").addEventListener("click", (e) => { if (e.target.id === "eventMod
 $("evTitle").addEventListener("keydown", (e) => { if (e.key === "Enter") saveEvent(); });
 
 /* ---------------------------------------------------------------- state I/O */
+let stateReady = false;   // guards against overwriting disk if initial load failed
+
 async function loadState() {
-  try {
-    const r = await fetch("/api/state", { cache: "no-store" });
-    const s = await r.json();
-    STATE = Object.assign({ choreDone: {}, choreWeek: null, grocery: [], events: [], stars: {}, streak: {}, mealPlan: {}, itemPrefs: {}, pantryNeed: {}, mealTarget: {} }, s);
-    STATE.choreDone = STATE.choreDone || {};
-    STATE.grocery = STATE.grocery || [];
-    STATE.events = STATE.events || [];
-    STATE.stars = STATE.stars || {};
-    STATE.streak = STATE.streak || {};
-    STATE.mealPlan = STATE.mealPlan || {};
-    STATE.itemPrefs = STATE.itemPrefs || {};
-    STATE.pantryNeed = STATE.pantryNeed || {};
-    STATE.mealTarget = STATE.mealTarget || {};
-  } catch { STATE = { choreDone: {}, choreWeek: null, grocery: [], events: [], stars: {}, streak: {}, mealPlan: {}, itemPrefs: {}, pantryNeed: {}, mealTarget: {} }; }
+  const DEFAULTS = { choreDone: {}, choreWeek: null, grocery: [], events: [], stars: {}, streak: {}, mealPlan: {}, itemPrefs: {}, pantryNeed: {}, mealTarget: {} };
+  for (let attempt = 0; attempt < 5; attempt++) {
+    try {
+      const r = await fetch("/api/state", { cache: "no-store" });
+      const s = await r.json();
+      STATE = Object.assign({ ...DEFAULTS }, s);
+      STATE.choreDone  = STATE.choreDone  || {};
+      STATE.grocery    = STATE.grocery    || [];
+      STATE.events     = STATE.events     || [];
+      STATE.stars      = STATE.stars      || {};
+      STATE.streak     = STATE.streak     || {};
+      STATE.mealPlan   = STATE.mealPlan   || {};
+      STATE.itemPrefs  = STATE.itemPrefs  || {};
+      STATE.pantryNeed = STATE.pantryNeed || {};
+      STATE.mealTarget = STATE.mealTarget || {};
+      stateReady = true;
+      return;
+    } catch {
+      if (attempt < 4) await new Promise(res => setTimeout(res, 2000 * (attempt + 1)));
+    }
+  }
+  // All retries failed — use in-memory defaults but do NOT save to disk.
+  STATE = { choreDone: {}, choreWeek: null, grocery: [], events: [], stars: {}, streak: {}, mealPlan: {}, itemPrefs: {}, pantryNeed: {}, mealTarget: {} };
+  stateReady = false;
 }
 
 let saveTimer = null;
 function saveState() {
+  if (!stateReady) return;   // never overwrite disk if we couldn't load it
   clearTimeout(saveTimer);
   saveTimer = setTimeout(() => {
     fetch("/api/state", {
