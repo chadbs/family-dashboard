@@ -7,4 +7,5 @@ REM ===========================================================================
 
 cd /d "%~dp0\.."
 set GIT_TERMINAL_PROMPT=0
+set GCM_INTERACTIVE=never
 git pull --rebase --autostash >> scripts\update.log 2>&1
