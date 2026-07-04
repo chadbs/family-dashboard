@@ -123,6 +123,39 @@ window.CONFIG = {
       spring: ["Lemon herb chicken", "Asparagus pasta", "Stir fry", "Salmon rice bowls",
         "Fajitas", "Spring veggie risotto", "Greek chicken pitas", "Pesto pasta"],
     },
+    // ── Featured picks: REAL recipes from great cooks — never AI slop. ──
+    // These back up the weekly live picks (which Claude web-searches from top
+    // sources when it's signed in). Simple ingredients, ~easy weeknight level.
+    // seasons: which seasons it suits (omit = all year).
+    featured: [
+      { name: "Tomato–butter pasta", source: "Marcella Hazan", emoji: "🍝", time: "45 min",
+        seasons: ["fall", "winter", "spring"],
+        ingredients: ["Canned whole tomatoes", "Butter", "Onion", { item: "Dried pasta", pantry: true }, { item: "Parmesan", pantry: true }] },
+      { name: "Lemon–garlic roast chicken", source: "Ina Garten", emoji: "🍋",
+        time: "40 min", ingredients: ["Chicken thighs", "Lemons", "Garlic", "Fresh thyme"] },
+      { name: "Crispy sheet-pan chicken & potatoes", source: "Kenji López-Alt / Serious Eats", emoji: "🍗",
+        time: "45 min", ingredients: ["Chicken thighs", "Baby potatoes", "Lemons", "Fresh rosemary"] },
+      { name: "Sheet-pan gnocchi & tomatoes", source: "Ali Slagle / NYT Cooking", emoji: "🥔",
+        time: "30 min", seasons: ["summer", "fall"],
+        ingredients: ["Shelf-stable gnocchi", "Cherry tomatoes", "Fresh mozzarella", "Basil"] },
+      { name: "Everyday chicken tacos", source: "Pati Jinich (style)", emoji: "🌮",
+        time: "30 min", ingredients: ["Chicken breast", "Corn tortillas", "Avocado", "Lime", "Cilantro", "Cotija or feta"] },
+      { name: "Garlicky shrimp & greens pasta", source: "Melissa Clark / NYT Cooking", emoji: "🦐",
+        time: "25 min", seasons: ["spring", "summer"],
+        ingredients: ["Shrimp", "Baby spinach", "Garlic", "Lemons", { item: "Dried pasta", pantry: true }] },
+      { name: "Skillet chicken pot pie", source: "Erin French / The Lost Kitchen (style)", emoji: "🥧",
+        time: "50 min", seasons: ["fall", "winter"],
+        ingredients: ["Chicken thighs", "Frozen peas & carrots", "Puff pastry", "Heavy cream", "Onion"] },
+      { name: "Grilled flank steak & corn salad", source: "Bon Appétit", emoji: "🥩",
+        time: "35 min", seasons: ["summer"],
+        ingredients: ["Flank steak", "Corn", "Cherry tomatoes", "Feta", "Lime"] },
+    ],
+    // Deal / coupon links used by the shopping list + grocery email.
+    dealLinks: [
+      { name: "Meijer weekly ad", url: "https://www.meijer.com/shopping/weekly-ad.html" },
+      { name: "mPerks coupons",   url: "https://www.meijer.com/shopping/mperks.html" },
+      { name: "ALDI weekly ad",   url: "https://www.aldi.us/weekly-specials/our-weekly-ads/" },
+    ],
     // The staple dinners. "pantry: true" on an ingredient means it's assumed
     // on-hand (a big/occasional staple) and skipped on the weekly list.
     recipes: [

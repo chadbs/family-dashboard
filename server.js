@@ -527,6 +527,63 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
+  // ---- API: recipe picks (weekly, from REAL top-tier sources) -----------
+  // Claude web-searches for seasonal / weather-relevant dinner recipes from
+  // named chefs & publications (never invented "AI slop"), returns structured
+  // JSON, and we cache it per ISO-week in data/recipe-picks.json so the wall
+  // isn't re-searching every load. ?refresh=1 forces a new search.
+  if (pathname === "/api/recipe-picks") {
+    const PICKS = path.join(DATA_DIR, "recipe-picks.json");
+    const wk = (() => { const d = new Date(); const j1 = new Date(d.getFullYear(), 0, 1);
+      return d.getFullYear() + "-W" + Math.ceil((((d - j1) / 86400000) + j1.getDay() + 1) / 7); })();
+    let cached = null;
+    try { cached = JSON.parse(fs.readFileSync(PICKS, "utf8")); } catch {}
+    const fresh = cached && cached.week === wk && Array.isArray(cached.picks) && cached.picks.length;
+    if (fresh && url.searchParams.get("refresh") !== "1")
+      return sendJSON(res, 200, { ok: true, picks: cached.picks, week: cached.week, cached: true });
+
+    const ra = req.socket.remoteAddress || "";
+    const isLocal = ra === "127.0.0.1" || ra === "::1" || ra === "::ffff:127.0.0.1";
+    const stale = () => cached && Array.isArray(cached.picks) && cached.picks.length
+      ? sendJSON(res, 200, { ok: true, picks: cached.picks, week: cached.week, cached: true, stale: true })
+      : sendJSON(res, 200, { ok: false, error: "no picks yet" });
+    if (!isLocal) return stale();                       // only the wall itself may trigger a search
+
+    const season = (url.searchParams.get("season") || "this season").replace(/[^\w ]/g, "").slice(0, 20);
+    const temp = (url.searchParams.get("temp") || "").replace(/[^\d-]/g, "").slice(0, 4);
+    const cond = (url.searchParams.get("cond") || "").replace(/[^\w ]/g, "").slice(0, 40);
+    const prompt = `Find 6 GREAT dinner recipes for a busy family with young kids, suited to ${season} in Michigan` +
+      (temp ? ` (this week ~${temp}°F${cond ? ", " + cond : ""})` : "") + `.
+Rules — quality over everything:
+- ONLY real, well-loved recipes from top-tier chefs, restaurants, or publications (e.g. NYT Cooking, Serious Eats, Bon Appétit, Smitten Kitchen, Ina Garten, Kenji López-Alt, Half Baked Harvest, Maangchi, Pati Jinich). Web-search to verify each one actually exists — never invent a recipe.
+- Fairly easy: ≤ 50 min active, no obscure equipment, ≤ 10 core ingredients, nothing hard to find at a Midwest grocery store.
+- Varied proteins/cuisines across the 6.
+Reply with ONLY a JSON array, no other text:
+[{"name":"short dish name","source":"chef or publication","time":"~30 min","emoji":"one fitting emoji","ingredients":["6-10 core shopping ingredients, capitalized, no quantities"]}]`;
+    const { spawn } = require("child_process");
+    const child = spawn("claude", ["-p", "--output-format", "text", "--allowedTools", "WebSearch WebFetch"], { cwd: ROOT, shell: true });
+    let out = "", done = false;
+    const finish = (obj) => { if (done) return; done = true; clearTimeout(timer); sendJSON(res, 200, obj); };
+    const timer = setTimeout(() => { try { child.kill(); } catch {} if (!done) { done = true; stale(); } }, 90000);
+    child.on("error", () => { if (!done) { done = true; stale(); } });
+    child.stdout.on("data", d => out += d.toString());
+    child.on("close", () => {
+      if (done) return;
+      let picks = [];
+      try { const m = out.match(/\[[\s\S]*\]/); if (m) picks = JSON.parse(m[0]); } catch {}
+      picks = (Array.isArray(picks) ? picks : []).filter(p => p && p.name && Array.isArray(p.ingredients))
+        .map(p => ({ name: String(p.name).slice(0, 60), source: String(p.source || "").slice(0, 60),
+          time: String(p.time || "").slice(0, 20), emoji: String(p.emoji || "🍽️").slice(0, 8),
+          ingredients: p.ingredients.slice(0, 12).map(x => String(x).slice(0, 40)) }))
+        .slice(0, 8);
+      if (!picks.length) { done = true; return stale(); }
+      try { fs.writeFileSync(PICKS, JSON.stringify({ week: wk, fetchedAt: new Date().toISOString(), picks }, null, 2)); } catch {}
+      finish({ ok: true, picks, week: wk, cached: false });
+    });
+    try { child.stdin.write(prompt); child.stdin.end(); } catch {}
+    return;
+  }
+
   // ---- API: weather (latest sensor reading) -----------------------------
   if (pathname === "/api/weather") {
     try {
