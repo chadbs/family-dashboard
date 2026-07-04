@@ -1186,10 +1186,14 @@ $("evTitle").addEventListener("keydown", (e) => { if (e.key === "Enter") saveEve
 
 /* ---------------------------------------------------------------- state I/O
    SAFETY: family data (chores, stars, meals, grocery) must never be lost.
-   - If the fetch fails, we KEEP the in-memory state we already have.
-   - If the server answers with an empty/near-empty object while we're holding
-     real data (a hiccup, not a reset), we keep ours instead of clobbering it.
-   The server also snapshots hourly backups to data/backups/ before saves.    */
+   - Load retries 5x with backoff (a server restart during git pull recovers).
+   - stateReady blocks saves until we've actually loaded — a failed boot can
+     never overwrite good data on disk with empties.
+   - If the server answers empty while we hold real data (a hiccup, not a
+     reset), we keep ours instead of clobbering the screen.
+   - The server keeps state.json.bak + hourly snapshots in data/backups/.     */
+let stateReady = false;   // guards against overwriting disk if we never loaded
+
 function hasMeaningfulData(s) {
   if (!s || typeof s !== "object") return false;
   return !!(Object.keys(s.stars || {}).length || (s.grocery || []).length ||
@@ -1198,26 +1202,37 @@ function hasMeaningfulData(s) {
     Object.keys(s.itemPrefs || {}).length);
 }
 async function loadState() {
-  try {
-    const r = await fetch("/api/state", { cache: "no-store" });
-    const s = await r.json();
-    // Server hiccup returning {} while we hold real data? Don't wipe ourselves.
-    if (!hasMeaningfulData(s) && hasMeaningfulData(STATE)) return;
-    STATE = Object.assign({ choreDone: {}, choreWeek: null, grocery: [], events: [], stars: {}, streak: {}, mealPlan: {}, itemPrefs: {}, pantryNeed: {}, mealTarget: {} }, s);
-    STATE.choreDone = STATE.choreDone || {};
-    STATE.grocery = STATE.grocery || [];
-    STATE.events = STATE.events || [];
-    STATE.stars = STATE.stars || {};
-    STATE.streak = STATE.streak || {};
-    STATE.mealPlan = STATE.mealPlan || {};
-    STATE.itemPrefs = STATE.itemPrefs || {};
-    STATE.pantryNeed = STATE.pantryNeed || {};
-    STATE.mealTarget = STATE.mealTarget || {};
-  } catch { /* keep whatever state we already have — never reset to empty */ }
+  const DEFAULTS = { choreDone: {}, choreWeek: null, grocery: [], events: [], stars: {}, streak: {}, mealPlan: {}, itemPrefs: {}, pantryNeed: {}, mealTarget: {} };
+  for (let attempt = 0; attempt < 5; attempt++) {
+    try {
+      const r = await fetch("/api/state", { cache: "no-store" });
+      const s = await r.json();
+      // Server hiccup returning {} while we hold real data? Don't wipe ourselves.
+      if (!hasMeaningfulData(s) && hasMeaningfulData(STATE)) { stateReady = true; return; }
+      STATE = Object.assign({ ...DEFAULTS }, s);
+      STATE.choreDone  = STATE.choreDone  || {};
+      STATE.grocery    = STATE.grocery    || [];
+      STATE.events     = STATE.events     || [];
+      STATE.stars      = STATE.stars      || {};
+      STATE.streak     = STATE.streak     || {};
+      STATE.mealPlan   = STATE.mealPlan   || {};
+      STATE.itemPrefs  = STATE.itemPrefs  || {};
+      STATE.pantryNeed = STATE.pantryNeed || {};
+      STATE.mealTarget = STATE.mealTarget || {};
+      stateReady = true;
+      return;
+    } catch {
+      if (attempt < 4) await new Promise(res => setTimeout(res, 2000 * (attempt + 1)));
+    }
+  }
+  // All retries failed — KEEP whatever we already have in memory (never blank
+  // a working screen). If we never had data, saves stay blocked.
+  if (!hasMeaningfulData(STATE)) stateReady = false;
 }
 
 let saveTimer = null;
 function saveState() {
+  if (!stateReady) return;   // never overwrite disk if we couldn't load it
   clearTimeout(saveTimer);
   saveTimer = setTimeout(() => {
     fetch("/api/state", {

@@ -135,8 +135,8 @@ body {
   height: 100%;
   display: grid;
   grid-template-columns: 1.5fr 1fr;
-  /* the week strip must never collapse — guarantee its row real height */
-  grid-template-rows: auto minmax(clamp(120px, 17vh, 190px), 1fr) auto;
+  /* hero capped at 26vh; the week-strip row can never collapse below a real height */
+  grid-template-rows: minmax(0, 26vh) minmax(clamp(120px, 17vh, 190px), 1fr) auto;
   grid-template-areas:
     "hero   hero"
     "cal    chores"
@@ -150,51 +150,53 @@ body {
 
 /* ---------- Weather hero ---------- */
 .hero {
-  flex-direction: column; align-items: stretch; justify-content: flex-start; gap: clamp(10px, 1.3vw, 18px);
+  flex-direction: column; align-items: stretch; justify-content: flex-start; gap: clamp(6px, .7vw, 10px);
+  overflow: hidden;
   background:
     radial-gradient(120% 160% at 100% 0%, var(--sky-1) 0%, transparent 55%),
     var(--card);
+  padding: clamp(10px, 1.1vw, 16px) clamp(14px, 1.5vw, 22px);
 }
-.hero-top { display: flex; align-items: center; justify-content: space-between; gap: clamp(14px, 2vw, 32px); }
+.hero-top { display: flex; align-items: center; justify-content: space-between; gap: clamp(10px, 1.4vw, 22px); }
 /* Rain trend tucked beside the big temperature */
-.hero-rain { flex: 1; min-width: 0; max-width: clamp(180px, 26vw, 360px); display: flex; flex-direction: column;
-  gap: 6px; align-self: stretch; justify-content: center; }
+.hero-rain { flex: 1; min-width: 0; max-width: clamp(160px, 22vw, 300px); display: flex; flex-direction: column;
+  gap: 4px; align-self: stretch; justify-content: center; }
 .hero-rain-head { display: flex; align-items: baseline; justify-content: space-between;
-  font-size: clamp(11px, 1.05vw, 14px); font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .8px; }
+  font-size: clamp(10px, .95vw, 13px); font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .8px; }
 .hero-rain-total { color: var(--rain); font-weight: 700; letter-spacing: 0; text-transform: none; font-variant-numeric: tabular-nums; }
-.hero-rain .rainchart { min-height: clamp(36px, 4vw, 56px); }
-.hero-main { display: flex; align-items: center; gap: clamp(14px, 2vw, 30px); }
-.hero-icon { width: clamp(64px, 6.5vw, 100px); height: clamp(64px, 6.5vw, 100px); flex-shrink: 0; }
-.temp-now { font-size: clamp(54px, 7vw, 100px); font-weight: 300; line-height: .9; letter-spacing: -3px; font-variant-numeric: tabular-nums; }
+.hero-rain .rainchart { min-height: clamp(28px, 3.2vw, 48px); }
+.hero-main { display: flex; align-items: center; gap: clamp(10px, 1.4vw, 24px); }
+.hero-icon { width: clamp(48px, 5.5vw, 80px); height: clamp(48px, 5.5vw, 80px); flex-shrink: 0; }
+.temp-now { font-size: clamp(42px, 5.8vw, 88px); font-weight: 300; line-height: .9; letter-spacing: -4px; font-variant-numeric: tabular-nums; }
 .temp-now .deg { font-weight: 300; }
-.temp-cond { font-size: clamp(16px, 1.7vw, 26px); font-weight: 500; color: var(--ink-soft); margin-top: 6px; }
-.temp-loc { font-size: clamp(12px, 1.2vw, 16px); font-weight: 600; color: var(--muted); margin-top: 4px; text-transform: uppercase; letter-spacing: 1.5px; }
+.temp-cond { font-size: clamp(13px, 1.3vw, 19px); font-weight: 500; color: var(--ink-soft); margin-top: 4px; }
+.temp-loc { font-size: clamp(10px, 1vw, 14px); font-weight: 600; color: var(--muted); margin-top: 2px; text-transform: uppercase; letter-spacing: 1.5px; }
 
-.hero-side { display: grid; grid-template-columns: 1fr 1fr; gap: 2px 0;
-  border-left: 1px solid var(--line); padding-left: clamp(16px, 2vw, 34px); }
-.metric { display: flex; flex-direction: column; padding: clamp(8px, 1vw, 14px) clamp(14px, 1.6vw, 24px); }
-.m-label { font-size: clamp(11px, 1.05vw, 14px); color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .8px; }
-.m-val { font-size: clamp(18px, 2vw, 30px); font-weight: 600; margin-top: 4px; letter-spacing: -.5px; font-variant-numeric: tabular-nums; }
+.hero-side { display: grid; grid-template-columns: 1fr 1fr; gap: 0;
+  border-left: 1px solid var(--line); padding-left: clamp(12px, 1.4vw, 22px); }
+.metric { display: flex; flex-direction: column; padding: clamp(5px, .6vw, 9px) clamp(10px, 1.2vw, 18px); }
+.m-label { font-size: clamp(10px, .95vw, 13px); color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .8px; }
+.m-val { font-size: clamp(15px, 1.6vw, 22px); font-weight: 600; margin-top: 2px; letter-spacing: -.5px; font-variant-numeric: tabular-nums; }
 .m-val.rain { color: var(--rain); }
 
 /* ---------- 7-day forecast strip (under the weather hero) ---------- */
-.forecast { display: grid; grid-template-columns: repeat(7, 1fr); gap: clamp(4px, .6vw, 10px);
-  border-top: 1px solid var(--line); padding-top: clamp(8px, 1.1vw, 16px); }
+.forecast { display: grid; grid-template-columns: repeat(7, 1fr); gap: clamp(3px, .4vw, 7px);
+  border-top: 1px solid var(--line); padding-top: clamp(5px, .7vw, 10px); }
 .forecast:empty { display: none; }
-.fc-day { font-family: inherit; display: flex; flex-direction: column; align-items: center; gap: clamp(2px, .35vw, 4px);
-  background: transparent; border: 1px solid transparent; border-radius: var(--r-md); padding: clamp(5px, .6vw, 9px) 2px;
+.fc-day { font-family: inherit; display: flex; flex-direction: column; align-items: center; gap: clamp(1px, .3vw, 4px);
+  background: transparent; border: 1px solid transparent; border-radius: var(--r-md); padding: clamp(4px, .5vw, 8px) 2px;
   cursor: pointer; color: var(--ink); transition: background .2s var(--ease), transform .12s var(--ease); }
 .fc-day:hover { background: var(--card-2); }
 .fc-day:active { transform: scale(.96); }
 .fc-day.is-today { background: var(--card-2); border-color: var(--line-2); }
-.fc-dow { font-size: clamp(11px, 1.05vw, 14px); font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .4px; }
+.fc-dow { font-size: clamp(10px, .95vw, 13px); font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .4px; }
 .fc-day.is-today .fc-dow { color: var(--accent); }
-.fc-ic { width: clamp(28px, 2.6vw, 38px); height: clamp(28px, 2.6vw, 38px); }
+.fc-ic { width: clamp(22px, 2.2vw, 34px); height: clamp(22px, 2.2vw, 34px); }
 .fc-ic svg { width: 100%; height: 100%; }
-.fc-t { display: flex; gap: 6px; align-items: baseline; font-variant-numeric: tabular-nums; }
-.fc-t b { font-size: clamp(14px, 1.4vw, 19px); font-weight: 700; }
-.fc-t i { font-size: clamp(12px, 1.2vw, 16px); font-style: normal; color: var(--muted); }
-.fc-pop { font-size: clamp(10px, .95vw, 13px); font-weight: 600; color: var(--rain); min-height: 1em; }
+.fc-t { display: flex; gap: 4px; align-items: baseline; font-variant-numeric: tabular-nums; }
+.fc-t b { font-size: clamp(12px, 1.2vw, 16px); font-weight: 700; }
+.fc-t i { font-size: clamp(10px, 1vw, 14px); font-style: normal; color: var(--muted); }
+.fc-pop { font-size: clamp(9px, .85vw, 12px); font-weight: 600; color: var(--rain); min-height: 1em; }
 .fc-pop.dry { color: transparent; }
 
 /* ---------- Forecast detail modal ---------- */

@@ -310,7 +310,9 @@ const server = http.createServer(async (req, res) => {
         // must be a plain object — reject null/numbers/arrays that would nuke state
         if (!parsed || typeof parsed !== "object" || Array.isArray(parsed))
           return sendJSON(res, 400, { ok: false, error: "state must be an object" });
-        backupState();                             // rotating safety net (hourly)
+        backupState();                             // rotating hourly safety net
+        // plus a one-deep .bak so a bad save can be recovered in one step
+        if (fs.existsSync(STATE)) fs.copyFileSync(STATE, STATE + ".bak");
         // atomic write: temp file then rename, so a crash can't corrupt state
         const tmp = STATE + ".tmp";
         fs.writeFileSync(tmp, JSON.stringify(parsed, null, 2));
