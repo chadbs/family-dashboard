@@ -136,7 +136,7 @@ body {
   display: grid;
   grid-template-columns: 1.5fr 1fr;
   /* hero capped at 26vh; the week-strip row can never collapse below a real height */
-  grid-template-rows: minmax(0, 26vh) minmax(clamp(120px, 17vh, 190px), 1fr) auto;
+  grid-template-rows: minmax(0, 26vh) minmax(clamp(110px, 15vh, 180px), 1fr) auto;
   grid-template-areas:
     "hero   hero"
     "cal    chores"
@@ -703,6 +703,15 @@ body {
 .jar-track { height: clamp(10px, 1.1vw, 14px); border-radius: 99px; background: var(--line); overflow: hidden; }
 .jar-fill { height: 100%; background: var(--kidcol); border-radius: 99px; transition: width .5s var(--ease); }
 .jar-sub { font-size: clamp(11px, 1.1vw, 14px); color: var(--muted); font-weight: 600; }
+/* in the Home "Stars" card the jars are the last element — no trailing margin */
+.card.stars .jars { margin-bottom: 0; }
+.card.stars { min-height: 0; }
+/* the week card runs tight when a birthday banner shows — slim its chrome */
+.card.calendar { padding-top: clamp(12px, 1.2vw, 18px); padding-bottom: clamp(12px, 1.2vw, 18px); }
+.card.calendar .card-head { margin-bottom: 8px; }
+/* the chores card spans two grid rows — it must compress (its list scrolls) */
+.card.chores { min-height: 0; }
+.card.chores .chore-list { flex: 1; min-height: 0; }
 .jars.home { grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: clamp(8px, 1vw, 12px); }
 .jars.home .jar { padding: clamp(8px, 1vw, 12px); gap: 6px; }
 .jars.home .jar-ava { width: clamp(24px, 2.3vw, 32px); height: clamp(24px, 2.3vw, 32px); font-size: clamp(13px, 1.4vw, 18px); }
