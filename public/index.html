@@ -207,6 +207,7 @@
           </div>
         </div>
         <span class="share-status" id="grocerySendStatus"></span>
+        <div class="deals-row" id="groceryDeals"></div>
         <form class="grocery-add" id="groceryAdd">
           <input id="groceryInput" type="text" placeholder="Add an item…" autocomplete="off" />
           <button type="submit" id="groceryAddBtn" aria-label="Add">Add</button>
@@ -288,6 +289,18 @@
     <div class="dinner-actions">
       <button class="dinner-clear" id="dinnerClear" type="button">Clear this night</button>
     </div>
+  </div>
+</div>
+
+<!-- Night chooser: which evening should this recipe go on? -->
+<div id="nightModal" class="dinner-modal" hidden>
+  <div class="dinner-card">
+    <div class="dinner-modal-head">
+      <div class="dinner-title" id="nightTitle">Add to which night?</div>
+      <button class="fc-close" id="nightClose" type="button" aria-label="Close">✕</button>
+    </div>
+    <div class="night-pick-recipe" id="nightRecipe"></div>
+    <div class="night-options" id="nightOptions"></div>
   </div>
 </div>
 

@@ -338,7 +338,18 @@ const server = http.createServer(async (req, res) => {
     try { grocery = (JSON.parse(fs.readFileSync(STATE, "utf8")).grocery) || []; } catch {}
     const toBuy = grocery.filter(g => g && !g.done);
     if (!toBuy.length) return sendJSON(res, 200, { ok: false, error: "The grocery list is empty." });
-    const text = "Here's the grocery list:\n\n" + toBuy.map(g => `• ${g.text}`).join("\n") + "\n\n— sent from the family dashboard 💚";
+    const byStore = { Meijer: [], Aldi: [], other: [] };
+    toBuy.forEach(g => (byStore[g.store] || byStore.other).push(g));
+    let text = "Here's the grocery list:\n";
+    for (const [store, items] of Object.entries(byStore)) {
+      if (!items.length) continue;
+      text += `\n${store === "other" ? "Anywhere" : store}:\n` + items.map(g => `  • ${g.text}${g.pref ? `  (${g.pref})` : ""}`).join("\n") + "\n";
+    }
+    text += "\nDeals & coupons:\n" +
+      "  Meijer weekly ad: https://www.meijer.com/shopping/weekly-ad.html\n" +
+      "  mPerks coupons:   https://www.meijer.com/shopping/mperks.html\n" +
+      "  ALDI weekly ad:   https://www.aldi.us/weekly-specials/our-weekly-ads/\n" +
+      "\n— sent from the family dashboard 💚";
     try {
       await sendGmail({ user: gmailUser, pass: gmailAppPassword, to: groceryTo,
         subject: `🛒 Grocery list (${toBuy.length} item${toBuy.length === 1 ? "" : "s"})`,

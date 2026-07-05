@@ -1486,11 +1486,16 @@ function buildShoppingList(wk) {
   }
   (mealsCfg().weekly || []).forEach(w => add(w.item, w.store, w.qty, "weekly"));
   Object.values(plan).forEach(night => {
-    if (!night || night.out || !night.recipeId) return;
-    const r = recipeById(night.recipeId); if (!r) return;
-    (r.ingredients || []).forEach(ing => {
-      if (ing.pantry || pan.has(ing.item.toLowerCase())) return;   // assumed on-hand
-      add(ing.item, ing.store, "", r.name);
+    if (!night || night.out) return;
+    // a config staple recipe, or a picked recipe carrying its own ingredients
+    const r = night.recipeId ? recipeById(night.recipeId) : null;
+    const ings = r ? (r.ingredients || []) : (night.ingredients || []);
+    const label = r ? r.name : night.dinner;
+    ings.forEach(ing => {
+      const o = (typeof ing === "string") ? { item: ing } : ing;
+      if (!o || !o.item) return;
+      if (o.pantry || pan.has(o.item.toLowerCase())) return;   // assumed on-hand
+      add(o.item, o.store, "", label);
     });
   });
   return Object.values(map);
@@ -1512,7 +1517,10 @@ function renderMealWeek() {
     const night = plan[i];
     let label, cls = "";
     if (night && night.out) { label = "🚗 Out / away"; cls = "out"; }
-    else if (night && night.dinner) label = `${night.emoji ? night.emoji + " " : ""}${escapeHtml(night.dinner)}`;
+    else if (night && night.dinner) {
+      label = `${night.emoji ? night.emoji + " " : ""}${escapeHtml(night.dinner)}` +
+        (night.source ? `<small class="meal-src">${escapeHtml(night.source)}</small>` : "");
+    }
     else { label = `<span class="meal-empty">Tap to choose…</span>`; cls = "empty"; }
     html += `<button class="meal-night ${dt.getTime() === today.getTime() ? "today" : ""} ${cls}" data-day="${i}" type="button">
       <span class="meal-dow">${DAY_ABBR[i]} <small>${dt.getMonth() + 1}/${dt.getDate()}</small></span>
@@ -1533,6 +1541,7 @@ function renderShopList() {
     html += its.map(it => `<div class="shop-row">
         <span class="shop-name">${escapeHtml(it.name)}${it.qty ? ` <span class="shop-qty">${escapeHtml(it.qty)}</span>` : ""}</span>
         <span class="shop-pref">${escapeHtml(itemPrefText(it.name, it.store))}</span>
+        <a class="shop-link" href="${storeSearchUrl(it.store, it.name)}" target="_blank" rel="noopener" title="See it at ${it.store}">↗</a>
         <button class="shop-edit" data-item="${escapeHtml(it.name)}" data-store="${it.store}" type="button" aria-label="Set what we like">✎</button>
       </div>`).join("");
     html += `</div>`;
@@ -1546,7 +1555,7 @@ function renderPantryCheck() {
     `<button class="pantry-item ${need[it.toLowerCase()] ? "on" : ""}" data-pan="${escapeHtml(it)}" type="button">${escapeHtml(it)}</button>`).join("");
 }
 function renderMeals() {
-  renderMealWeek(); renderShopList(); renderPantryCheck();
+  renderMealWeek(); renderShopList(); renderPantryCheck(); renderPicks(); renderDeals();
   const v = $("mealTargetVal"); if (v) v.textContent = mealTarget(mealWeekKey());
   primeIdeas();   // warm fresh ideas in the background so taps stay instant
 }
@@ -1607,6 +1616,104 @@ function primeIdeas() {
 // Never blocks: a cached (Claude) idea if we have one, else an instant seasonal one.
 function nextIdeaInstant() { primeIdeas(); return ideaCache.length ? ideaCache.shift() : instantIdea(); }
 
+/* ---- weekly recipe picks: REAL recipes from great cooks, never AI slop ----
+   Live picks come from /api/recipe-picks (Claude web-searches top sources,
+   cached per week). The curated config.meals.featured classics fill in
+   underneath so the row is always full of quality. Picking one puts it on a
+   night WITH its ingredients, which flow straight into the shopping list.   */
+let recipePicks = [];
+function seasonalFeatured() {
+  const s = currentSeason();
+  return (mealsCfg().featured || []).filter(f => !f.seasons || f.seasons.includes(s));
+}
+function allPicks() {
+  const seen = new Set(recipePicks.map(p => (p.name || "").toLowerCase()));
+  return recipePicks.concat(seasonalFeatured().filter(f => !seen.has(f.name.toLowerCase())));
+}
+async function loadRecipePicks(refresh) {
+  const btn = $("pickRefresh");
+  if (refresh && btn) { btn.disabled = true; btn.classList.add("spin"); }
+  try {
+    const w = lastWeather || {};
+    const qs = `season=${currentSeason()}&temp=${w.temperature_F != null ? Math.round(w.temperature_F) : ""}&cond=${encodeURIComponent(w.condition || "")}` + (refresh ? "&refresh=1" : "");
+    const ctrl = new AbortController();
+    const to = setTimeout(() => ctrl.abort(), 95000);
+    const r = await fetch(`/api/recipe-picks?${qs}`, { cache: "no-store", signal: ctrl.signal });
+    clearTimeout(to);
+    const d = await r.json();
+    if (d && d.ok && Array.isArray(d.picks) && d.picks.length) recipePicks = d.picks;
+  } catch { /* featured classics carry the row */ }
+  if (btn) { btn.disabled = false; btn.classList.remove("spin"); }
+  renderPicks();
+}
+function renderPicks() {
+  const host = $("mealPicks"); if (!host) return;
+  const picks = allPicks();
+  const sub = $("picksSub");
+  if (sub) sub.textContent = recipePicks.length ? "fresh finds for this week's weather" : "from chefs & kitchens we trust";
+  host.innerHTML = picks.map((p, i) => `<button class="pick-card" data-pick="${i}" type="button">
+      <span class="pick-emoji">${p.emoji || "🍽️"}</span>
+      <span class="pick-name">${escapeHtml(p.name)}</span>
+      <span class="pick-src">${escapeHtml(p.source || "")}</span>
+      <span class="pick-meta">${p.time ? escapeHtml(p.time) : ""}${p.ingredients ? ` · ${p.ingredients.length} ingredients` : ""}</span>
+    </button>`).join("");
+}
+
+/* ---- night chooser: tap a pick → choose which evening it goes on ---- */
+let pendingPick = null;
+function pickAsNight(p) {
+  return { dinner: p.name, emoji: p.emoji || "🍽️", source: p.source || null,
+    ingredients: (p.ingredients || []).map(x => (typeof x === "string") ? x : x), out: false };
+}
+function openNightChooser(p) {
+  pendingPick = p;
+  $("nightRecipe").innerHTML = `<span class="pick-emoji">${p.emoji || "🍽️"}</span>
+    <div><div class="night-r-name">${escapeHtml(p.name)}</div>
+    <div class="night-r-src">${escapeHtml(p.source || "")}</div></div>`;
+  const ws = mealWeekStart(), plan = mealPlanFor(mealWeekKey());
+  let html = "";
+  for (let i = 0; i < 7; i++) {
+    const dt = new Date(ws); dt.setDate(dt.getDate() + i);
+    const n = plan[i];
+    const cur = n ? (n.out ? "🚗 out" : (n.dinner || "")) : "free";
+    html += `<button class="night-opt ${n ? "" : "free"}" data-day="${i}" type="button">
+      <b>${DAY_ABBR[i]} ${dt.getMonth() + 1}/${dt.getDate()}</b><small>${escapeHtml(String(cur).slice(0, 22))}</small></button>`;
+  }
+  $("nightOptions").innerHTML = html;
+  $("nightModal").hidden = false;
+}
+function closeNightChooser() { $("nightModal").hidden = true; pendingPick = null; }
+$("mealPicks")?.addEventListener("click", e => {
+  const b = e.target.closest(".pick-card"); if (!b) return;
+  const p = allPicks()[+b.dataset.pick]; if (p) openNightChooser(p);
+});
+$("nightOptions")?.addEventListener("click", e => {
+  const b = e.target.closest(".night-opt"); if (!b || !pendingPick) return;
+  setNight(mealWeekKey(), +b.dataset.day, pickAsNight(pendingPick));
+  closeNightChooser(); renderMeals();
+});
+$("nightClose")?.addEventListener("click", closeNightChooser);
+$("nightModal")?.addEventListener("click", e => { if (e.target.id === "nightModal") closeNightChooser(); });
+$("pickRefresh")?.addEventListener("click", () => loadRecipePicks(true));
+
+/* ---- store + deal links (the "find it cheap" layer) ---- */
+function storeSearchUrl(store, item) {
+  const q = encodeURIComponent(item);
+  return store === "Aldi" ? `https://new.aldi.us/results?q=${q}`
+                          : `https://www.meijer.com/shopping/search.html?text=${q}`;
+}
+function dealsRowHTML() {
+  const links = mealsCfg().dealLinks || [];
+  if (!links.length) return "";
+  return `<span class="deals-label">💰 Deals:</span>` + links.map(l =>
+    `<a class="deal-chip" href="${l.url}" target="_blank" rel="noopener">${escapeHtml(l.name)}</a>`).join("");
+}
+function renderDeals() {
+  for (const id of ["mealDeals", "groceryDeals"]) {
+    const host = $(id); if (host) host.innerHTML = dealsRowHTML();
+  }
+}
+
 // "✨ Plan my week" — instantly fill a sensible draft she can edit. Honors the
 // dinner target, puts pizza on Saturday, mixes in seasonal ideas, and avoids
 // last week's meals. (The live-Claude ideas power the 🎲 New idea button.)
@@ -1623,8 +1730,15 @@ function planMyWeek() {
   recipes.sort((a, b) => (usedLastWeek.has(a.name) ? 1 : 0) - (usedLastWeek.has(b.name) ? 1 : 0));
   const picks = [];
   const ideaCount = cookSlots >= 4 ? 2 : (cookSlots >= 2 ? 1 : 0);
-  const pool = (ideaCache.length ? ideaCache.slice() : ((m.seasonalIdeas && m.seasonalIdeas[currentSeason()]) || m.newIdeas || [])).slice().sort(() => Math.random() - 0.5);
-  for (let i = 0; i < ideaCount && i < pool.length; i++) { picks.push({ dinner: pool[i], out: false }); cookSlots--; }
+  // fresh slots come from the real-recipe picks (with ingredients); fall back
+  // to the seasonal name bank only if no picks are available
+  const quality = allPicks().filter(p => !usedLastWeek.has(p.name)).sort(() => Math.random() - 0.5);
+  const pool = quality.length ? quality
+    : (ideaCache.length ? ideaCache.slice() : ((m.seasonalIdeas && m.seasonalIdeas[currentSeason()]) || m.newIdeas || [])).slice().sort(() => Math.random() - 0.5);
+  for (let i = 0; i < ideaCount && i < pool.length; i++) {
+    picks.push(typeof pool[i] === "string" ? { dinner: pool[i], out: false } : pickAsNight(pool[i]));
+    cookSlots--;
+  }
   for (const r of recipes) { if (cookSlots <= 0) break; picks.push({ dinner: r.name, emoji: r.emoji, recipeId: r.id, out: false }); cookSlots--; }
   let pi = 0;
   for (let d = 0; d < 7; d++) {
@@ -1662,7 +1776,10 @@ function openDinner(day) {
   const ws = mealWeekStart(); const dt = new Date(ws); dt.setDate(dt.getDate() + day);
   $("dinnerTitle").textContent = `${DOW[dt.getDay()]}'s dinner`;
   const recipes = mealsCfg().recipes || [];
-  let opts = recipes.map(r => `<button class="dinner-opt" data-rid="${r.id}" type="button">${r.emoji || "🍽️"} ${escapeHtml(r.name)}</button>`).join("");
+  const picks = allPicks().slice(0, 4);
+  let opts = picks.map((p, i) => `<button class="dinner-opt pickopt" data-pickidx="${i}" type="button">
+      ${p.emoji || "🍽️"} ${escapeHtml(p.name)}<small>${escapeHtml(p.source || "")}</small></button>`).join("");
+  opts += recipes.map(r => `<button class="dinner-opt" data-rid="${r.id}" type="button">${r.emoji || "🍽️"} ${escapeHtml(r.name)}</button>`).join("");
   opts += `<button class="dinner-opt special" data-special="pizza" type="button">${escapeHtml(mealsCfg().pizzaName || "Pizza night 🍕")}</button>`;
   opts += `<button class="dinner-opt special" data-special="idea" type="button">🎲 New idea</button>`;
   opts += `<button class="dinner-opt special out" data-special="out" type="button">🚗 Out / away</button>`;
@@ -1697,10 +1814,16 @@ $("mealPlanBtn")?.addEventListener("click", planMyWeek);
 $("mealToGrocery")?.addEventListener("click", sendShopToGrocery);
 $("dinnerOptions")?.addEventListener("click", e => {
   const b = e.target.closest(".dinner-opt"); if (!b) return;
-  if (b.dataset.rid) { const r = recipeById(b.dataset.rid); if (r) chooseDinner({ dinner: r.name, emoji: r.emoji, recipeId: r.id, out: false }); }
+  if (b.dataset.pickidx != null) { const p = allPicks()[+b.dataset.pickidx]; if (p) chooseDinner(pickAsNight(p)); }
+  else if (b.dataset.rid) { const r = recipeById(b.dataset.rid); if (r) chooseDinner({ dinner: r.name, emoji: r.emoji, recipeId: r.id, out: false }); }
   else if (b.dataset.special === "pizza") chooseDinner({ dinner: mealsCfg().pizzaName || "Pizza night 🍕", recipeId: "pizza", out: false });
   else if (b.dataset.special === "out") chooseDinner({ out: true });
-  else if (b.dataset.special === "idea") chooseDinner({ dinner: nextIdeaInstant(), out: false });
+  else if (b.dataset.special === "idea") {
+    // prefer a real pick (with its ingredients); fall back to a seasonal name
+    const pool = allPicks();
+    if (pool.length) chooseDinner(pickAsNight(pool[Math.floor(Math.random() * pool.length)]));
+    else chooseDinner({ dinner: nextIdeaInstant(), out: false });
+  }
 });
 $("dinnerCustom")?.addEventListener("keydown", e => { if (e.key === "Enter") { const v = e.target.value.trim(); if (v) chooseDinner({ dinner: v, out: false }); } });
 $("dinnerClose")?.addEventListener("click", closeDinner);
@@ -1734,6 +1857,7 @@ async function boot() {
   renderMonth();
   await loadWeather();
   loadForecast();                        // 7-day outlook (free Open-Meteo)
+  loadRecipePicks();                     // this week's real-recipe picks
   loadCalendar();
   loadPhotos();                          // start the photo reel if it's enabled
   if (!showLoveNow()) maybeShowLove();   // surprise note wins; else the daily one
