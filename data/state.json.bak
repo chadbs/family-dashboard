@@ -3,10 +3,13 @@
   "choreWeek": "2026-06-29",
   "grocery": [],
   "events": [],
-  "stars": {
-    "Addison": 4
+  "stars": {},
+  "streak": {
+    "Addison": {
+      "count": 1,
+      "last": "2026-07-03"
+    }
   },
-  "streak": {},
   "mealPlan": {},
   "itemPrefs": {},
   "pantryNeed": {},

@@ -855,7 +855,8 @@ html[data-skin="glass"] .tabs {
 html[data-skin="glass"] .jar, html[data-skin="glass"] .shop-item,
 html[data-skin="glass"] .ws-col, html[data-skin="glass"] .meal-night,
 html[data-skin="glass"] .shop-store, html[data-skin="glass"] .cal-cell:not(.blank),
-html[data-skin="glass"] .weekcol, html[data-skin="glass"] .event, html[data-skin="glass"] .gitem {
+html[data-skin="glass"] .weekcol, html[data-skin="glass"] .event, html[data-skin="glass"] .gitem,
+html[data-skin="glass"] .pick-card, html[data-skin="glass"] .night-opt, html[data-skin="glass"] .deal-chip {
   border-color: rgba(255, 255, 255, .10);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, .07);
 }
@@ -973,3 +974,79 @@ html[data-skin="glass"] .pref-card { background: rgba(20, 24, 32, .95); }
 .pref-cancel:active, .pref-save:active { transform: scale(.95); }
 .pref-save { background: var(--accent); color: #fff; }
 .pref-cancel { background: var(--card-2); color: var(--ink-soft); border-color: var(--line-2); }
+
+/* ============================================================================
+   This week's picks — real recipes from great cooks (Meals tab)
+   ========================================================================== */
+.picks-head { display: flex; align-items: baseline; gap: 10px; margin: 0 2px clamp(8px, 1vw, 12px); }
+.picks-title { font-size: clamp(14px, 1.4vw, 19px); font-weight: 700; }
+.picks-title::before { content: "✨ "; }
+.picks-sub { flex: 1; font-size: clamp(11px, 1.05vw, 14px); color: var(--muted); font-weight: 500; }
+.picks-refresh { font-family: inherit; width: clamp(30px, 3vw, 38px); height: clamp(30px, 3vw, 38px); border-radius: 50%;
+  border: 1px solid var(--line-2); background: var(--card-2); color: var(--ink-soft); font-size: clamp(15px, 1.5vw, 19px);
+  cursor: pointer; transition: transform .12s var(--ease); }
+.picks-refresh:active { transform: scale(.9); }
+.picks-refresh.spin { animation: voice-spin 1s linear infinite; }
+.picks-refresh:disabled { opacity: .55; }
+.meal-picks { display: grid; grid-auto-flow: column; grid-auto-columns: clamp(150px, 17vw, 220px);
+  gap: clamp(8px, 1vw, 12px); overflow-x: auto; padding: 2px 2px 8px; margin-bottom: clamp(12px, 1.6vw, 20px);
+  -webkit-overflow-scrolling: touch; scroll-snap-type: x proximity; }
+.meal-picks::-webkit-scrollbar { height: 6px; }
+.meal-picks::-webkit-scrollbar-thumb { background: var(--line-2); border-radius: 3px; }
+.pick-card { font-family: inherit; display: flex; flex-direction: column; align-items: flex-start; gap: 3px;
+  text-align: left; scroll-snap-align: start; cursor: pointer; color: var(--ink);
+  background: var(--card-2); border: 1.5px solid var(--line); border-radius: var(--r-md);
+  padding: clamp(10px, 1.2vw, 15px); transition: transform .12s var(--ease), border-color .2s var(--ease); }
+.pick-card:hover { border-color: var(--accent); }
+.pick-card:active { transform: scale(.96); }
+.pick-emoji { font-size: clamp(22px, 2.4vw, 32px); line-height: 1; }
+.pick-name { font-size: clamp(13px, 1.25vw, 16px); font-weight: 700; line-height: 1.25; }
+.pick-src { font-size: clamp(10px, 1vw, 12px); font-weight: 600; color: var(--accent); }
+.pick-meta { font-size: clamp(10px, .95vw, 12px); color: var(--muted); font-weight: 500; }
+
+/* the source shown on a planned night */
+.meal-src { display: block; font-size: .68em; font-weight: 600; color: var(--muted); margin-top: 1px; }
+.dinner-opt.pickopt small { display: block; font-size: .72em; font-weight: 600; color: var(--accent); margin-top: 2px; }
+
+/* night chooser (which evening gets the recipe) */
+.night-pick-recipe { display: flex; align-items: center; gap: 12px; margin-bottom: clamp(12px, 1.5vw, 16px); }
+.night-r-name { font-size: clamp(15px, 1.5vw, 19px); font-weight: 700; }
+.night-r-src { font-size: clamp(11px, 1.1vw, 14px); font-weight: 600; color: var(--accent); }
+.night-options { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(6px, .8vw, 10px); }
+.night-opt { font-family: inherit; display: flex; flex-direction: column; align-items: flex-start; gap: 2px; text-align: left;
+  color: var(--ink); background: var(--card-2); border: 1.5px solid var(--line); border-radius: var(--r-md);
+  padding: clamp(9px, 1.1vw, 13px) clamp(11px, 1.3vw, 15px); cursor: pointer; transition: transform .12s var(--ease); }
+.night-opt:active { transform: scale(.96); }
+.night-opt b { font-size: clamp(12px, 1.2vw, 15px); }
+.night-opt small { font-size: clamp(10px, 1vw, 13px); color: var(--muted); }
+.night-opt.free small { color: var(--good); font-weight: 700; }
+
+/* deals row (Meijer ad / mPerks / ALDI ad) + per-item store links */
+.deals-row { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin: 0 2px clamp(10px, 1.2vw, 14px); }
+.deals-row:empty { display: none; }
+.deals-label { font-size: clamp(11px, 1.05vw, 14px); font-weight: 700; color: var(--muted); }
+.deal-chip { font-size: clamp(11px, 1.05vw, 14px); font-weight: 600; color: var(--ink-soft); text-decoration: none;
+  background: var(--card-2); border: 1px solid var(--line-2); border-radius: 999px; padding: 5px 13px;
+  transition: border-color .2s var(--ease); }
+.deal-chip:hover { border-color: var(--accent); color: var(--ink); }
+.shop-link { flex: 0 0 auto; display: grid; place-items: center; width: clamp(30px, 3vw, 38px); height: clamp(30px, 3vw, 38px);
+  font-size: clamp(13px, 1.3vw, 16px); color: var(--muted); text-decoration: none;
+  background: var(--card); border: 1px solid var(--line-2); border-radius: 8px; }
+.shop-link:hover { color: var(--accent); border-color: var(--accent); }
+
+/* ---------- Phone (Kenzie's view) — keep Meals & Grocery great at 400px ---- */
+@media (max-width: 700px) {
+  .app { padding: 10px; gap: 10px; }
+  .topbar .greet-home { display: none; }
+  .tabs { max-width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .meals-head { gap: 8px; }
+  .meals-week-label { min-width: 0; }
+  .meal-picks { grid-auto-columns: 46vw; }
+  .night-options, .dinner-options { grid-template-columns: 1fr; }
+  .shop-row { flex-wrap: wrap; }
+  .shop-name { min-width: 0; flex: 1 1 100%; }
+  .grocery-head-right { flex-wrap: wrap; }
+  .forecast { grid-template-columns: repeat(7, minmax(0, 1fr)); }
+  .fc-t i, .fc-pop { display: none; }
+  .statusbar .status-mid { display: none; }
+}
