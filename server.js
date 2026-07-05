@@ -570,7 +570,7 @@ Rules — quality over everything:
 - Fairly easy: ≤ 50 min active, no obscure equipment, ≤ 10 core ingredients, nothing hard to find at a Midwest grocery store.
 - Varied proteins/cuisines across the 6.
 Reply with ONLY a JSON array, no other text:
-[{"name":"short dish name","source":"chef or publication","time":"~30 min","emoji":"one fitting emoji","ingredients":["6-10 core shopping ingredients, capitalized, no quantities"]}]`;
+[{"name":"short dish name","source":"chef or publication","time":"~30 min","emoji":"one fitting emoji","url":"https link to the actual recipe page you verified","ingredients":["6-10 core shopping ingredients, capitalized, no quantities"]}]`;
     const { spawn } = require("child_process");
     const child = spawn("claude", ["-p", "--output-format", "text", "--allowedTools", "WebSearch WebFetch"], { cwd: ROOT, shell: true });
     let out = "", done = false;
