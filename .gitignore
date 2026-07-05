@@ -25,3 +25,4 @@ scripts/*.log
 .DS_Store
 Thumbs.db
 node_modules/
+data/state.json.bak
