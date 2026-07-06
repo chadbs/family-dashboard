@@ -2,6 +2,7 @@
 data/state.json
 data/weather.json
 data/recipe-picks.json
+data/prices.json
 data/*.tmp
 data/backups/
 

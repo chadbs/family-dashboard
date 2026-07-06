@@ -874,8 +874,34 @@ function addGrocery(text) {
   text = (text || "").trim();
   if (!text) return;
   STATE.grocery = STATE.grocery || [];
-  STATE.grocery.push({ id: "g" + Date.now().toString(36), text, done: false });
+  const id = "g" + Date.now().toString(36);
+  STATE.grocery.push({ id, text, done: false });
   renderGrocery(); saveState();
+  priceItem(id, text);   // look up Meijer vs ALDI in the background
+}
+
+// Best-effort price check for a manually-added item: web-search both stores,
+// tag the item with the prices, and point it at the cheaper store. Silent on
+// failure — the item just stays as typed.
+async function priceItem(id, text) {
+  try {
+    const ctrl = new AbortController();
+    const to = setTimeout(() => ctrl.abort(), 80000);
+    const r = await fetch(`/api/price-item?item=${encodeURIComponent(text)}`, { cache: "no-store", signal: ctrl.signal });
+    clearTimeout(to);
+    const d = await r.json();
+    if (!d || !d.ok) return;
+    const g = (STATE.grocery || []).find(x => x.id === id);
+    if (!g || g.done) return;                       // gone or bought already
+    const parts = [];
+    if (d.meijer != null) parts.push(`Meijer ~$${d.meijer.toFixed(2)}`);
+    if (d.aldi != null) parts.push(`ALDI ~$${d.aldi.toFixed(2)}`);
+    g.pref = parts.join(" · ");
+    if (d.meijer != null && d.aldi != null) g.store = d.aldi < d.meijer ? "Aldi" : "Meijer";
+    else if (d.meijer != null) g.store = "Meijer";
+    else if (d.aldi != null) g.store = "Aldi";
+    renderGrocery(); saveState();
+  } catch { /* estimates only — never block the list */ }
 }
 function toggleGrocery(id) {
   const g = (STATE.grocery || []).find(x => x.id === id);
@@ -1820,6 +1846,38 @@ function sendShopToGrocery() {
   const st = $("mealShopStatus");
   if (st) { st.className = "share-status ok"; st.textContent = `Added ${added} item${added === 1 ? "" : "s"} to the grocery list ✓`; setTimeout(() => { st.textContent = ""; st.className = "share-status"; }, 6000); }
 }
+
+// "🛒 Build my carts" — freeze this week's final order (unskipped items +
+// weekly staples + flagged pantry restocks, with stores & preferences) into
+// STATE.cartRequest. Claude on the main PC reads it and fills the Meijer +
+// Aldi carts in Chrome, then emails the cart links to review & buy.
+function buildCartOrder() {
+  const wk = mealWeekKey(), skip = skipSetFor(wk);
+  const items = buildShoppingList(wk).filter(it => !skip[it.name.toLowerCase()]);
+  const need = STATE.pantryNeed || {};
+  (mealsCfg().pantry || []).forEach(it => {
+    if (need[it.toLowerCase()]) items.push({ name: it, store: itemStore(it, "Meijer"), qty: "", sources: ["pantry"] });
+  });
+  const st = $("mealShopStatus");
+  if (!items.length) {
+    if (st) { st.className = "share-status err"; st.textContent = "Nothing on the list yet — plan some dinners first."; }
+    return;
+  }
+  STATE.cartRequest = {
+    week: wk,
+    requestedAt: new Date().toISOString(),
+    status: "pending",
+    items: items.map(it => ({ name: it.name, qty: it.qty || "", store: it.store, pref: itemPrefText(it.name, it.store) })),
+    dinners: Object.values(mealPlanFor(wk)).filter(n => n && n.dinner).map(n => n.dinner),
+  };
+  saveState();
+  if (st) {
+    st.className = "share-status ok";
+    st.textContent = `Cart order saved (${items.length} items) — on the main PC, tell Claude: "build the carts" ✓`;
+    setTimeout(() => { st.textContent = ""; st.className = "share-status"; }, 12000);
+  }
+}
+$("mealBuildCart")?.addEventListener("click", buildCartOrder);
 
 /* ---- dinner picker ---- */
 let dinnerDay = null;

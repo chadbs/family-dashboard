@@ -596,6 +596,47 @@ Reply with ONLY a JSON array, no other text:
     return;
   }
 
+  // ---- API: price lookup (Meijer vs ALDI, best-effort via web search) ----
+  // Claude web-searches the item's price at Meijer (Hudsonville MI) and ALDI
+  // and we cache results for 7 days in data/prices.json. Estimates only — the
+  // real prices come from the cart-build run. Loopback-only (shells claude).
+  if (pathname === "/api/price-item") {
+    const item = (url.searchParams.get("item") || "").trim().slice(0, 60);
+    if (!item) return sendJSON(res, 400, { ok: false, error: "item required" });
+    const PRICES = path.join(DATA_DIR, "prices.json");
+    let cache = {};
+    try { cache = JSON.parse(fs.readFileSync(PRICES, "utf8")); } catch {}
+    const key = item.toLowerCase();
+    const hit = cache[key];
+    if (hit && (Date.now() - new Date(hit.at).getTime()) < 7 * 86400000)
+      return sendJSON(res, 200, { ok: true, item, meijer: hit.meijer, aldi: hit.aldi, cached: true });
+
+    const ra = req.socket.remoteAddress || "";
+    if (!(ra === "127.0.0.1" || ra === "::1" || ra === "::ffff:127.0.0.1"))
+      return sendJSON(res, 200, { ok: false, error: "local only" });
+
+    const prompt = `Web-search the current price of "${item}" (typical store-brand size) at Meijer (Hudsonville, Michigan area) and at ALDI in the US Midwest. Reply with ONLY this JSON and nothing else, using numbers in dollars or null when you can't find a credible price: {"meijer": 3.29, "aldi": 2.95}`;
+    const { spawn } = require("child_process");
+    const child = spawn("claude", ["-p", "--output-format", "text", "--allowedTools", "WebSearch WebFetch"], { cwd: ROOT, shell: true });
+    let out = "", done = false;
+    const finish = (obj) => { if (done) return; done = true; clearTimeout(timer); sendJSON(res, 200, obj); };
+    const timer = setTimeout(() => { try { child.kill(); } catch {} finish({ ok: false, error: "timeout" }); }, 75000);
+    child.on("error", () => finish({ ok: false, error: "claude unavailable" }));
+    child.stdout.on("data", d => out += d.toString());
+    child.on("close", () => {
+      let p = null;
+      try { const m = out.match(/\{[\s\S]*?\}/); if (m) p = JSON.parse(m[0]); } catch {}
+      const num = v => (typeof v === "number" && isFinite(v) && v > 0 && v < 500) ? Math.round(v * 100) / 100 : null;
+      const meijer = p ? num(p.meijer) : null, aldi = p ? num(p.aldi) : null;
+      if (meijer == null && aldi == null) return finish({ ok: false, error: "no price found" });
+      cache[key] = { meijer, aldi, at: new Date().toISOString() };
+      try { fs.writeFileSync(PRICES, JSON.stringify(cache, null, 2)); } catch {}
+      finish({ ok: true, item, meijer, aldi, cached: false });
+    });
+    try { child.stdin.write(prompt); child.stdin.end(); } catch {}
+    return;
+  }
+
   // ---- API: weather (latest sensor reading) -----------------------------
   if (pathname === "/api/weather") {
     try {
