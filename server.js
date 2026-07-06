@@ -585,6 +585,7 @@ Reply with ONLY a JSON array, no other text:
       picks = (Array.isArray(picks) ? picks : []).filter(p => p && p.name && Array.isArray(p.ingredients))
         .map(p => ({ name: String(p.name).slice(0, 60), source: String(p.source || "").slice(0, 60),
           time: String(p.time || "").slice(0, 20), emoji: String(p.emoji || "🍽️").slice(0, 8),
+          url: /^https?:\/\//i.test(String(p.url || "")) ? String(p.url).slice(0, 300) : null,
           ingredients: p.ingredients.slice(0, 12).map(x => String(x).slice(0, 40)) }))
         .slice(0, 8);
       if (!picks.length) { done = true; return stale(); }

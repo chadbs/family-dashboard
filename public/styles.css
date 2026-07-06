@@ -1034,6 +1034,31 @@ html[data-skin="glass"] .pref-card { background: rgba(20, 24, 32, .95); }
   background: var(--card); border: 1px solid var(--line-2); border-radius: 8px; }
 .shop-link:hover { color: var(--accent); border-color: var(--accent); }
 
+/* "already have it" toggle on the shopping list */
+.shop-have { flex: 0 0 auto; width: clamp(22px, 2.2vw, 28px); height: clamp(22px, 2.2vw, 28px); border-radius: 50%;
+  border: 2px solid var(--line-2); display: grid; place-items: center; font-size: clamp(12px, 1.2vw, 15px);
+  color: #fff; transition: all .2s var(--ease); }
+.shop-have.on { background: var(--good); border-color: var(--good); }
+.shop-row { cursor: pointer; }
+.shop-row.skipped .shop-name { text-decoration: line-through; opacity: .55; }
+.shop-row.skipped .shop-pref { color: var(--good); font-weight: 600; opacity: .9; }
+.shop-hint { font-size: clamp(11px, 1vw, 13px); color: var(--muted); font-style: italic; margin: 2px 4px; }
+
+/* recipe links: on planned nights + in the night chooser */
+.meal-recipe-link { flex: 0 0 auto; margin-left: auto; font-size: clamp(11px, 1.05vw, 14px); font-weight: 700;
+  color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, transparent);
+  border-radius: 999px; padding: 5px 12px; white-space: nowrap; }
+.night-r-body { min-width: 0; }
+.night-r-link { color: var(--accent); font-weight: 700; text-decoration: none; }
+.night-r-ings { font-size: clamp(11px, 1.05vw, 13px); color: var(--muted); margin-top: 4px; line-height: 1.4; }
+
+/* grocery list grouped by store */
+.gstore-head { display: flex; align-items: center; gap: 8px; font-size: clamp(13px, 1.3vw, 17px); font-weight: 700;
+  margin: clamp(10px, 1.2vw, 14px) 2px clamp(4px, .6vw, 8px); }
+.gstore-head:first-child { margin-top: 0; }
+.gstore-head small { color: var(--muted); font-weight: 600; }
+.store-dot.any { background: var(--muted); }
+
 /* ---------- Phone (Kenzie's view) — keep Meals & Grocery great at 400px ---- */
 @media (max-width: 700px) {
   .app { padding: 10px; gap: 10px; }

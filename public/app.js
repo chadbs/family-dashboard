@@ -11,7 +11,7 @@ const DOW  = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Satur
 const DOWS = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 const MON  = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 
-let STATE = { choreDone: {}, choreWeek: null, grocery: [], events: [], stars: {}, streak: {}, mealPlan: {}, itemPrefs: {}, pantryNeed: {}, mealTarget: {} };
+let STATE = { choreDone: {}, choreWeek: null, grocery: [], events: [], stars: {}, streak: {}, mealPlan: {}, itemPrefs: {}, pantryNeed: {}, mealTarget: {}, shopSkip: {} };
 
 /* ---------------------------------------------------------------- helpers */
 function color(who) { return (C.people && C.people[who]) || "#8A93A6"; }
@@ -840,14 +840,27 @@ function renderGrocery() {
   if (!list.length) {
     host.innerHTML = `<div class="grocery-empty">Nothing on the list yet — add something above.</div>`;
   } else {
-    host.innerHTML = list.map(g => {
-      const store = g.store ? `<span class="gitem-store ${g.store === "Aldi" ? "aldi" : "meijer"}">${escapeHtml(g.store)}</span>` : "";
+    // group by store so the list reads like the actual shopping trip
+    const groups = [["Meijer", []], ["Aldi", []], ["Anywhere", []]];
+    list.forEach(g => {
+      const slot = g.store === "Meijer" ? 0 : g.store === "Aldi" ? 1 : 2;
+      groups[slot][1].push(g);
+    });
+    const withItems = groups.filter(([, items]) => items.length);
+    const showHeads = withItems.length > 1;                 // flat list if everything's one bucket
+    const row = g => {
       const pref = g.pref ? `<span class="gitem-pref">${escapeHtml(g.pref)}</span>` : "";
       return `<div class="gitem ${g.done ? "done" : ""}" data-id="${g.id}">
       <div class="chk gchk"><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg></div>
-      <div class="gitem-text">${escapeHtml(g.text)}${store}${pref}</div>
+      <div class="gitem-text">${escapeHtml(g.text)}${pref}</div>
       <div class="gitem-x" data-remove="${g.id}" title="Remove">&times;</div>
-    </div>`; }).join("");
+    </div>`;
+    };
+    host.innerHTML = withItems.map(([store, items]) => {
+      const left = items.filter(g => !g.done).length;
+      const head = showHeads ? `<div class="gstore-head"><span class="store-dot ${store === "Aldi" ? "aldi" : store === "Meijer" ? "meijer" : "any"}"></span>${store}<small>${left} to buy</small></div>` : "";
+      return head + items.map(row).join("");
+    }).join("");
   }
   const left = list.filter(g => !g.done).length;
   $("groceryCount").textContent = list.length ? `${left} to buy` : "empty";
@@ -1078,6 +1091,14 @@ function renderAgenda() {
       <div class="ws-evs">${pills}</div></div>`;
   }
   $("agenda").innerHTML = holidayBanner() + birthdayBanner() + `<div class="weekstrip">${cols}</div>`;
+  // the wall answers "what's for dinner?" — tonight's plan in the card header
+  const sub = $("homeCalSub");
+  if (sub) {
+    const tonight = mealPlanFor(weekKeyOf())[todayIndex()];
+    if (tonight && tonight.dinner) sub.innerHTML = `🍽️ Tonight: <b>${escapeHtml(tonight.dinner)}</b>`;
+    else if (tonight && tonight.out) sub.textContent = "🚗 Out tonight";
+    else sub.textContent = "Tap a day to add";
+  }
 }
 $("agenda").addEventListener("click", (e) => {
   const col = e.target.closest(".ws-col[data-date]");
@@ -1202,7 +1223,7 @@ function hasMeaningfulData(s) {
     Object.keys(s.itemPrefs || {}).length);
 }
 async function loadState() {
-  const DEFAULTS = { choreDone: {}, choreWeek: null, grocery: [], events: [], stars: {}, streak: {}, mealPlan: {}, itemPrefs: {}, pantryNeed: {}, mealTarget: {} };
+  const DEFAULTS = { choreDone: {}, choreWeek: null, grocery: [], events: [], stars: {}, streak: {}, mealPlan: {}, itemPrefs: {}, pantryNeed: {}, mealTarget: {}, shopSkip: {} };
   for (let attempt = 0; attempt < 5; attempt++) {
     try {
       const r = await fetch("/api/state", { cache: "no-store" });
@@ -1219,6 +1240,7 @@ async function loadState() {
       STATE.itemPrefs  = STATE.itemPrefs  || {};
       STATE.pantryNeed = STATE.pantryNeed || {};
       STATE.mealTarget = STATE.mealTarget || {};
+      STATE.shopSkip = STATE.shopSkip || {};
       stateReady = true;
       return;
     } catch {
@@ -1516,36 +1538,55 @@ function renderMealWeek() {
     const dt = new Date(ws); dt.setDate(dt.getDate() + i);
     const night = plan[i];
     let label, cls = "";
+    let linkBtn = "";
     if (night && night.out) { label = "🚗 Out / away"; cls = "out"; }
     else if (night && night.dinner) {
       label = `${night.emoji ? night.emoji + " " : ""}${escapeHtml(night.dinner)}` +
         (night.source ? `<small class="meal-src">${escapeHtml(night.source)}</small>` : "");
+      if (night.source || night.url)
+        linkBtn = `<span class="meal-recipe-link" data-url="${recipeUrl({ name: night.dinner, source: night.source, url: night.url })}" title="Open the recipe">recipe ↗</span>`;
     }
     else { label = `<span class="meal-empty">Tap to choose…</span>`; cls = "empty"; }
     html += `<button class="meal-night ${dt.getTime() === today.getTime() ? "today" : ""} ${cls}" data-day="${i}" type="button">
       <span class="meal-dow">${DAY_ABBR[i]} <small>${dt.getMonth() + 1}/${dt.getDate()}</small></span>
-      <span class="meal-dinner">${label}</span>
+      <span class="meal-dinner">${label}</span>${linkBtn}
     </button>`;
   }
   host.innerHTML = html;
 }
+// Which items she's marked "already have it" this week (excluded from the cart).
+function skipSetFor(wk) { return (STATE.shopSkip || {})[wk] || {}; }
+function toggleSkip(wk, item) {
+  STATE.shopSkip = STATE.shopSkip || {};
+  const s = STATE.shopSkip[wk] = STATE.shopSkip[wk] || {};
+  const k = item.toLowerCase();
+  if (s[k]) delete s[k]; else s[k] = true;
+  saveState();
+}
 function renderShopList() {
   const host = $("shopList"); if (!host) return;
-  const items = buildShoppingList(mealWeekKey());
+  const wk = mealWeekKey(), skip = skipSetFor(wk);
+  const items = buildShoppingList(wk);
   if (!items.length) { host.innerHTML = `<div class="shop-empty">Plan some dinners above and your list builds itself.</div>`; return; }
   let html = "";
   ["Meijer", "Aldi"].forEach(store => {
     const its = items.filter(x => x.store === store);
     if (!its.length) return;
-    html += `<div class="shop-store"><div class="shop-store-head"><span class="store-dot ${store === "Aldi" ? "aldi" : "meijer"}"></span>${store}<small>${its.length}</small></div>`;
-    html += its.map(it => `<div class="shop-row">
+    const active = its.filter(it => !skip[it.name.toLowerCase()]).length;
+    html += `<div class="shop-store"><div class="shop-store-head"><span class="store-dot ${store === "Aldi" ? "aldi" : "meijer"}"></span>${store}<small>${active} to buy</small></div>`;
+    html += its.map(it => {
+      const skipped = !!skip[it.name.toLowerCase()];
+      return `<div class="shop-row ${skipped ? "skipped" : ""}" data-skipitem="${escapeHtml(it.name)}">
+        <span class="shop-have ${skipped ? "on" : ""}" title="Tap if you already have it">${skipped ? "✓" : ""}</span>
         <span class="shop-name">${escapeHtml(it.name)}${it.qty ? ` <span class="shop-qty">${escapeHtml(it.qty)}</span>` : ""}</span>
-        <span class="shop-pref">${escapeHtml(itemPrefText(it.name, it.store))}</span>
+        <span class="shop-pref">${skipped ? "already have it" : escapeHtml(itemPrefText(it.name, it.store))}</span>
         <a class="shop-link" href="${storeSearchUrl(it.store, it.name)}" target="_blank" rel="noopener" title="See it at ${it.store}">↗</a>
         <button class="shop-edit" data-item="${escapeHtml(it.name)}" data-store="${it.store}" type="button" aria-label="Set what we like">✎</button>
-      </div>`).join("");
+      </div>`;
+    }).join("");
     html += `</div>`;
   });
+  html += `<div class="shop-hint">Tap an item you already have — it's skipped when the list goes to the cart.</div>`;
   host.innerHTML = html;
 }
 function renderPantryCheck() {
@@ -1661,15 +1702,25 @@ function renderPicks() {
 
 /* ---- night chooser: tap a pick → choose which evening it goes on ---- */
 let pendingPick = null;
+// A link to the actual recipe: the verified URL from the weekly search, or a
+// search for "name + source + recipe" so there's ALWAYS a way to the method.
+function recipeUrl(p) {
+  if (p && p.url) return p.url;
+  const q = encodeURIComponent(`${p.name} ${p.source || ""} recipe`.trim());
+  return `https://www.google.com/search?q=${q}`;
+}
 function pickAsNight(p) {
   return { dinner: p.name, emoji: p.emoji || "🍽️", source: p.source || null,
-    ingredients: (p.ingredients || []).map(x => (typeof x === "string") ? x : x), out: false };
+    url: (p.url || null), ingredients: (p.ingredients || []).slice(), out: false };
 }
 function openNightChooser(p) {
   pendingPick = p;
+  const ings = (p.ingredients || []).map(x => typeof x === "string" ? x : x.item).join(", ");
   $("nightRecipe").innerHTML = `<span class="pick-emoji">${p.emoji || "🍽️"}</span>
-    <div><div class="night-r-name">${escapeHtml(p.name)}</div>
-    <div class="night-r-src">${escapeHtml(p.source || "")}</div></div>`;
+    <div class="night-r-body"><div class="night-r-name">${escapeHtml(p.name)}</div>
+    <div class="night-r-src">${escapeHtml(p.source || "")}
+      · <a class="night-r-link" href="${recipeUrl(p)}" target="_blank" rel="noopener">view recipe ↗</a></div>
+    ${ings ? `<div class="night-r-ings">${escapeHtml(ings)}</div>` : ""}</div>`;
   const ws = mealWeekStart(), plan = mealPlanFor(mealWeekKey());
   let html = "";
   for (let i = 0; i < 7; i++) {
@@ -1752,7 +1803,8 @@ function planMyWeek() {
 
 // Push the built list (+ any "running low" pantry items) into the grocery tab.
 function sendShopToGrocery() {
-  const items = buildShoppingList(mealWeekKey());
+  const wk = mealWeekKey(), skip = skipSetFor(wk);
+  const items = buildShoppingList(wk).filter(it => !skip[it.name.toLowerCase()]);
   const need = STATE.pantryNeed || {};
   (mealsCfg().pantry || []).forEach(it => { if (need[it.toLowerCase()]) items.push({ name: it, store: itemStore(it, "Meijer"), qty: "", sources: ["pantry"] }); });
   STATE.grocery = STATE.grocery || [];
@@ -1805,7 +1857,11 @@ function openPref(item, store) {
 function savePref() { setPref(prefItem, $("prefInput").value.trim(), prefStore); $("prefModal").hidden = true; renderShopList(); renderGrocery(); }
 function closePref() { $("prefModal").hidden = true; }
 
-$("mealWeek")?.addEventListener("click", e => { const b = e.target.closest(".meal-night"); if (b) openDinner(+b.dataset.day); });
+$("mealWeek")?.addEventListener("click", e => {
+  const link = e.target.closest(".meal-recipe-link");
+  if (link) { e.stopPropagation(); window.open(link.dataset.url, "_blank", "noopener"); return; }
+  const b = e.target.closest(".meal-night"); if (b) openDinner(+b.dataset.day);
+});
 $("mealPrev")?.addEventListener("click", () => { mealOffset--; renderMeals(); });
 $("mealNext")?.addEventListener("click", () => { mealOffset++; renderMeals(); });
 $("mealTargetUp")?.addEventListener("click", () => { const wk = mealWeekKey(); setMealTarget(wk, mealTarget(wk) + 1); renderMeals(); });
@@ -1829,7 +1885,13 @@ $("dinnerCustom")?.addEventListener("keydown", e => { if (e.key === "Enter") { c
 $("dinnerClose")?.addEventListener("click", closeDinner);
 $("dinnerClear")?.addEventListener("click", () => chooseDinner(null));
 $("dinnerModal")?.addEventListener("click", e => { if (e.target.id === "dinnerModal") closeDinner(); });
-$("shopList")?.addEventListener("click", e => { const b = e.target.closest(".shop-edit"); if (b) openPref(b.dataset.item, b.dataset.store); });
+$("shopList")?.addEventListener("click", e => {
+  const b = e.target.closest(".shop-edit");
+  if (b) return openPref(b.dataset.item, b.dataset.store);
+  if (e.target.closest(".shop-link")) return;                 // let the link be a link
+  const row = e.target.closest(".shop-row[data-skipitem]");   // anywhere else on the row = toggle "have it"
+  if (row) { toggleSkip(mealWeekKey(), row.dataset.skipitem); renderShopList(); }
+});
 $("pantryCheck")?.addEventListener("click", e => {
   const b = e.target.closest(".pantry-item"); if (!b) return;
   const k = b.dataset.pan.toLowerCase();
