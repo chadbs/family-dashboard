@@ -25,8 +25,8 @@ Write-Host "`n=== Family Dashboard - Surface setup/repair ===" -ForegroundColor 
 # ---- 1) Repo health: mirror origin/main, recover any stuck state ----------
 Write-Host "`n[1/4] Repairing repo..."
 $env:GIT_TERMINAL_PROMPT = "0"; $env:GCM_INTERACTIVE = "never"
-git rebase --abort 2>$null | Out-Null
-git merge --abort 2>$null | Out-Null
+try { git rebase --abort 2>$null | Out-Null } catch {}
+try { git merge --abort 2>$null | Out-Null } catch {}
 git fetch origin
 $local = git rev-parse HEAD; $remote = git rev-parse origin/main
 if ($local -ne $remote) { git reset --hard origin/main | Out-Null }
