@@ -139,8 +139,9 @@ body {
   height: 100%;
   display: grid;
   grid-template-columns: 1.5fr 1fr;
-  /* hero capped at 26vh; the week-strip row can never collapse below a real height */
-  grid-template-rows: minmax(0, 26vh) minmax(clamp(110px, 15vh, 180px), 1fr) auto;
+  /* hero capped small; the week-strip row gets the reclaimed height so the
+     days are actually readable without scrolling */
+  grid-template-rows: minmax(0, 23vh) minmax(clamp(150px, 23vh, 280px), 1fr) auto;
   grid-template-areas:
     "hero   hero"
     "cal    chores"

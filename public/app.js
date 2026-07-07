@@ -118,11 +118,16 @@ function dewPointF(tF, rh) {
   return ((b * g) / (a - g)) * 9 / 5 + 32;
 }
 
-// Map a condition string to a sky-tint key for the weather-reactive background.
-function skyFromCondition(cond = "") {
+// Map a condition string (+ actual temp) to a sky-tint key for the
+// weather-reactive background. Rain/snow (the condition) win over temperature;
+// otherwise a heat wave or a deep freeze gets its own warmer/colder tint even
+// on an otherwise plain "Clear" day.
+function skyFromCondition(cond = "", tempF = null) {
   const c = cond.toLowerCase();
   if (c.includes("rain") || c.includes("shower") || c.includes("storm") || c.includes("drizzle")) return "rainy";
   if (c.includes("snow") || c.includes("sleet") || c.includes("flurr")) return "snow";
+  if (tempF != null && tempF >= 85) return "hot";
+  if (tempF != null && tempF <= 20) return "cold";
   if (c.includes("part") || c.includes("few")) return "partly";
   if (c.includes("cloud") || c.includes("overcast") || c.includes("fog") || c.includes("mist")) return "cloudy";
   return "sunny";
@@ -132,11 +137,14 @@ let lastWeather = null;
 function renderWeather(w) {
   lastWeather = w || null;
   const r = v => (v == null || isNaN(v)) ? null : Math.round(v);
-  document.documentElement.setAttribute("data-sky", skyFromCondition(w.condition));
+  const sky = skyFromCondition(w.condition, r(w.temperature_F));
+  document.documentElement.setAttribute("data-sky", sky);
   $("tempNow").innerHTML = `${r(w.temperature_F) ?? "--"}<span class="deg">°</span>`;
   $("tempCond").textContent = w.condition || "—";
   $("tempLoc").textContent = C.location || "Outside";
   $("heroIcon").innerHTML = weatherIcon(w.condition);
+  const badge = $("tempBadge");
+  if (badge) badge.textContent = sky === "hot" ? "🌴" : sky === "cold" ? "🥶" : "";
   $("mHiLo").textContent = (r(w.hi) != null && r(w.lo) != null) ? `${r(w.hi)}° / ${r(w.lo)}°` : "—";
   $("mHum").textContent = r(w.humidity) != null ? `${r(w.humidity)}%` : "—";
   $("mRain").textContent = `${(w.rain_in ?? 0).toFixed(2)}"`;
@@ -310,6 +318,8 @@ const CHORE_PICS = [
   [/leaf|rake/i, "🍂"], [/towel/i, "🧻"], [/hair/i, "💇"], [/face|hand/i, "🧽"],
   [/feed|food|bowl/i, "🥣"], [/homework|study/i, "✏️"], [/music|piano|practice/i, "🎹"],
   [/bath|shower/i, "🛁"], [/swim|pool/i, "🏊"], [/bike|cycle/i, "🚲"], [/garden|yard|weed/i, "🌻"],
+  [/sock/i, "🧦"], [/potty|toilet/i, "🚽"], [/diaper/i, "🍼"], [/backpack/i, "🎒"],
+  [/puzzle/i, "🧩"], [/draw|color(?:ing)?|paint|art/i, "🎨"], [/nap|sleep/i, "😴"],
 ];
 function chorePic(c) {
   if (c.pic) return c.pic;                                  // explicit picture wins
