@@ -218,8 +218,7 @@ function renderForecast(d) {
     html += `<button class="fc-day ${i === 0 ? "is-today" : ""}" data-i="${i}" type="button">
       <span class="fc-dow">${dow}</span>
       <span class="fc-ic">${weatherIcon(cond)}</span>
-      <span class="fc-t"><b>${hi}°</b><i>${lo}°</i></span>
-      <span class="fc-pop ${pop >= 15 ? "" : "dry"}">${pop >= 15 ? "💧" + pop + "%" : ""}</span>
+      <span class="fc-t"><b>${hi}°</b><i>${lo}°</i>${pop >= 30 ? `<span class="fc-drop" title="${pop}% rain">💧</span>` : ""}</span>
     </button>`;
   }
   host.innerHTML = html;
@@ -1050,9 +1049,9 @@ function holidayBanner() {
     const days = Math.round((hd - n) / 86400000);
     if (days < 0 || days > 3) continue;
     const when = days === 0 ? "Today! 🎇" : days === 1 ? "Tomorrow!" : `in ${days} days`;
-    return `<div style="display:flex;align-items:center;gap:10px;background:${h.col}15;border:1px solid ${h.col}44;border-radius:var(--r-md);padding:9px 14px;margin-bottom:4px;">
-      <span style="font-size:1.5em;line-height:1;flex-shrink:0">${h.emoji}</span>
-      <div style="font-size:clamp(13px,1.25vw,16px);font-weight:600;">${h.name} — ${when}</div>
+    return `<div style="display:flex;align-items:center;gap:9px;background:${h.col}15;border:1px solid ${h.col}44;border-radius:var(--r-md);padding:5px 12px;margin-bottom:3px;">
+      <span style="font-size:1.25em;line-height:1;flex-shrink:0">${h.emoji}</span>
+      <div style="font-size:clamp(12px,1.15vw,15px);font-weight:600;">${h.name} — ${when}</div>
     </div>`;
   }
   return "";
@@ -1074,10 +1073,10 @@ function birthdayBanner() {
         <line x1="12" y1="4" x2="12" y2="8"/><circle cx="12" cy="3" r="1" fill="${col}" stroke="none"/></svg>`;
   const bg = soon ? `${col}22` : `${col}14`;
   const border = soon ? `1.5px solid ${col}55` : `1px solid ${col}33`;
-  return `<div style="display:flex;align-items:center;gap:11px;background:${bg};border:${border};border-radius:var(--r-md);padding:11px 14px;margin-bottom:4px;">
+  return `<div style="display:flex;align-items:center;gap:10px;background:${bg};border:${border};border-radius:var(--r-md);padding:6px 12px;margin-bottom:3px;">
     ${icon}
-    <div style="flex:1;font-size:clamp(13px,1.25vw,17px);font-weight:600;">${b.name} turns ${b.turning} ${when}</div>
-    <div style="font-size:clamp(11px,1vw,14px);font-weight:700;color:${col};">${dateStr}</div>
+    <div style="flex:1;font-size:clamp(12px,1.15vw,15px);font-weight:600;">${b.name} turns ${b.turning} ${when}</div>
+    <div style="font-size:clamp(11px,1vw,13px);font-weight:700;color:${col};">${dateStr}</div>
   </div>`;
 }
 

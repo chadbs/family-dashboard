@@ -160,7 +160,7 @@ body {
   background:
     radial-gradient(120% 160% at 100% 0%, var(--sky-1) 0%, transparent 55%),
     var(--card);
-  padding: clamp(10px, 1.1vw, 16px) clamp(14px, 1.5vw, 22px);
+  padding: clamp(8px, .9vw, 13px) clamp(14px, 1.5vw, 22px);
 }
 .hero-top { display: flex; align-items: center; justify-content: space-between; gap: clamp(10px, 1.4vw, 22px); }
 /* Rain trend tucked beside the big temperature */
@@ -171,8 +171,8 @@ body {
 .hero-rain-total { color: var(--rain); font-weight: 700; letter-spacing: 0; text-transform: none; font-variant-numeric: tabular-nums; }
 .hero-rain .rainchart { min-height: clamp(28px, 3.2vw, 48px); }
 .hero-main { display: flex; align-items: center; gap: clamp(10px, 1.4vw, 24px); }
-.hero-icon { width: clamp(48px, 5.5vw, 80px); height: clamp(48px, 5.5vw, 80px); flex-shrink: 0; }
-.temp-now { font-size: clamp(42px, 5.8vw, 88px); font-weight: 300; line-height: .9; letter-spacing: -4px; font-variant-numeric: tabular-nums; }
+.hero-icon { width: clamp(44px, 4.8vw, 70px); height: clamp(44px, 4.8vw, 70px); flex-shrink: 0; }
+.temp-now { font-size: clamp(38px, 5vw, 74px); font-weight: 300; line-height: .9; letter-spacing: -3px; font-variant-numeric: tabular-nums; }
 .temp-now .deg { font-weight: 300; }
 .temp-cond { font-size: clamp(13px, 1.3vw, 19px); font-weight: 500; color: var(--ink-soft); margin-top: 4px; }
 .temp-badge { margin-left: 6px; font-size: 1.15em; vertical-align: -1px; }
@@ -181,7 +181,7 @@ body {
 
 .hero-side { display: grid; grid-template-columns: 1fr 1fr; gap: 0;
   border-left: 1px solid var(--line); padding-left: clamp(12px, 1.4vw, 22px); }
-.metric { display: flex; flex-direction: column; padding: clamp(5px, .6vw, 9px) clamp(10px, 1.2vw, 18px); }
+.metric { display: flex; flex-direction: column; padding: clamp(3px, .45vw, 7px) clamp(10px, 1.2vw, 18px); }
 .m-label { font-size: clamp(10px, .95vw, 13px); color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .8px; }
 .m-val { font-size: clamp(15px, 1.6vw, 22px); font-weight: 600; margin-top: 2px; letter-spacing: -.5px; font-variant-numeric: tabular-nums; }
 .m-val.rain { color: var(--rain); }
@@ -190,8 +190,8 @@ body {
 .forecast { display: grid; grid-template-columns: repeat(7, 1fr); gap: clamp(3px, .4vw, 7px);
   border-top: 1px solid var(--line); padding-top: clamp(5px, .7vw, 10px); }
 .forecast:empty { display: none; }
-.fc-day { font-family: inherit; display: flex; flex-direction: column; align-items: center; gap: clamp(1px, .3vw, 4px);
-  background: transparent; border: 1px solid transparent; border-radius: var(--r-md); padding: clamp(4px, .5vw, 8px) 2px;
+.fc-day { font-family: inherit; display: flex; flex-direction: column; align-items: center; gap: clamp(1px, .25vw, 3px);
+  background: transparent; border: 1px solid transparent; border-radius: var(--r-md); padding: clamp(3px, .4vw, 6px) 2px;
   cursor: pointer; color: var(--ink); transition: background .2s var(--ease), transform .12s var(--ease); }
 .fc-day:hover { background: var(--card-2); }
 .fc-day:active { transform: scale(.96); }
@@ -261,7 +261,7 @@ body {
 .event .ev-who { font-size: clamp(11px, 1vw, 14px); font-weight: 700; padding: 4px 11px; border-radius: 999px; }
 
 /* ---------- Week strip (Home "This week") — a column per day ---------- */
-.weekstrip { flex: 1; min-height: clamp(84px, 11vh, 140px); display: grid; grid-template-columns: repeat(7, 1fr); gap: clamp(4px, .55vw, 8px); }
+.weekstrip { flex: 1; min-height: clamp(120px, 16vh, 210px); display: grid; grid-template-columns: repeat(7, 1fr); gap: clamp(4px, .55vw, 8px); }
 .ws-col { background: var(--card-2); border: 1.5px solid transparent; border-radius: var(--r-sm);
   padding: clamp(5px, .7vw, 9px) clamp(3px, .45vw, 6px); display: flex; flex-direction: column; gap: 4px;
   min-height: 0; overflow: hidden; cursor: pointer; transition: background .2s var(--ease), border-color .2s var(--ease); }
@@ -710,9 +710,15 @@ body {
 .jar-track { height: clamp(10px, 1.1vw, 14px); border-radius: 99px; background: var(--line); overflow: hidden; }
 .jar-fill { height: 100%; background: var(--kidcol); border-radius: 99px; transition: width .5s var(--ease); }
 .jar-sub { font-size: clamp(11px, 1.1vw, 14px); color: var(--muted); font-weight: 600; }
-/* in the Home "Stars" card the jars are the last element — no trailing margin */
+/* in the Home "Stars" card the jars are the last element — no trailing margin.
+   Compact everything: the reclaimed height goes to the week calendar above. */
 .card.stars .jars { margin-bottom: 0; }
-.card.stars { min-height: 0; }
+.card.stars { min-height: 0; padding-top: clamp(10px, 1.1vw, 16px); padding-bottom: clamp(10px, 1.1vw, 16px); }
+.card.stars .card-head { margin-bottom: 8px; }
+.card.stars .jar { padding: clamp(9px, 1vw, 13px); gap: 5px; }
+.card.stars .jar-ava { width: clamp(28px, 2.6vw, 36px); height: clamp(28px, 2.6vw, 36px); font-size: clamp(14px, 1.4vw, 19px); }
+.card.stars .jar-bal { font-size: clamp(15px, 1.6vw, 21px); }
+.card.stars .jar-track { height: clamp(8px, .9vw, 11px); }
 /* the week card runs tight when a birthday banner shows — slim its chrome */
 .card.calendar { padding-top: clamp(12px, 1.2vw, 18px); padding-bottom: clamp(12px, 1.2vw, 18px); }
 .card.calendar .card-head { margin-bottom: 8px; }
