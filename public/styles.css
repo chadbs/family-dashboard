@@ -70,11 +70,15 @@ html[data-theme="light"][data-sky="partly"] { --sky-tint: rgba(244, 206, 142, .3
 html[data-theme="light"][data-sky="cloudy"] { --sky-tint: rgba(150, 166, 184, .38); }
 html[data-theme="light"][data-sky="rainy"]  { --sky-tint: rgba(96, 134, 178, .44); }
 html[data-theme="light"][data-sky="snow"]   { --sky-tint: rgba(198, 216, 234, .50); }
+html[data-theme="light"][data-sky="hot"]    { --sky-tint: rgba(244, 150, 90, .46); }
+html[data-theme="light"][data-sky="cold"]   { --sky-tint: rgba(180, 205, 232, .46); }
 html[data-theme="dark"][data-sky="sunny"]  { --sky-tint: rgba(150, 116, 64, .24); }
 html[data-theme="dark"][data-sky="partly"] { --sky-tint: rgba(110, 98, 72, .24); }
 html[data-theme="dark"][data-sky="cloudy"] { --sky-tint: rgba(72, 86, 106, .30); }
 html[data-theme="dark"][data-sky="rainy"]  { --sky-tint: rgba(48, 86, 132, .36); }
 html[data-theme="dark"][data-sky="snow"]   { --sky-tint: rgba(120, 150, 186, .30); }
+html[data-theme="dark"][data-sky="hot"]    { --sky-tint: rgba(170, 96, 56, .32); }
+html[data-theme="dark"][data-sky="cold"]   { --sky-tint: rgba(90, 130, 176, .30); }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 html, body { height: 100%; }
@@ -170,6 +174,8 @@ body {
 .temp-now { font-size: clamp(42px, 5.8vw, 88px); font-weight: 300; line-height: .9; letter-spacing: -4px; font-variant-numeric: tabular-nums; }
 .temp-now .deg { font-weight: 300; }
 .temp-cond { font-size: clamp(13px, 1.3vw, 19px); font-weight: 500; color: var(--ink-soft); margin-top: 4px; }
+.temp-badge { margin-left: 6px; font-size: 1.15em; vertical-align: -1px; }
+.temp-badge:empty { margin-left: 0; }
 .temp-loc { font-size: clamp(10px, 1vw, 14px); font-weight: 600; color: var(--muted); margin-top: 2px; text-transform: uppercase; letter-spacing: 1.5px; }
 
 .hero-side { display: grid; grid-template-columns: 1fr 1fr; gap: 0;
@@ -875,6 +881,9 @@ html[data-skin="glass"] .pref-card { background: rgba(20, 24, 32, .95); }
    Meals & groceries (Meals tab)
    ========================================================================== */
 .meals-full { height: 100%; overflow-y: auto; -webkit-overflow-scrolling: touch; padding-bottom: clamp(24px, 3vw, 40px); }
+/* the card is a flex column: children must KEEP their natural height and let
+   the card scroll — otherwise flex shrinks/clips the top rows to fit */
+.meals-full > *, .rewards-full > * { flex-shrink: 0; }
 .meals-full::-webkit-scrollbar { width: 6px; }
 .meals-full::-webkit-scrollbar-thumb { background: var(--line-2); border-radius: 3px; }
 .meals-head { display: flex; align-items: center; gap: clamp(10px, 1.4vw, 18px); flex-wrap: wrap; margin-bottom: clamp(12px, 1.5vw, 18px); }
