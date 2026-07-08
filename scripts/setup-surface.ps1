@@ -41,6 +41,21 @@ powercfg /change standby-timeout-ac 0 | Out-Null
 powercfg /change hibernate-timeout-ac 0 | Out-Null
 Write-Host "  display + sleep + hibernate disabled on AC" -ForegroundColor Green
 
+# allow phones + the main PC to reach the wall (best-effort; needs admin once)
+try {
+  if (-not (Get-NetFirewallRule -DisplayName "Family Dashboard 8080" -ErrorAction Stop 2>$null)) { throw "missing" }
+  Write-Host "  firewall rule already present (port 8080 reachable on home network)" -ForegroundColor Green
+} catch {
+  try {
+    New-NetFirewallRule -DisplayName "Family Dashboard 8080" -Direction Inbound -Action Allow -Protocol TCP -LocalPort 8080 -Profile Private -ErrorAction Stop | Out-Null
+    Write-Host "  firewall: opened inbound 8080 so phones + the main PC can reach the wall" -ForegroundColor Green
+  } catch {
+    Write-Host "  NOTE: could not add the firewall rule (needs admin). Run ONCE in an admin PowerShell:" -ForegroundColor Yellow
+    Write-Host '    New-NetFirewallRule -DisplayName "Family Dashboard 8080" -Direction Inbound -Action Allow -Protocol TCP -LocalPort 8080 -Profile Private' -ForegroundColor Yellow
+    Write-Host "  (until then, phones and the cart-build watcher cannot reach the wall)" -ForegroundColor Yellow
+  }
+}
+
 # ---- 3) Scheduled tasks (battery-friendly; they actually fire on laptops) --
 Write-Host "`n[3/4] Installing scheduled tasks..."
 $settings = New-ScheduledTaskSettingsSet `

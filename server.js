@@ -596,6 +596,22 @@ Reply with ONLY a JSON array, no other text:
     return;
   }
 
+  // ---- API: all known prices (nightly cloud sweep + local lookups merged) --
+  // public/prices.json is committed nightly by the price-sweep routine (so it
+  // arrives via the normal git mirror); data/prices.json holds on-demand
+  // lookups. Newest entry per item wins.
+  if (pathname === "/api/prices") {
+    let repo = {}, local = {};
+    try { repo = JSON.parse(fs.readFileSync(path.join(PUBLIC, "prices.json"), "utf8")); } catch {}
+    try { local = JSON.parse(fs.readFileSync(path.join(DATA_DIR, "prices.json"), "utf8")); } catch {}
+    const merged = Object.assign({}, repo);
+    for (const [k, v] of Object.entries(local)) {
+      const cur = merged[k];
+      if (!cur || new Date(v.at || 0) > new Date(cur.at || 0)) merged[k] = v;
+    }
+    return sendJSON(res, 200, { ok: true, prices: merged });
+  }
+
   // ---- API: price lookup (Meijer vs ALDI, best-effort via web search) ----
   // Claude web-searches the item's price at Meijer (Hudsonville MI) and ALDI
   // and we cache results for 7 days in data/prices.json. Estimates only — the

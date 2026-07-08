@@ -1529,7 +1529,31 @@ function setPref(item, pref, store) {
   STATE.itemPrefs[item.toLowerCase()] = { pref: pref || "", store: store || null };
   saveState();
 }
-function itemStore(item, baseStore) { const p = prefFor(item); return (p && p.store) || baseStore || "Meijer"; }
+
+// Live Meijer/ALDI prices — merged from the nightly cloud sweep (public/
+// prices.json, committed to the repo) + on-demand local lookups. Used to pick
+// the cheaper store and show prices/deals on the shopping list.
+let PRICES = {};
+async function loadPrices() {
+  try {
+    const r = await fetch("/api/prices", { cache: "no-store" });
+    const d = await r.json();
+    if (d && d.ok && d.prices) { PRICES = d.prices; renderShopList(); renderDeals(); }
+  } catch {}
+}
+function priceFor(item) { return PRICES[item.toLowerCase()] || null; }
+
+// Which store an item comes from, in priority order:
+//   1. the family's explicit preference (✎ "what we like")
+//   2. whichever store is CHEAPER when we know both prices
+//   3. the recipe's default store, else Meijer
+function itemStore(item, baseStore) {
+  const p = prefFor(item);
+  if (p && p.store) return p.store;
+  const pr = priceFor(item);
+  if (pr && pr.meijer != null && pr.aldi != null) return pr.aldi < pr.meijer ? "Aldi" : "Meijer";
+  return baseStore || "Meijer";
+}
 function itemPrefText(item, store) { const p = prefFor(item); return (p && p.pref) ? p.pref : `${store} brand`; }
 
 // Build the week's shopping list: weekly staples + non-pantry recipe items.
@@ -1611,9 +1635,19 @@ function renderShopList() {
     html += `<div class="shop-store"><div class="shop-store-head"><span class="store-dot ${store === "Aldi" ? "aldi" : "meijer"}"></span>${store}<small>${active} to buy</small></div>`;
     html += its.map(it => {
       const skipped = !!skip[it.name.toLowerCase()];
+      const pr = priceFor(it.name);
+      let priceHtml = "";
+      if (pr && !skipped) {
+        const own = it.store === "Aldi" ? pr.aldi : pr.meijer;
+        const other = it.store === "Aldi" ? pr.meijer : pr.aldi;
+        if (own != null) priceHtml += `<span class="shop-price">~$${own.toFixed(2)}</span>`;
+        if (own != null && other != null && other - own >= 0.25)
+          priceHtml += `<span class="deal-badge">save $${(other - own).toFixed(2)}</span>`;
+        if (pr.deal) priceHtml += `<span class="deal-badge">🏷 ${escapeHtml(pr.deal)}</span>`;
+      }
       return `<div class="shop-row ${skipped ? "skipped" : ""}" data-skipitem="${escapeHtml(it.name)}">
         <span class="shop-have ${skipped ? "on" : ""}" title="Tap if you already have it">${skipped ? "✓" : ""}</span>
-        <span class="shop-name">${escapeHtml(it.name)}${it.qty ? ` <span class="shop-qty">${escapeHtml(it.qty)}</span>` : ""}</span>
+        <span class="shop-name">${escapeHtml(it.name)}${it.qty ? ` <span class="shop-qty">${escapeHtml(it.qty)}</span>` : ""}${priceHtml}</span>
         <span class="shop-pref">${skipped ? "already have it" : escapeHtml(itemPrefText(it.name, it.store))}</span>
         <a class="shop-link" href="${storeSearchUrl(it.store, it.name)}" target="_blank" rel="noopener" title="See it at ${it.store}">↗</a>
         <button class="shop-edit" data-item="${escapeHtml(it.name)}" data-store="${it.store}" type="button" aria-label="Set what we like">✎</button>
@@ -1631,7 +1665,7 @@ function renderPantryCheck() {
     `<button class="pantry-item ${need[it.toLowerCase()] ? "on" : ""}" data-pan="${escapeHtml(it)}" type="button">${escapeHtml(it)}</button>`).join("");
 }
 function renderMeals() {
-  renderMealWeek(); renderShopList(); renderPantryCheck(); renderPicks(); renderDeals();
+  renderMealWeek(); renderShopList(); renderPantryCheck(); renderPicks(); renderDeals(); renderCartStatus();
   const v = $("mealTargetVal"); if (v) v.textContent = mealTarget(mealWeekKey());
   primeIdeas();   // warm fresh ideas in the background so taps stay instant
 }
@@ -1879,14 +1913,51 @@ function buildCartOrder() {
     items: items.map(it => ({ name: it.name, qty: it.qty || "", store: it.store, pref: itemPrefText(it.name, it.store) })),
     dinners: Object.values(mealPlanFor(wk)).filter(n => n && n.dinner).map(n => n.dinner),
   };
-  saveState();
+  saveState(); renderCartStatus();
   if (st) {
     st.className = "share-status ok";
-    st.textContent = `Cart order saved (${items.length} items) — on the main PC, tell Claude: "build the carts" ✓`;
+    st.textContent = `Cart order queued (${items.length} items) — the main PC starts building within a few minutes 🛒`;
     setTimeout(() => { st.textContent = ""; st.className = "share-status"; }, 12000);
   }
 }
 $("mealBuildCart")?.addEventListener("click", buildCartOrder);
+
+// Live status of the cart build (the main PC's watcher updates cartRequest).
+function renderCartStatus() {
+  const el = $("cartStatus"); if (!el) return;
+  const cr = STATE.cartRequest;
+  if (!cr || !cr.status) { el.hidden = true; el.textContent = ""; return; }
+  const map = {
+    pending: "🛒 Cart order queued — the main PC will start within a few minutes…",
+    building: "🛒 Building your Meijer + ALDI carts now…",
+    done: `✅ Carts are ready${cr.summary ? " — " + cr.summary : ""} (check your email)`,
+    error: `⚠️ Cart build hit a snag${cr.summary ? ": " + cr.summary : ""} — it will retry, or ask Chad`,
+  };
+  el.hidden = false;
+  el.dataset.state = cr.status;
+  el.textContent = map[cr.status] || "";
+}
+
+/* ---- clear-all buttons (two-tap confirm so little fingers can't wipe things) ---- */
+function armClear(btn, label, onConfirm) {
+  if (btn.dataset.armed === "1") {
+    delete btn.dataset.armed; btn.textContent = label;
+    onConfirm();
+    return;
+  }
+  btn.dataset.armed = "1"; btn.textContent = "Tap again to clear";
+  setTimeout(() => { if (btn.dataset.armed) { delete btn.dataset.armed; btn.textContent = label; } }, 3500);
+}
+$("groceryClear")?.addEventListener("click", () => armClear($("groceryClear"), "Clear list", () => {
+  STATE.grocery = [];
+  renderGrocery(); saveState();
+}));
+$("mealClearWeek")?.addEventListener("click", () => armClear($("mealClearWeek"), "Clear week", () => {
+  const wk = mealWeekKey();
+  if (STATE.mealPlan) delete STATE.mealPlan[wk];
+  if (STATE.shopSkip) delete STATE.shopSkip[wk];
+  renderMeals(); saveState();
+}));
 
 /* ---- dinner picker ---- */
 let dinnerDay = null;
@@ -1987,6 +2058,7 @@ async function boot() {
   await loadWeather();
   loadForecast();                        // 7-day outlook (free Open-Meteo)
   loadRecipePicks();                     // this week's real-recipe picks
+  loadPrices();                          // Meijer/ALDI prices (nightly sweep + lookups)
   loadCalendar();
   loadPhotos();                          // start the photo reel if it's enabled
   if (!showLoveNow()) maybeShowLove();   // surprise note wins; else the daily one
@@ -1997,6 +2069,7 @@ async function boot() {
   setInterval(loadWeather, 1000 * 30);
   setInterval(loadForecast, 1000 * 60 * 30);   // refresh the outlook every 30 min
   setInterval(loadCalendar, 1000 * 60 * 15);
+  setInterval(loadPrices, 1000 * 60 * 30);  // fresh prices after the nightly sweep
   setInterval(loadPhotos, 1000 * 60 * 5);   // pick up newly-added photos
   setInterval(() => { ensureWeek(); renderHomeChores(); renderChart(); }, 1000 * 60 * 5);
   // re-pull state periodically so edits from other devices show up

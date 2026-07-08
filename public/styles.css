@@ -1053,6 +1053,25 @@ html[data-skin="glass"] .pref-card { background: rgba(20, 24, 32, .95); }
   background: var(--card); border: 1px solid var(--line-2); border-radius: 8px; }
 .shop-link:hover { color: var(--accent); border-color: var(--accent); }
 
+/* clear-all buttons (two-tap confirm) + prices/deals + cart status */
+.clear-btn { appearance: none; font-family: inherit; font-size: clamp(11px, 1.05vw, 14px); font-weight: 600;
+  color: #E5484D; background: transparent; border: 1px solid color-mix(in srgb, #E5484D 40%, transparent);
+  border-radius: 999px; cursor: pointer; padding: clamp(6px, .8vw, 10px) clamp(12px, 1.4vw, 18px);
+  transition: all .15s var(--ease); }
+.clear-btn[data-armed] { background: #E5484D; color: #fff; border-color: #E5484D; }
+.clear-btn:active { transform: scale(.95); }
+.shop-price { margin-left: 8px; font-size: clamp(11px, 1.05vw, 14px); font-weight: 700; color: var(--good); font-variant-numeric: tabular-nums; }
+.deal-badge { margin-left: 6px; font-size: clamp(10px, .95vw, 12px); font-weight: 700; color: #B4530A;
+  background: color-mix(in srgb, #F59E0B 22%, transparent); border-radius: 999px; padding: 2px 8px; white-space: nowrap; }
+html[data-skin="glass"] .deal-badge { color: #FFD9A8; }
+.cart-status { display: flex; align-items: center; font-size: clamp(12px, 1.2vw, 16px); font-weight: 600;
+  border-radius: var(--r-md); padding: clamp(8px, 1vw, 12px) clamp(12px, 1.4vw, 16px); margin: 0 2px clamp(10px, 1.2vw, 14px);
+  background: var(--card-2); border: 1.5px solid var(--line); }
+.cart-status[data-state="building"] { border-color: color-mix(in srgb, var(--accent) 55%, transparent); }
+.cart-status[data-state="done"] { border-color: color-mix(in srgb, var(--good) 55%, transparent); }
+.cart-status[data-state="error"] { border-color: color-mix(in srgb, #E5484D 55%, transparent); }
+.cart-status[hidden] { display: none; }
+
 /* "already have it" toggle on the shopping list */
 .shop-have { flex: 0 0 auto; width: clamp(22px, 2.2vw, 28px); height: clamp(22px, 2.2vw, 28px); border-radius: 50%;
   border: 2px solid var(--line-2); display: grid; place-items: center; font-size: clamp(12px, 1.2vw, 15px);
