@@ -293,6 +293,44 @@ function sendGmail({ user, pass, to, subject, text, fromName }) {
   });
 }
 
+// When a cart build finishes (cartRequest flips to "done"), email Kenzie the
+// cart links so she can review + check out. Goes to secrets.cartTo, falling
+// back to secrets.groceryTo (the same address the grocery list goes to).
+async function sendCartReadyEmail(cr) {
+  let secrets;
+  try { secrets = JSON.parse(fs.readFileSync(SECRETS, "utf8")); } catch { return; }
+  const { gmailUser, gmailAppPassword } = secrets;
+  const to = secrets.cartTo || secrets.groceryTo;
+  if (!gmailUser || !gmailAppPassword || !to) return;
+
+  const dinners = (cr.dinners || []).map(d => "  • " + d).join("\n");
+  const items = (cr.items || []).map(it =>
+    `  • ${it.name}${it.qty ? ` (${it.qty})` : ""} — ${it.store || "Meijer"}`).join("\n");
+  const text =
+`Your grocery carts are ready! 🛒
+
+${cr.summary || ""}
+
+Review & check out:
+  Meijer cart:  https://www.meijer.com/shopping/cart.html
+  ALDI cart:    https://new.aldi.us/store/aldi/storefront  (tap the cart icon, top right)
+
+${dinners ? "This week's dinners:\n" + dinners + "\n" : ""}
+What went in:
+${items}
+
+Heads up: the carts were filled in Chrome on the main computer, so open the
+links there (or sign in to meijer.com / aldi.us on that Chrome once and the
+carts will follow you to your phone). Nothing has been ordered — you always
+do the checkout.
+
+— the family dashboard`;
+  await sendGmail({ user: gmailUser, pass: gmailAppPassword, to,
+    subject: `🛒 Carts are ready — ${cr.summary ? cr.summary.split(" - ")[0] : "groceries"}`,
+    text, fromName: "Family Dashboard" });
+  console.log("[cart-email] sent to", to);
+}
+
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, `http://${req.headers.host}`);
   const pathname = decodeURIComponent(url.pathname);
@@ -310,6 +348,13 @@ const server = http.createServer(async (req, res) => {
         // must be a plain object — reject null/numbers/arrays that would nuke state
         if (!parsed || typeof parsed !== "object" || Array.isArray(parsed))
           return sendJSON(res, 400, { ok: false, error: "state must be an object" });
+        // did this save just finish a cart build? (detect before overwriting)
+        let cartJustDone = false;
+        try {
+          const prev = JSON.parse(fs.readFileSync(STATE, "utf8"));
+          cartJustDone = parsed.cartRequest && parsed.cartRequest.status === "done" &&
+                         (!prev.cartRequest || prev.cartRequest.status !== "done");
+        } catch {}
         backupState();                             // rotating hourly safety net
         // plus a one-deep .bak so a bad save can be recovered in one step
         if (fs.existsSync(STATE)) fs.copyFileSync(STATE, STATE + ".bak");
@@ -317,6 +362,8 @@ const server = http.createServer(async (req, res) => {
         const tmp = STATE + ".tmp";
         fs.writeFileSync(tmp, JSON.stringify(parsed, null, 2));
         fs.renameSync(tmp, STATE);
+        // carts ready → email Kenzie the links (fire and forget, never blocks the save)
+        if (cartJustDone) sendCartReadyEmail(parsed.cartRequest).catch(e => console.error("[cart-email]", e.message));
         return sendJSON(res, 200, { ok: true });
       } catch (e) {
         return sendJSON(res, 400, { ok: false, error: "invalid json" });
