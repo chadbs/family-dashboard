@@ -311,7 +311,7 @@ async function sendCartReadyEmail(cr) {
 
 ${cr.summary || ""}
 
-Review & check out:
+Tap to review & check out:
   Meijer cart:  https://www.meijer.com/shopping/cart.html
   ALDI cart:    https://new.aldi.us/store/aldi/storefront  (tap the cart icon, top right)
 
@@ -319,10 +319,10 @@ ${dinners ? "This week's dinners:\n" + dinners + "\n" : ""}
 What went in:
 ${items}
 
-Heads up: the carts were filled in Chrome on the main computer, so open the
-links there (or sign in to meijer.com / aldi.us on that Chrome once and the
-carts will follow you to your phone). Nothing has been ordered — you always
-do the checkout.
+Nothing has been ordered — you review the cart and do the checkout.
+(If a cart looks empty on your phone, make sure you're signed in to that
+store on both your phone and the main computer's Chrome — one time — and
+the carts will always follow you.)
 
 — the family dashboard`;
   await sendGmail({ user: gmailUser, pass: gmailAppPassword, to,
