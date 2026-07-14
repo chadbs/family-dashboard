@@ -81,7 +81,7 @@ window.CONFIG = {
   // saved on the device and survive every update. "pic" is optional: kid
   // chores without one get a picture auto-picked from the name.
   chores: [
-    { id: "windows", name: "Wash windows",   who: "Addison", cadence: "weekly", pic: "🪟" },
+    { id: "windows", name: "Wash windows",   who: "Addison", cadence: "weekly", pic: "🧽" },
     { id: "shoes",   name: "Clean up shoes", who: "Sophie",  cadence: "weekly", pic: "👟" },
   ],
 

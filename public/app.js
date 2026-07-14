@@ -306,19 +306,24 @@ function choreWho(id) { const c = choreById(id); return c && c.who; }
 function isKid(who) { return (C.kids || []).includes(who); }
 
 // Auto-pick a picture for a chore from its name (kid chores without one).
+// First match wins, so specific words come first and generic wash/clean go
+// LAST. Only emoji from Emoji 12 or older — the wall may run an older Windows
+// whose font shows newer glyphs (🪟 🪥 🪴 …) as empty boxes, i.e. "no icon".
 const CHORE_PICS = [
-  [/window/i, "🪟"], [/shoe/i, "👟"], [/tooth|teeth|brush/i, "🪥"], [/\bbed\b|make.*bed/i, "🛏️"],
-  [/toy/i, "🧸"], [/dish|dishwash/i, "🍽️"], [/trash|garbage/i, "🗑️"], [/recycl/i, "♻️"],
-  [/\bdog\b|puppy|walk/i, "🐕"], [/\bcat\b|kitty/i, "🐈"], [/fish/i, "🐠"],
-  [/plant|water/i, "🪴"], [/flower/i, "🌷"], [/vacuum|sweep/i, "🧹"], [/mop|floor/i, "🧽"],
-  [/laundry|fold|clothes/i, "🧺"], [/wash/i, "🧼"], [/clean|tidy|pick.?up/i, "🧼"],
+  [/window/i, "🧽"], [/shoe/i, "👟"], [/tooth|teeth|brush/i, "🦷"], [/\bbed\b|make.*bed/i, "🛏️"],
+  [/toy|basement|play.?room/i, "🧸"], [/dish|dishwash/i, "🍽️"], [/trash|garbage/i, "🗑️"], [/recycl/i, "♻️"],
+  [/\bdog\b|puppy|walk/i, "🐕"], [/\bcat\b|kitty/i, "🐈"], [/fish/i, "🐠"], [/chicken|coop/i, "🐔"],
+  [/plant|water/i, "🌱"], [/flower/i, "🌷"], [/vacuum|sweep/i, "🧹"], [/mop|floor/i, "💦"],
+  [/laundry|fold|clothes/i, "🧺"], [/pajama|\bpjs?\b|dressed/i, "👕"], [/dresser|closet|hang.?up/i, "👚"],
+  [/blanket|pillow/i, "🛌"], [/stairs?/i, "👣"], [/dust/i, "✨"], [/wipe|counter/i, "🧴"],
   [/\broom\b/i, "🚪"], [/table|set.*table/i, "🍽️"], [/lunch|meal|cook|kitchen/i, "🍱"],
-  [/book|read/i, "📚"], [/\bcar\b/i, "🚗"], [/mail/i, "📬"], [/snow|shovel/i, "❄️"],
-  [/leaf|rake/i, "🍂"], [/towel/i, "🧻"], [/hair/i, "💇"], [/face|hand/i, "🧽"],
+  [/book|read/i, "📚"], [/\bcar\b|garage/i, "🚗"], [/mail/i, "📬"], [/snow|shovel/i, "❄️"],
+  [/leaf|rake/i, "🍂"], [/towel/i, "🧻"], [/hair/i, "💇"], [/face|hand/i, "🧼"],
   [/feed|food|bowl/i, "🥣"], [/homework|study/i, "✏️"], [/music|piano|practice/i, "🎹"],
   [/bath|shower/i, "🛁"], [/swim|pool/i, "🏊"], [/bike|cycle/i, "🚲"], [/garden|yard|weed/i, "🌻"],
-  [/sock/i, "🧦"], [/potty|toilet/i, "🚽"], [/diaper/i, "🍼"], [/backpack/i, "🎒"],
-  [/puzzle/i, "🧩"], [/draw|color(?:ing)?|paint|art/i, "🎨"], [/nap|sleep/i, "😴"],
+  [/sock/i, "🧦"], [/potty|toilet/i, "🚽"], [/diaper|baby/i, "🍼"], [/backpack/i, "🎒"],
+  [/puzzle/i, "🧩"], [/draw|color(?:ing)?|paint|art/i, "🎨"], [/light|lamp/i, "💡"], [/nap|sleep/i, "😴"],
+  [/vitamin/i, "🍊"], [/wash/i, "🧼"], [/clean|tidy|pick.?up/i, "🧼"],
 ];
 function chorePic(c) {
   if (c.pic) return c.pic;                                  // explicit picture wins
