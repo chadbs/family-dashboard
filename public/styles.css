@@ -155,6 +155,7 @@ body {
 
 /* ---------- Weather hero ---------- */
 .hero {
+  position: relative;
   flex-direction: column; align-items: stretch; justify-content: flex-start; gap: clamp(6px, .7vw, 10px);
   overflow: hidden;
   background:
@@ -162,7 +163,40 @@ body {
     var(--card);
   padding: clamp(8px, .9vw, 13px) clamp(14px, 1.5vw, 22px);
 }
-.hero-top { display: flex; align-items: center; justify-content: space-between; gap: clamp(10px, 1.4vw, 22px); }
+.hero-top { position: relative; z-index: 1; display: flex; align-items: center; justify-content: space-between; gap: clamp(10px, 1.4vw, 22px); }
+
+/* Ambient rain/snow over the hero — a few drifting marks, pure CSS (no JS
+   timers) so it's free to run all day. Only shows on data-sky="rainy"/"snow"
+   (set in app.js from the live condition), so it never lies about the weather. */
+.sky-fx { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 0; opacity: 0; transition: opacity .8s; }
+.sky-fx span { position: absolute; top: -14%; }
+html[data-sky="rainy"] .sky-fx {
+  opacity: 1;
+}
+html[data-sky="rainy"] .sky-fx span {
+  width: 2px; height: 16px; border-radius: 2px;
+  background: linear-gradient(var(--rain), transparent);
+  animation: sky-fall 1s linear infinite;
+}
+html[data-sky="snow"] .sky-fx { opacity: 1; }
+html[data-sky="snow"] .sky-fx span {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: rgba(255, 255, 255, .85);
+  animation: sky-fall-snow 6s linear infinite;
+}
+.sky-fx span:nth-child(1) { left: 6%;  animation-delay: 0s;   }
+.sky-fx span:nth-child(2) { left: 18%; animation-delay: .3s;  }
+.sky-fx span:nth-child(3) { left: 30%; animation-delay: .9s;  }
+.sky-fx span:nth-child(4) { left: 42%; animation-delay: .15s; }
+.sky-fx span:nth-child(5) { left: 55%; animation-delay: .6s;  }
+.sky-fx span:nth-child(6) { left: 68%; animation-delay: .45s; }
+.sky-fx span:nth-child(7) { left: 80%; animation-delay: .75s; }
+.sky-fx span:nth-child(8) { left: 92%; animation-delay: .2s;  }
+@keyframes sky-fall { to { transform: translateY(160px); opacity: 0; } }
+@keyframes sky-fall-snow { to { transform: translateY(160px) translateX(10px); opacity: .2; } }
+@media (prefers-reduced-motion: reduce) {
+  .sky-fx span { animation: none; display: none; }
+}
 /* Rain trend tucked beside the big temperature */
 .hero-rain { flex: 1; min-width: 0; max-width: clamp(160px, 22vw, 300px); display: flex; flex-direction: column;
   gap: 4px; align-self: stretch; justify-content: center; }
@@ -187,7 +221,7 @@ body {
 .m-val.rain { color: var(--rain); }
 
 /* ---------- 7-day forecast strip (under the weather hero) ---------- */
-.forecast { display: grid; grid-template-columns: repeat(7, 1fr); gap: clamp(3px, .4vw, 7px);
+.forecast { position: relative; z-index: 1; display: grid; grid-template-columns: repeat(7, 1fr); gap: clamp(3px, .4vw, 7px);
   border-top: 1px solid var(--line); padding-top: clamp(5px, .7vw, 10px); }
 .forecast:empty { display: none; }
 .fc-day { font-family: inherit; display: flex; flex-direction: column; align-items: center; gap: clamp(1px, .25vw, 3px);
