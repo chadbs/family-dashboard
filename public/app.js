@@ -144,7 +144,7 @@ function renderWeather(w) {
   $("tempLoc").textContent = C.location || "Outside";
   $("heroIcon").innerHTML = weatherIcon(w.condition);
   const badge = $("tempBadge");
-  if (badge) badge.textContent = sky === "hot" ? "🌴" : sky === "cold" ? "🥶" : "";
+  if (badge) badge.textContent = sky === "hot" ? "🌴" : sky === "cold" ? "🥶" : sky === "rainy" ? "☔" : sky === "snow" ? "❄️" : "";
   $("mHiLo").textContent = (r(w.hi) != null && r(w.lo) != null) ? `${r(w.hi)}° / ${r(w.lo)}°` : "—";
   $("mHum").textContent = r(w.humidity) != null ? `${r(w.humidity)}%` : "—";
   $("mRain").textContent = `${(w.rain_in ?? 0).toFixed(2)}"`;
@@ -1045,6 +1045,7 @@ function holidayBanner() {
   const n = new Date(); n.setHours(0, 0, 0, 0);
   const upcoming = [
     { month: 1,  day: 1,  name: "New Year's Day", emoji: "🎊", col: "#8B5CF6" },
+    { month: 2,  day: 14, name: "Valentine's Day", emoji: "💝", col: "#F472B6" },
     { month: 7,  day: 4,  name: "July 4th",       emoji: "🎆", col: "#EF4444" },
     { month: 10, day: 31, name: "Halloween",       emoji: "🎃", col: "#F97316" },
     { month: 12, day: 25, name: "Christmas",       emoji: "🎄", col: "#10B981" },
