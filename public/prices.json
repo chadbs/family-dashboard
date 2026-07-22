@@ -3,31 +3,31 @@
     "meijer": 3.14,
     "aldi": 2.89,
     "deal": null,
-    "at": "2026-07-22T09:30:19.229Z"
+    "at": "2026-07-22T14:29:48.004Z"
   },
   "greek yogurt": {
     "meijer": 3.79,
-    "aldi": null,
+    "aldi": 2.6,
     "deal": null,
-    "at": "2026-07-22T09:30:19.229Z"
+    "at": "2026-07-22T14:29:48.004Z"
   },
   "chicken breast": {
-    "meijer": 4.19,
-    "aldi": 2.29,
+    "meijer": 2.99,
+    "aldi": 2.76,
     "deal": null,
-    "at": "2026-07-22T09:30:19.229Z"
+    "at": "2026-07-22T14:29:48.004Z"
   },
   "chicken thighs": {
-    "meijer": 2.69,
+    "meijer": 1.69,
     "aldi": 3.09,
     "deal": null,
-    "at": "2026-07-22T09:30:19.229Z"
+    "at": "2026-07-22T14:29:48.004Z"
   },
   "ground beef": {
     "meijer": 5.69,
     "aldi": 4.65,
     "deal": null,
-    "at": "2026-07-22T09:30:19.229Z"
+    "at": "2026-07-22T14:29:48.004Z"
   },
   "pork": {
     "meijer": 2.79,
@@ -55,9 +55,9 @@
   },
   "eggs": {
     "meijer": 2.59,
-    "aldi": 2.19,
+    "aldi": 1.54,
     "deal": null,
-    "at": "2026-07-22T09:30:19.229Z"
+    "at": "2026-07-22T14:29:48.004Z"
   },
   "broccoli": {
     "meijer": null,
@@ -81,7 +81,7 @@
     "meijer": 0.69,
     "aldi": null,
     "deal": null,
-    "at": "2026-07-22T09:30:19.229Z"
+    "at": "2026-07-22T14:29:48.004Z"
   },
   "lettuce": {
     "meijer": 2.99,
@@ -163,9 +163,9 @@
   },
   "butter": {
     "meijer": 3.19,
-    "aldi": 3.55,
+    "aldi": 3.43,
     "deal": null,
-    "at": "2026-07-22T09:30:19.229Z"
+    "at": "2026-07-22T14:29:48.004Z"
   },
   "fresh mozzarella": {
     "meijer": null,
