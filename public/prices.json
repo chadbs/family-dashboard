@@ -24,16 +24,16 @@
     "at": "2026-07-22T14:29:48.004Z"
   },
   "ground beef": {
-    "meijer": 5.69,
+    "meijer": 2.49,
     "aldi": 4.65,
-    "deal": null,
-    "at": "2026-07-22T14:29:48.004Z"
+    "deal": "Wk ad $2.49/lb 80/20",
+    "at": "2026-07-22T14:33:37.388Z"
   },
   "pork": {
-    "meijer": 2.79,
+    "meijer": 0.99,
     "aldi": null,
-    "deal": null,
-    "at": "2026-07-22T09:30:19.229Z"
+    "deal": "Wk ad loin chops $0.99/lb",
+    "at": "2026-07-22T14:33:37.388Z"
   },
   "italian sausage": {
     "meijer": 4.49,
@@ -90,10 +90,10 @@
     "at": "2026-07-22T09:30:19.229Z"
   },
   "tomato": {
-    "meijer": 1.48,
+    "meijer": 1.29,
     "aldi": 0.89,
-    "deal": null,
-    "at": "2026-07-22T09:30:19.229Z"
+    "deal": "Wk ad vine-ripe $1.29/lb",
+    "at": "2026-07-22T14:33:37.388Z"
   },
   "onion": {
     "meijer": 1.49,
