@@ -594,17 +594,22 @@ html[data-sky="snow"] .sky-fx span {
   animation: love-in .5s var(--ease); }
 .love-modal[hidden] { display: none; }
 .love-card { position: relative; z-index: 2; max-width: min(700px, 92vw); text-align: center;
+  display: flex; flex-direction: column; max-height: 92vh;
   padding: clamp(30px, 4.4vw, 58px) clamp(24px, 4vw, 54px);
   border-radius: 34px; border: 1px solid rgba(255,255,255,.14);
   background: linear-gradient(158deg, #13261e 0%, #0c1411 58%, #0e1b23 100%);
   box-shadow: 0 30px 90px rgba(0,0,0,.55), 0 0 70px rgba(16,185,129,.22), inset 0 1px 0 rgba(255,255,255,.06);
   animation: love-pop .6s var(--ease) both; }
-.love-eyebrow { font-size: clamp(12px, 1.4vw, 17px); font-weight: 700; letter-spacing: 2px;
+.love-eyebrow { flex: 0 0 auto; font-size: clamp(12px, 1.4vw, 17px); font-weight: 700; letter-spacing: 2px;
   text-transform: uppercase; color: #34d399; margin-bottom: clamp(14px, 2vw, 22px); }
-.love-msg { font-size: clamp(22px, 3.3vw, 40px); line-height: 1.3; font-weight: 600;
+/* A long surprise note scrolls inside the card instead of spilling off the
+   bottom of the 3:2 Surface — the eyebrow and "xoxo" button stay pinned so the
+   note is always readable and dismissable. Short notes look exactly as before. */
+.love-msg { flex: 1 1 auto; min-height: 0; overflow-y: auto;
+  font-size: clamp(22px, 3.3vw, 40px); line-height: 1.3; font-weight: 600;
   letter-spacing: -.4px; color: #F4F6FA; text-wrap: balance;
   text-shadow: 0 2px 24px rgba(0,0,0,.4); }
-.love-close { margin-top: clamp(22px, 3vw, 34px); font-family: inherit; cursor: pointer;
+.love-close { flex: 0 0 auto; align-self: center; margin-top: clamp(22px, 3vw, 34px); font-family: inherit; cursor: pointer;
   font-size: clamp(15px, 1.5vw, 19px); font-weight: 700; color: #052e22;
   background: linear-gradient(#6ee7b7, #34d399); border: 0; border-radius: 999px;
   padding: clamp(12px, 1.4vw, 16px) clamp(26px, 3vw, 40px);
