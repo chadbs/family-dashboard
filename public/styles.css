@@ -548,7 +548,7 @@ html[data-sky="snow"] .sky-fx span {
   color: var(--bg); background: var(--ink); border: 0; border-radius: var(--r-md);
   padding: 0 clamp(20px, 2.2vw, 32px); cursor: pointer; transition: transform .12s var(--ease); }
 .grocery-add button:active { transform: scale(.96); }
-.grocery-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+.grocery-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
   gap: 9px; align-content: start; overflow: hidden; }
 .gitem { display: flex; align-items: center; gap: 13px; background: var(--card-2);
   border-radius: var(--r-md); padding: clamp(11px, 1.2vw, 15px) clamp(13px, 1.4vw, 17px);
@@ -562,6 +562,26 @@ html[data-sky="snow"] .sky-fx span {
 .gitem-x { color: var(--muted); font-size: clamp(16px, 1.6vw, 22px); line-height: 1; padding: 0 4px; opacity: .5; transition: opacity .2s, color .2s; }
 .gitem-x:hover { opacity: 1; color: var(--ink); }
 .grocery-empty { color: var(--muted); font-size: clamp(14px, 1.3vw, 17px); font-style: italic; padding: 8px 2px; }
+
+/* Meijer-vs-ALDI price chips on each grocery row: the filled chip is the
+   store the item is routed to (= the cheaper one, or 📌 the family's pick) */
+.gprices { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; justify-content: flex-end; }
+.pchip { font-size: clamp(10px, 1vw, 13px); font-weight: 700; border-radius: 999px; white-space: nowrap;
+  padding: 3px 9px; border: 1.5px solid var(--line-2); color: var(--muted); font-variant-numeric: tabular-nums; }
+.pchip.ghost { opacity: .45; border-style: dashed; font-weight: 600; }
+.pchip.win { color: #fff; border-color: transparent; }
+.pchip.meijer.win { background: #E87722; }
+.pchip.aldi.win { background: #2A6EBB; }
+.gsave { font-size: clamp(10px, .95vw, 12px); font-weight: 700; color: var(--good); white-space: nowrap; }
+.gdeal { display: inline-block; font-size: clamp(10px, .95vw, 12px); font-weight: 700; color: #B4530A;
+  background: color-mix(in srgb, #F59E0B 22%, transparent); border-radius: 999px; padding: 2px 8px; margin-top: 3px; }
+html[data-skin="glass"] .gdeal { color: #FFD9A8; }
+.gitem.done .gprices, .gitem.done .gdeal { opacity: .4; }
+@media (max-width: 700px) {
+  .grocery-list { grid-template-columns: 1fr; }
+  .gprices { justify-content: flex-start; flex-basis: 100%; margin-left: calc(clamp(22px, 2.1vw, 28px) + 13px); }
+  .gitem { flex-wrap: wrap; }
+}
 
 /* ---------- Status bar ---------- */
 .statusbar { display: flex; align-items: center; justify-content: space-between;

@@ -852,9 +852,26 @@ $("choreEditor").addEventListener("submit", (e) => {
 function renderGrocery() {
   const list = STATE.grocery || [];
   const host = $("groceryList");
+  let storeChanged = false;
   if (!list.length) {
     host.innerHTML = `<div class="grocery-empty">Nothing on the list yet — add something above.</div>`;
   } else {
+    // Re-route every item with tonight's prices: family pick wins, else the
+    // cheaper store, else whichever store we have a price for. This is what
+    // makes it OBVIOUS why an item sits under Meijer or ALDI.
+    list.forEach(g => {
+      const pin = prefFor(g.text);
+      const p = priceFor(g.text);
+      let store = (pin && pin.store) || null;
+      if (!store && p) {
+        if (p.meijer != null && p.aldi != null) store = p.aldi < p.meijer ? "Aldi" : "Meijer";
+        else if (p.meijer != null) store = "Meijer";
+        else if (p.aldi != null) store = "Aldi";
+      }
+      store = store || g.store || null;
+      if (store !== g.store) { g.store = store; storeChanged = true; }
+    });
+
     // group by store so the list reads like the actual shopping trip
     const groups = [["Meijer", []], ["Aldi", []], ["Anywhere", []]];
     list.forEach(g => {
@@ -862,23 +879,53 @@ function renderGrocery() {
       groups[slot][1].push(g);
     });
     const withItems = groups.filter(([, items]) => items.length);
-    const showHeads = withItems.length > 1;                 // flat list if everything's one bucket
+
+    const money = n => "$" + n.toFixed(2);
+    const chip = (label, cls, val, winner, pinned) => {
+      if (val == null) return `<span class="pchip ghost">${label} —</span>`;
+      return `<span class="pchip ${cls} ${winner ? "win" : ""}">${pinned ? "📌 " : ""}${label} ${money(val)}</span>`;
+    };
     const row = g => {
-      const pref = g.pref ? `<span class="gitem-pref">${escapeHtml(g.pref)}</span>` : "";
+      const p = priceFor(g.text);
+      const pin = prefFor(g.text);
+      const pinnedHere = !!(pin && pin.store && pin.store === g.store);
+      // legacy auto-set "Meijer ~$x · ALDI ~$y" pref strings are replaced by chips
+      const prefText = g.pref && !/~\$/.test(g.pref) ? `<span class="gitem-pref">${escapeHtml(g.pref)}</span>` : "";
+      const deal = p && p.deal ? `<span class="gdeal">🏷 ${escapeHtml(p.deal)}</span>` : "";
+      let prices = "";
+      if (p && (p.meijer != null || p.aldi != null)) {
+        const both = p.meijer != null && p.aldi != null;
+        const meijerWins = g.store === "Meijer";
+        const save = both ? Math.abs(p.meijer - p.aldi) : 0;
+        prices = `<div class="gprices">
+          ${chip("Meijer", "meijer", p.meijer, meijerWins, pinnedHere && meijerWins)}
+          ${chip("ALDI", "aldi", p.aldi, !meijerWins && g.store === "Aldi", pinnedHere && g.store === "Aldi")}
+          ${both && save >= 0.25 ? `<span class="gsave">save ${money(save)}</span>` : ""}
+        </div>`;
+      }
       return `<div class="gitem ${g.done ? "done" : ""}" data-id="${g.id}">
       <div class="chk gchk"><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg></div>
-      <div class="gitem-text">${escapeHtml(g.text)}${pref}</div>
+      <div class="gitem-text">${escapeHtml(g.text)}${prefText}${deal}</div>
+      ${prices}
       <div class="gitem-x" data-remove="${g.id}" title="Remove">&times;</div>
     </div>`;
     };
+
     host.innerHTML = withItems.map(([store, items]) => {
-      const left = items.filter(g => !g.done).length;
-      const head = showHeads ? `<div class="gstore-head"><span class="store-dot ${store === "Aldi" ? "aldi" : store === "Meijer" ? "meijer" : "any"}"></span>${store}<small>${left} to buy</small></div>` : "";
+      const open = items.filter(g => !g.done);
+      // estimated basket for this store: chosen-store price of unchecked items
+      const est = open.reduce((sum, g) => {
+        const p = priceFor(g.text); if (!p) return sum;
+        const v = store === "Aldi" ? p.aldi : p.meijer;
+        return v != null ? sum + v : sum;
+      }, 0);
+      const head = `<div class="gstore-head"><span class="store-dot ${store === "Aldi" ? "aldi" : store === "Meijer" ? "meijer" : "any"}"></span>${store}<small>${open.length} to buy${est > 0 ? ` · ~${money(est)}` : ""}</small></div>`;
       return head + items.map(row).join("");
     }).join("");
   }
   const left = list.filter(g => !g.done).length;
   $("groceryCount").textContent = list.length ? `${left} to buy` : "empty";
+  if (storeChanged) saveState();
 }
 
 function escapeHtml(s) {
@@ -908,13 +955,10 @@ async function priceItem(id, text) {
     if (!d || !d.ok) return;
     const g = (STATE.grocery || []).find(x => x.id === id);
     if (!g || g.done) return;                       // gone or bought already
-    const parts = [];
-    if (d.meijer != null) parts.push(`Meijer ~$${d.meijer.toFixed(2)}`);
-    if (d.aldi != null) parts.push(`ALDI ~$${d.aldi.toFixed(2)}`);
-    g.pref = parts.join(" · ");
-    if (d.meijer != null && d.aldi != null) g.store = d.aldi < d.meijer ? "Aldi" : "Meijer";
-    else if (d.meijer != null) g.store = "Meijer";
-    else if (d.aldi != null) g.store = "Aldi";
+    // stash the fresh prices in the client cache; renderGrocery routes the
+    // item to the cheaper store and draws the price chips from PRICES
+    PRICES[text.toLowerCase().replace(/\(.*?\)/g, " ").replace(/\s+/g, " ").trim()] =
+      { meijer: d.meijer ?? null, aldi: d.aldi ?? null, at: new Date().toISOString() };
     renderGrocery(); saveState();
   } catch { /* estimates only — never block the list */ }
 }
@@ -1545,10 +1589,21 @@ async function loadPrices() {
   try {
     const r = await fetch("/api/prices", { cache: "no-store" });
     const d = await r.json();
-    if (d && d.ok && d.prices) { PRICES = d.prices; renderShopList(); renderDeals(); }
+    if (d && d.ok && d.prices) { PRICES = d.prices; renderShopList(); renderDeals(); renderGrocery(); }
   } catch {}
 }
-function priceFor(item) { return PRICES[item.toLowerCase()] || null; }
+// Fuzzy: "Whole milk (3 gallons)" should match the "whole milk" price entry.
+// Exact key first, else the longest key contained in the text (or vice versa).
+function priceFor(item) {
+  const t = String(item || "").toLowerCase().replace(/\(.*?\)/g, " ").replace(/\s+/g, " ").trim();
+  if (!t) return null;
+  if (PRICES[t]) return PRICES[t];
+  let best = null, bestLen = 0;
+  for (const [k, v] of Object.entries(PRICES)) {
+    if ((t.includes(k) || k.includes(t)) && k.length > bestLen) { best = v; bestLen = k.length; }
+  }
+  return best;
+}
 
 // Which store an item comes from, in priority order:
 //   1. the family's explicit preference (✎ "what we like")
