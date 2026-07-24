@@ -314,7 +314,7 @@ const CHORE_PICS = [
   [/toy|basement|play.?room/i, "🧸"], [/dish|dishwash/i, "🍽️"], [/trash|garbage/i, "🗑️"], [/recycl/i, "♻️"],
   [/\bdog\b|puppy|walk/i, "🐕"], [/\bcat\b|kitty/i, "🐈"], [/fish/i, "🐠"], [/chicken|coop/i, "🐔"],
   [/bunny|rabbit/i, "🐰"], [/turtle|tortoise/i, "🐢"], [/hamster|guinea/i, "🐹"], [/bird|parakeet/i, "🐦"],
-  [/plant|water/i, "🌱"], [/flower/i, "🌷"], [/vacuum|sweep/i, "🧹"], [/mop|floor/i, "💦"],
+  [/plant|water/i, "🌱"], [/flower/i, "🌷"], [/vacuum|sweep|broom/i, "🧹"], [/mop|floor/i, "💦"],
   [/laundry|fold|clothes/i, "🧺"], [/pajama|\bpjs?\b|dressed/i, "👕"], [/dresser|closet|hang.?up/i, "👚"],
   [/blanket|pillow/i, "🛌"], [/stairs?/i, "👣"], [/dust/i, "✨"], [/wipe|counter/i, "🧴"],
   [/\broom\b/i, "🚪"], [/table|set.*table/i, "🍽️"], [/lunch|meal|cook|kitchen/i, "🍱"],
@@ -324,7 +324,8 @@ const CHORE_PICS = [
   [/bath|shower/i, "🛁"], [/swim|pool/i, "🏊"], [/bike|cycle|scooter/i, "🚲"], [/mow|lawn|grass/i, "🌿"], [/garden|yard|weed/i, "🌻"],
   [/sock/i, "🧦"], [/potty|toilet/i, "🚽"], [/diaper|baby/i, "🍼"], [/backpack/i, "🎒"],
   [/puzzle/i, "🧩"], [/draw|color(?:ing)?|paint|art/i, "🎨"], [/light|lamp/i, "💡"], [/nap|sleep/i, "😴"],
-  [/vitamin/i, "🍊"], [/wash/i, "🧼"], [/clean|tidy|pick.?up/i, "🧼"],
+  [/vitamin/i, "🍊"], [/grocer/i, "🛒"], [/lego|block/i, "🧱"], [/couch|sofa|cushion/i, "🛋️"],
+  [/wash/i, "🧼"], [/clean|tidy|pick.?up/i, "🧼"],
 ];
 function chorePic(c) {
   if (c.pic) return c.pic;                                  // explicit picture wins
@@ -409,7 +410,8 @@ function toggleSlot(id, slot) {
         localized to where they tapped — never a full-screen takeover ---- */
 const CHEERS = ["Great job!", "Nice!", "Woohoo!", "Way to go!", "Awesome!", "High five!", "You did it!", "Yay!",
   "Superstar! ⭐", "So proud!", "Incredible!", "You rock! 🎸", "Amazing!", "Keep it up!", "Winner! 🏆", "Nailed it!",
-  "Brilliant! ✨", "You're the best!", "Too good! 💯", "On a roll! 🔥", "Unstoppable! 🚀", "Level up! 🎮", "So cool! 😎"];
+  "Brilliant! ✨", "You're the best!", "Too good! 💯", "On a roll! 🔥", "Unstoppable! 🚀", "Level up! 🎮", "So cool! 😎",
+  "Hop hop hooray! 🐰", "Turtle-y awesome! 🐢", "Shell-abrate! 🐢", "Bunny-rrific! 🐰"];
 const FUN_ANIMALS = ["🐰", "🐢"];   // the kids' favorites, always join the party
 function celebrate(x, y, accent, who) {
   const fx = $("fx"); if (!fx) return;
