@@ -184,6 +184,14 @@ html[data-sky="snow"] .sky-fx span {
   background: rgba(255, 255, 255, .85);
   animation: sky-fall-snow 6s linear infinite;
 }
+/* Hot day: a few warm motes shimmer gently UPWARD, like heat rising off a
+   summer afternoon. Only on data-sky="hot" (temp ≥ 85°F), so it never lies. */
+html[data-sky="hot"] .sky-fx { opacity: 1; }
+html[data-sky="hot"] .sky-fx span {
+  width: 7px; height: 7px; border-radius: 50%; top: auto; bottom: -8%;
+  background: radial-gradient(circle, rgba(255, 216, 140, .9), rgba(255, 180, 90, 0));
+  animation: sky-rise 9s linear infinite;
+}
 .sky-fx span:nth-child(1) { left: 6%;  animation-delay: 0s;   }
 .sky-fx span:nth-child(2) { left: 18%; animation-delay: .3s;  }
 .sky-fx span:nth-child(3) { left: 30%; animation-delay: .9s;  }
@@ -194,6 +202,7 @@ html[data-sky="snow"] .sky-fx span {
 .sky-fx span:nth-child(8) { left: 92%; animation-delay: .2s;  }
 @keyframes sky-fall { to { transform: translateY(160px); opacity: 0; } }
 @keyframes sky-fall-snow { to { transform: translateY(160px) translateX(10px); opacity: .2; } }
+@keyframes sky-rise { 0% { opacity: 0; } 20% { opacity: 1; } to { transform: translateY(-200px) translateX(8px); opacity: 0; } }
 @media (prefers-reduced-motion: reduce) {
   .sky-fx span { animation: none; display: none; }
 }

@@ -324,7 +324,7 @@ const CHORE_PICS = [
   [/bath|shower/i, "🛁"], [/swim|pool/i, "🏊"], [/bike|cycle|scooter/i, "🚲"], [/mow|lawn|grass/i, "🌿"], [/garden|yard|weed/i, "🌻"],
   [/sock/i, "🧦"], [/potty|toilet/i, "🚽"], [/diaper|baby/i, "🍼"], [/backpack/i, "🎒"],
   [/puzzle/i, "🧩"], [/draw|color(?:ing)?|paint|art/i, "🎨"], [/light|lamp/i, "💡"], [/nap|sleep/i, "😴"],
-  [/vitamin/i, "🍊"], [/wash/i, "🧼"], [/clean|tidy|pick.?up/i, "🧼"],
+  [/vitamin/i, "🍊"], [/help|helper/i, "🤝"], [/wash/i, "🧼"], [/clean|tidy|pick.?up/i, "🧼"],
 ];
 function chorePic(c) {
   if (c.pic) return c.pic;                                  // explicit picture wins
@@ -409,7 +409,8 @@ function toggleSlot(id, slot) {
         localized to where they tapped — never a full-screen takeover ---- */
 const CHEERS = ["Great job!", "Nice!", "Woohoo!", "Way to go!", "Awesome!", "High five!", "You did it!", "Yay!",
   "Superstar! ⭐", "So proud!", "Incredible!", "You rock! 🎸", "Amazing!", "Keep it up!", "Winner! 🏆", "Nailed it!",
-  "Brilliant! ✨", "You're the best!", "Too good! 💯", "On a roll! 🔥", "Unstoppable! 🚀", "Level up! 🎮", "So cool! 😎"];
+  "Brilliant! ✨", "You're the best!", "Too good! 💯", "On a roll! 🔥", "Unstoppable! 🚀", "Level up! 🎮", "So cool! 😎",
+  "Hoppy job! 🐰", "Some-bunny's amazing! 🐰", "Turtle-y awesome! 🐢", "Shell yeah! 🐢", "You hopped to it! 🐰"];
 const FUN_ANIMALS = ["🐰", "🐢"];   // the kids' favorites, always join the party
 function celebrate(x, y, accent, who) {
   const fx = $("fx"); if (!fx) return;
