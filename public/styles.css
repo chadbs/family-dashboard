@@ -194,8 +194,36 @@ html[data-sky="snow"] .sky-fx span {
 .sky-fx span:nth-child(8) { left: 92%; animation-delay: .2s;  }
 @keyframes sky-fall { to { transform: translateY(160px); opacity: 0; } }
 @keyframes sky-fall-snow { to { transform: translateY(160px) translateX(10px); opacity: .2; } }
+
+/* Warm sun for clear & hot days — a soft, slowly-turning ray glow tucked in the
+   hero's top corner, purely CSS (no JS timers). Kept subtle and behind the text
+   (z-index 0) so it never fights the temperature readout. Only on data-sky
+   "sunny"/"hot" (set from the live condition), so it never lies about the sky. */
+html[data-sky="sunny"] .sky-fx,
+html[data-sky="hot"] .sky-fx { opacity: 1; }
+html[data-sky="sunny"] .sky-fx::after,
+html[data-sky="hot"] .sky-fx::after {          /* the warm core glow (static) */
+  content: ""; position: absolute; top: -54%; right: -14%;
+  width: min(46vw, 420px); aspect-ratio: 1; pointer-events: none;
+  background: radial-gradient(circle at center,
+    rgba(255, 221, 150, .48) 0%, rgba(255, 201, 110, .14) 32%, transparent 60%);
+}
+html[data-sky="sunny"] .sky-fx::before,
+html[data-sky="hot"] .sky-fx::before {         /* the slowly-turning rays */
+  content: ""; position: absolute; top: -54%; right: -14%;
+  width: min(46vw, 420px); aspect-ratio: 1; pointer-events: none;
+  background: repeating-conic-gradient(from 0deg,
+    rgba(255, 209, 128, .16) 0deg 4deg, transparent 4deg 15deg);
+  -webkit-mask: radial-gradient(circle at center, #000 14%, transparent 60%);
+          mask: radial-gradient(circle at center, #000 14%, transparent 60%);
+  animation: sun-spin 90s linear infinite;
+}
+html[data-sky="hot"] .sky-fx::before { animation-duration: 60s; }   /* a touch livelier when it's really hot */
+@keyframes sun-spin { to { transform: rotate(360deg); } }
+
 @media (prefers-reduced-motion: reduce) {
   .sky-fx span { animation: none; display: none; }
+  .sky-fx::before { animation: none; }
 }
 /* Rain trend tucked beside the big temperature */
 .hero-rain { flex: 1; min-width: 0; max-width: clamp(160px, 22vw, 300px); display: flex; flex-direction: column;

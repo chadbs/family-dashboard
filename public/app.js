@@ -409,7 +409,8 @@ function toggleSlot(id, slot) {
         localized to where they tapped — never a full-screen takeover ---- */
 const CHEERS = ["Great job!", "Nice!", "Woohoo!", "Way to go!", "Awesome!", "High five!", "You did it!", "Yay!",
   "Superstar! ⭐", "So proud!", "Incredible!", "You rock! 🎸", "Amazing!", "Keep it up!", "Winner! 🏆", "Nailed it!",
-  "Brilliant! ✨", "You're the best!", "Too good! 💯", "On a roll! 🔥", "Unstoppable! 🚀", "Level up! 🎮", "So cool! 😎"];
+  "Brilliant! ✨", "You're the best!", "Too good! 💯", "On a roll! 🔥", "Unstoppable! 🚀", "Level up! 🎮", "So cool! 😎",
+  "Hoppy job! 🐰", "Slow & steady! 🐢", "You're a star! 🌟", "Wowee!", "Sensational!", "Fantastic!", "Bravo! 👏"];
 const FUN_ANIMALS = ["🐰", "🐢"];   // the kids' favorites, always join the party
 function celebrate(x, y, accent, who) {
   const fx = $("fx"); if (!fx) return;
