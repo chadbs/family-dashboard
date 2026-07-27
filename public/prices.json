@@ -18,22 +18,22 @@
     "at": "2026-07-27T01:16:03.000Z"
   },
   "chicken thighs": {
-    "meijer": 2.69,
+    "meijer": 1.49,
     "aldi": 3.59,
-    "deal": null,
-    "at": "2026-07-27T01:16:03.000Z"
+    "deal": "Wk ad $1.49/lb family pk",
+    "at": "2026-07-27T17:17:53.000Z"
   },
   "ground beef": {
-    "meijer": 7.49,
+    "meijer": 6.29,
     "aldi": 5.99,
-    "deal": null,
-    "at": "2026-07-27T01:16:03.000Z"
+    "deal": "Wk ad $6.29/lb 81% lean 3lb",
+    "at": "2026-07-27T17:17:53.000Z"
   },
   "pork": {
-    "meijer": 1.99,
+    "meijer": 1.0,
     "aldi": 2.09,
-    "deal": null,
-    "at": "2026-07-27T01:16:03.000Z"
+    "deal": "Wk ad $1/lb loin chops",
+    "at": "2026-07-27T17:17:53.000Z"
   },
   "italian sausage": {
     "meijer": 4.49,
@@ -68,8 +68,8 @@
   "bell pepper": {
     "meijer": 1.0,
     "aldi": 0.83,
-    "deal": null,
-    "at": "2026-07-27T01:16:03.000Z"
+    "deal": "Wk ad $1 ea (7+)",
+    "at": "2026-07-27T17:17:53.000Z"
   },
   "potatoes": {
     "meijer": 1.0,
@@ -96,10 +96,10 @@
     "at": "2026-07-27T01:16:03.000Z"
   },
   "onion": {
-    "meijer": 1.49,
+    "meijer": 1.29,
     "aldi": 0.73,
-    "deal": null,
-    "at": "2026-07-27T01:16:03.000Z"
+    "deal": "Wk ad $1.29/lb Vidalia",
+    "at": "2026-07-27T17:17:53.000Z"
   },
   "green onion": {
     "meijer": 1.09,
@@ -108,10 +108,10 @@
     "at": "2026-07-27T01:16:03.000Z"
   },
   "mushrooms": {
-    "meijer": 3.66,
+    "meijer": 2.5,
     "aldi": 1.65,
-    "deal": null,
-    "at": "2026-07-27T01:16:03.000Z"
+    "deal": "Wk ad 2/$5 organic 8oz",
+    "at": "2026-07-27T17:17:53.000Z"
   },
   "lemons": {
     "meijer": 0.9,
@@ -132,10 +132,10 @@
     "at": "2026-07-27T01:16:03.000Z"
   },
   "avocado": {
-    "meijer": 0.92,
+    "meijer": 1.0,
     "aldi": 0.89,
-    "deal": null,
-    "at": "2026-07-27T01:16:03.000Z"
+    "deal": "Wk ad $1 XL (7+)",
+    "at": "2026-07-27T17:17:53.000Z"
   },
   "lime": {
     "meijer": 0.28,
@@ -150,10 +150,10 @@
     "at": "2026-07-27T01:16:03.000Z"
   },
   "cheese slices": {
-    "meijer": 3.2,
+    "meijer": 3.0,
     "aldi": 1.9,
-    "deal": null,
-    "at": "2026-07-27T01:16:03.000Z"
+    "deal": "Wk ad 2/$6 Sargento",
+    "at": "2026-07-27T17:17:53.000Z"
   },
   "heavy cream": {
     "meijer": 2.69,
