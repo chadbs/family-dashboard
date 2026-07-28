@@ -255,6 +255,8 @@ window.CONFIG = {
     "July 4th fun fact: independence is great, but finding someone to be completely UN-independent from is better. That's you. 💚🎆",
     "Sophie's birthday is almost here 🐢 — watching you be their mom is the best show on earth. You're incredible, Kenzie. 💚",
     "Addy's 🐰 and Sophie's 🐢 have the most beautiful, creative, funniest, most patient mom alive. Lucky doesn't cover it. 💚🖤",
+    "The sun came up, saw those green eyes, and quietly admitted defeat. Good morning to the most beautiful woman in Michigan — and every other state. ☀️💚",
+    "I'd trade every palm tree, every sunset, and my entire sandwich empire for one more morning waking up next to you. Worth it a thousand times over. 🌴🖤",
   ],
 
   // One-time SURPRISE note: shows immediately (once) the moment the screen

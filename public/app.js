@@ -310,20 +310,20 @@ function isKid(who) { return (C.kids || []).includes(who); }
 // LAST. Only emoji from Emoji 12 or older — the wall may run an older Windows
 // whose font shows newer glyphs (🪟 🪥 🪴 …) as empty boxes, i.e. "no icon".
 const CHORE_PICS = [
-  [/window/i, "🧽"], [/shoe/i, "👟"], [/tooth|teeth|brush/i, "🦷"], [/\bbed\b|make.*bed/i, "🛏️"],
-  [/toy|basement|play.?room/i, "🧸"], [/dish|dishwash/i, "🍽️"], [/trash|garbage/i, "🗑️"], [/recycl/i, "♻️"],
+  [/window/i, "🧽"], [/shoe/i, "👟"], [/hair/i, "💇"], [/tooth|teeth|brush/i, "🦷"], [/\bbed\b|make.*bed/i, "🛏️"],
+  [/toy|basement|play.?room/i, "🧸"], [/block|lego|duplo/i, "🧱"], [/dish|dishwash/i, "🍽️"], [/trash|garbage/i, "🗑️"], [/recycl/i, "♻️"],
   [/\bdog\b|puppy|walk/i, "🐕"], [/\bcat\b|kitty/i, "🐈"], [/fish/i, "🐠"], [/chicken|coop/i, "🐔"],
   [/bunny|rabbit/i, "🐰"], [/turtle|tortoise/i, "🐢"], [/hamster|guinea/i, "🐹"], [/bird|parakeet/i, "🐦"],
   [/plant|water/i, "🌱"], [/flower/i, "🌷"], [/vacuum|sweep/i, "🧹"], [/mop|floor/i, "💦"],
   [/laundry|fold|clothes/i, "🧺"], [/pajama|\bpjs?\b|dressed/i, "👕"], [/dresser|closet|hang.?up/i, "👚"],
   [/blanket|pillow/i, "🛌"], [/stairs?/i, "👣"], [/dust/i, "✨"], [/wipe|counter/i, "🧴"],
-  [/\broom\b/i, "🚪"], [/table|set.*table/i, "🍽️"], [/lunch|meal|cook|kitchen/i, "🍱"],
+  [/\broom\b/i, "🚪"], [/table|set.*table/i, "🍽️"], [/grocer/i, "🛒"], [/lunch|meal|cook|kitchen/i, "🍱"],
   [/book|read/i, "📚"], [/\bcar\b|garage/i, "🚗"], [/mail/i, "📬"], [/snow|shovel/i, "❄️"],
-  [/leaf|rake/i, "🍂"], [/towel/i, "🧻"], [/hair/i, "💇"], [/face|hand/i, "🧼"],
+  [/leaf|rake/i, "🍂"], [/towel/i, "🧻"], [/face|hand/i, "🧼"],
   [/feed|food|bowl/i, "🥣"], [/homework|study/i, "✏️"], [/guitar|violin|cello/i, "🎸"], [/music|piano|practice/i, "🎹"],
   [/bath|shower/i, "🛁"], [/swim|pool/i, "🏊"], [/bike|cycle|scooter/i, "🚲"], [/mow|lawn|grass/i, "🌿"], [/garden|yard|weed/i, "🌻"],
   [/sock/i, "🧦"], [/potty|toilet/i, "🚽"], [/diaper|baby/i, "🍼"], [/backpack/i, "🎒"],
-  [/puzzle/i, "🧩"], [/draw|color(?:ing)?|paint|art/i, "🎨"], [/light|lamp/i, "💡"], [/nap|sleep/i, "😴"],
+  [/puzzle/i, "🧩"], [/draw|color(?:ing)?|paint|art|crayon|marker/i, "🎨"], [/light|lamp/i, "💡"], [/nap|sleep/i, "😴"],
   [/vitamin/i, "🍊"], [/wash/i, "🧼"], [/clean|tidy|pick.?up/i, "🧼"],
 ];
 function chorePic(c) {
@@ -409,7 +409,8 @@ function toggleSlot(id, slot) {
         localized to where they tapped — never a full-screen takeover ---- */
 const CHEERS = ["Great job!", "Nice!", "Woohoo!", "Way to go!", "Awesome!", "High five!", "You did it!", "Yay!",
   "Superstar! ⭐", "So proud!", "Incredible!", "You rock! 🎸", "Amazing!", "Keep it up!", "Winner! 🏆", "Nailed it!",
-  "Brilliant! ✨", "You're the best!", "Too good! 💯", "On a roll! 🔥", "Unstoppable! 🚀", "Level up! 🎮", "So cool! 😎"];
+  "Brilliant! ✨", "You're the best!", "Too good! 💯", "On a roll! 🔥", "Unstoppable! 🚀", "Level up! 🎮", "So cool! 😎",
+  "Hop hop! 🐰", "Turtle-rific! 🐢", "Wonderful!", "Super helper!", "Look at you go! 🌟", "Fantastic!", "Well done! 👏"];
 const FUN_ANIMALS = ["🐰", "🐢"];   // the kids' favorites, always join the party
 function celebrate(x, y, accent, who) {
   const fx = $("fx"); if (!fx) return;
