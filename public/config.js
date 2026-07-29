@@ -70,10 +70,10 @@ window.CONFIG = {
   // Ice cream is 7 ⭐ (≈ a week of chores), and they can spend on others too.
   rewards: [
     { id: "candy",    name: "Candy",          emoji: "🍬", cost: 3  },
-    { id: "tv",       name: "Watch TV 30 min", emoji: "📺", cost: 4 },
+    { id: "tv",       name: "Watch TV 30 min", emoji: "📺", cost: 5 },
     { id: "stayup",   name: "Stay up late",   emoji: "🌙", cost: 5 },
     { id: "icecream", name: "Ice cream",      emoji: "🍦", cost: 7 },
-    { id: "park",     name: "Park trip",      emoji: "🌳", cost: 10 },
+    { id: "park",     name: "Park trip",      emoji: "🌳", cost: 6 },
   ],
 
   // These are just the STARTING chores. Add/edit/delete them right on the
