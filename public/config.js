@@ -257,6 +257,8 @@ window.CONFIG = {
     "Addy's 🐰 and Sophie's 🐢 have the most beautiful, creative, funniest, most patient mom alive. Lucky doesn't cover it. 💚🖤",
     "The sun came up, saw those green eyes, and quietly admitted defeat. Good morning to the most beautiful woman in Michigan — and every other state. ☀️💚",
     "I'd trade every palm tree, every sunset, and my entire sandwich empire for one more morning waking up next to you. Worth it a thousand times over. 🌴🖤",
+    "Late-July fun fact: the backyard fireflies only glow that bright hoping to catch your eye. Nice try, bugs — those green eyes are already spoken for. Good morning, gorgeous. ✨💚",
+    "The sprinkler's on, Addy 🐰 and Sophie 🐢 are squealing with joy, and I just got caught staring at their gorgeous mom across the yard again. Worth it. Always worth it. Good morning, my love. 💚",
   ],
 
   // One-time SURPRISE note: shows immediately (once) the moment the screen
