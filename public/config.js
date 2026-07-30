@@ -67,13 +67,14 @@ window.CONFIG = {
   streakBonusEvery: 3,
   streakBonus: 1,
   // The reward shop. Tap a reward on the Rewards tab to cash stars in for it.
-  // Ice cream is 7 ⭐ (≈ a week of chores), and they can spend on others too.
+  // Listed cheapest first so the little ones can see what's within reach.
   rewards: [
-    { id: "candy",    name: "Candy",          emoji: "🍬", cost: 3  },
+    { id: "candy",    name: "Candy",           emoji: "🍬", cost: 3 },
+    { id: "stayup",   name: "Stay up late",    emoji: "🌙", cost: 4 },
+    { id: "playdad",  name: "Play with Dad",   emoji: "🎲", cost: 4 },
     { id: "tv",       name: "Watch TV 30 min", emoji: "📺", cost: 5 },
-    { id: "stayup",   name: "Stay up late",   emoji: "🌙", cost: 5 },
-    { id: "icecream", name: "Ice cream",      emoji: "🍦", cost: 7 },
-    { id: "park",     name: "Park trip",      emoji: "🌳", cost: 6 },
+    { id: "icecream", name: "Ice cream",       emoji: "🍦", cost: 5 },
+    { id: "park",     name: "Park trip",       emoji: "🌳", cost: 5 },
   ],
 
   // These are just the STARTING chores. Add/edit/delete them right on the

@@ -62,7 +62,7 @@ stars, grocery, meal plans, cart requests), `data/photos/`, `data/backups/`,
 |-----|--------------|
 | **Home** | Weather hero (live backyard sensor + 7-day Open-Meteo forecast), this-week calendar strip, chores, star jars. Family photo reel behind glass cards. Weather-reactive background. |
 | **Calendar** | Month grid; tap a day to add, tap an event to edit. Google Calendar (secret iCal URL, proxied by the server). Birthday/holiday banners. |
-| **Rewards** | One currency: 1 chore = 1 ⭐ (streak bonus every 3 days, kindness = 1⭐). Shop: candy 3⭐ … ice cream 7⭐ … park trip 10⭐. No PIN. |
+| **Rewards** | One currency: 1 chore = 1 ⭐ (streak bonus every 3 days, kindness = 1⭐). Shop: candy 3⭐, stay up late / play with Dad 4⭐, TV 30 min / ice cream / park trip 5⭐. No PIN. Costs live in `public/config.js`. |
 | **Chores** | Weekly chart with per-kid emoji chores, editable on the touchscreen. |
 | **Meals** | Kenzie sets how many home dinners; "✨ Plan my week" auto-fills from **real attributed recipes** (weekly Claude web-search by season/weather, cached in `data/recipe-picks.json`) + curated classics in config. Shopping list builds from the plan (+ weekly staples: milk ×3, yogurt ×5) with "already have it" toggles, prices, and deal badges. **🛒 Build my carts** queues the order. **Clear week** two-tap button. |
 | **Grocery** | Family list grouped by store; add an item and it's auto-priced (Meijer vs ALDI) and filed under the cheaper store. Send to Google Keep / email. Deal links (Meijer weekly ad, mPerks, ALDI ad). **Clear list** two-tap button. |
