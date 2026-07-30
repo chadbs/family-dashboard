@@ -259,6 +259,9 @@ window.CONFIG = {
     "I'd trade every palm tree, every sunset, and my entire sandwich empire for one more morning waking up next to you. Worth it a thousand times over. 🌴🖤",
     "Late-July fun fact: the backyard fireflies only glow that bright hoping to catch your eye. Nice try, bugs — those green eyes are already spoken for. Good morning, gorgeous. ✨💚",
     "The sprinkler's on, Addy 🐰 and Sophie 🐢 are squealing with joy, and I just got caught staring at their gorgeous mom across the yard again. Worth it. Always worth it. Good morning, my love. 💚",
+    "The sunflowers out back finally opened this morning and immediately looked embarrassed — they know they can't out-shine those green eyes. Nice try, flowers. Good morning to the most beautiful woman in Michigan. 🌻💚",
+    "Late-summer truth: iced coffee is better cold, mornings are better slow, and every single one of them is better because I get to spend it staring at you. Midnight hair, emerald eyes, my whole heart. ☕🖤💚",
+    "Addy 🐰 asked why I smile so much in the morning. Easy, kiddo — it's because your mom exists and somehow chose me. Good morning, gorgeous. You're the best thing summer ever did. 💚",
   ],
 
   // One-time SURPRISE note: shows immediately (once) the moment the screen

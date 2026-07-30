@@ -326,6 +326,11 @@ const CHORE_PICS = [
   [/puzzle/i, "🧩"], [/draw|color(?:ing)?|paint|art|crayon|marker/i, "🎨"], [/light|lamp/i, "💡"], [/nap|sleep/i, "😴"],
   [/pray|prayer|grace/i, "🙏"], [/hug|cuddle|kiss/i, "🤗"], [/bottle|sippy/i, "🍼"], [/wagon|pull.?toy|stroller/i, "🚂"], [/sticker|chart/i, "🏅"],
   [/vitamin/i, "🍊"], [/wash/i, "🧼"], [/clean|tidy|pick.?up/i, "🧼"],
+  // Last-resort friendly matches for common little-kid tasks that dodge every
+  // specific word above (help / share / play outside / snacks). Kept dead last
+  // so nothing regresses — they only ever replace a bare ⭐ with a clear picture.
+  [/\bhelp(?:er|ing)?\b|\bchores?\b/i, "🤝"], [/\bshare|\bkind\b|gentle|manners|\bnice\b/i, "💗"],
+  [/outside|outdoor|playground|backyard|recess/i, "🌳"], [/snack|\bfruit\b|\bveggie|vegetable|\bapple\b/i, "🍎"],
 ];
 function chorePic(c) {
   if (c.pic) return c.pic;                                  // explicit picture wins
@@ -412,7 +417,9 @@ const CHEERS = ["Great job!", "Nice!", "Woohoo!", "Way to go!", "Awesome!", "Hig
   "Superstar! ⭐", "So proud!", "Incredible!", "You rock! 🎸", "Amazing!", "Keep it up!", "Winner! 🏆", "Nailed it!",
   "Brilliant! ✨", "You're the best!", "Too good! 💯", "On a roll! 🔥", "Unstoppable! 🚀", "Level up! 🎮", "So cool! 😎",
   "Hop hop! 🐰", "Turtle-rific! 🐢", "Wonderful!", "Super helper!", "Look at you go! 🌟", "Fantastic!", "Well done! 👏",
-  "Ta-da! 🎊", "Yippee! 🎈", "Champion! 🏅", "Magnificent! 🌈", "Shell-abrate! 🐢", "Big helper! 💪", "Hip hip hooray! 🎉"];
+  "Ta-da! 🎊", "Yippee! 🎈", "Champion! 🏅", "Magnificent! 🌈", "Shell-abrate! 🐢", "Big helper! 💪", "Hip hip hooray! 🎉",
+  "Egg-cellent! 🐣", "Boom! Nailed it! 💥", "You're a gem! 💎", "Two thumbs up! 👍", "Hoppy days! 🐰", "Sunshine helper! ☀️",
+  "Marvelous! 🌼", "Wowza! 😲", "Slow & steady wins! 🐢", "Absolutely ace! 🌟"];
 const FUN_ANIMALS = ["🐰", "🐢"];   // the kids' favorites, always join the party
 function celebrate(x, y, accent, who) {
   const fx = $("fx"); if (!fx) return;
