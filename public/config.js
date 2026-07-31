@@ -263,6 +263,10 @@ window.CONFIG = {
     "The sunflowers out back finally opened this morning and immediately looked embarrassed — they know they can't out-shine those green eyes. Nice try, flowers. Good morning to the most beautiful woman in Michigan. 🌻💚",
     "Late-summer truth: iced coffee is better cold, mornings are better slow, and every single one of them is better because I get to spend it staring at you. Midnight hair, emerald eyes, my whole heart. ☕🖤💚",
     "Addy 🐰 asked why I smile so much in the morning. Easy, kiddo — it's because your mom exists and somehow chose me. Good morning, gorgeous. You're the best thing summer ever did. 💚",
+    "August already? Summer's flying by, but every single morning with you still feels like the long, golden, slow kind. Green eyes, midnight hair, my whole entire heart — good morning, my love. 💚🌻",
+    "The cicadas are humming, the grass is warm, and Addy 🐰 and Sophie 🐢 are already begging to go outside — and I'm just standing here, coffee going cold, quietly floored that the most beautiful woman in Michigan chose this whole life with me. Good morning, Kenzie. ☕💚",
+    "Late-summer fact: sunflowers turn to face the sun all day long. I finally get it — I've been turning to face you since the second I met you, and I've never once wanted to look away. Good morning, gorgeous. 🌻💚",
+    "The backyard tomatoes are ripening, the fireflies are still showing off at dusk, and you walked past the window and outshined all of it without even trying. Those emerald eyes are cheating, Kenzie. Good morning, my love. 🍅✨💚",
   ],
 
   // One-time SURPRISE note: shows immediately (once) the moment the screen

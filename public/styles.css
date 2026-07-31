@@ -372,7 +372,7 @@ html[data-sky="hot"] .sky-fx span {
 .edit-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
 
 .chore-chart { display: flex; flex-direction: column; gap: clamp(6px, .8vw, 10px); overflow-y: auto; overflow-x: hidden; }
-.cc-row { display: grid; grid-template-columns: minmax(120px, 1.7fr) repeat(7, minmax(0, 1fr));
+.cc-row { display: grid; grid-template-columns: minmax(150px, 2.1fr) repeat(7, minmax(0, 1fr));
   gap: clamp(5px, .6vw, 8px); align-items: stretch; }
 .cc-head { position: sticky; top: 0; background: var(--card); z-index: 1; padding-bottom: 4px; }
 .cc-head .cc-name { font-size: clamp(11px, 1vw, 13px); font-weight: 700; color: var(--muted);
@@ -508,7 +508,11 @@ html[data-sky="hot"] .sky-fx span {
 /* Big pictures for kid chores. */
 .cc-row.kid { min-height: clamp(56px, 6.2vw, 92px); }
 .cc-pic { font-size: clamp(30px, 3.6vw, 50px); line-height: 1; flex-shrink: 0; filter: drop-shadow(0 2px 4px rgba(0,0,0,.2)); }
-.cc-row.kid .cc-title { font-size: clamp(15px, 1.55vw, 22px); font-weight: 600; }
+/* Kid chore names read in full — wrap to two lines instead of clipping with an
+   ellipsis, so a big-picture chore like "Clean up shoes" is always legible. */
+.cc-row.kid .cc-title { font-size: clamp(15px, 1.55vw, 22px); font-weight: 600;
+  white-space: normal; line-height: 1.15; display: -webkit-box;
+  -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; }
 .chore.kid .chore-name { display: flex; align-items: center; gap: 10px; }
 .chore-pic { font-size: clamp(24px, 2.4vw, 34px); line-height: 1; flex-shrink: 0; }
 
