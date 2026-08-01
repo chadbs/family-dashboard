@@ -1095,27 +1095,39 @@ function nextBirthday() {
   return best;
 }
 
-// Shows a small banner 0–3 days before major fixed-date holidays.
+// Shows a small banner 0–3 days before major holidays. Each holiday rolls to
+// next year's date once this year's has passed, so late-December still counts
+// down to New Year's Day. Thanksgiving is the floating 4th Thursday of Nov.
+function thanksgivingDate(yr) {
+  const firstThu = 1 + ((4 - new Date(yr, 10, 1).getDay() + 7) % 7);   // Nov 1..
+  return new Date(yr, 10, firstThu + 21);
+}
 function holidayBanner() {
   const n = new Date(); n.setHours(0, 0, 0, 0);
-  const upcoming = [
-    { month: 1,  day: 1,  name: "New Year's Day", emoji: "🎊", col: "#8B5CF6" },
-    { month: 2,  day: 14, name: "Valentine's Day", emoji: "💝", col: "#F472B6" },
-    { month: 7,  day: 4,  name: "July 4th",       emoji: "🎆", col: "#EF4444" },
-    { month: 10, day: 31, name: "Halloween",       emoji: "🎃", col: "#F97316" },
-    { month: 12, day: 25, name: "Christmas",       emoji: "🎄", col: "#10B981" },
+  const y = n.getFullYear();
+  const fixed = [
+    { month: 1,  day: 1,  name: "New Year's Day",   emoji: "🎊", col: "#8B5CF6" },
+    { month: 2,  day: 14, name: "Valentine's Day",  emoji: "💝", col: "#F472B6" },
+    { month: 3,  day: 17, name: "St. Patrick's Day", emoji: "🍀", col: "#22C55E" },
+    { month: 7,  day: 4,  name: "July 4th",         emoji: "🎆", col: "#EF4444" },
+    { month: 10, day: 31, name: "Halloween",        emoji: "🎃", col: "#F97316" },
+    { month: 12, day: 25, name: "Christmas",        emoji: "🎄", col: "#10B981" },
   ];
-  for (const h of upcoming) {
-    const hd = new Date(n.getFullYear(), h.month - 1, h.day);
-    const days = Math.round((hd - n) / 86400000);
+  const cands = fixed.map(h => ({ ...h, date: new Date(y, h.month - 1, h.day), roll: yr => new Date(yr, h.month - 1, h.day) }));
+  cands.push({ name: "Thanksgiving", emoji: "🦃", col: "#D97706", date: thanksgivingDate(y), roll: thanksgivingDate });
+  let best = null;
+  for (const h of cands) {
+    let hd = h.date, days = Math.round((hd - n) / 86400000);
+    if (days < 0) { hd = h.roll(y + 1); days = Math.round((hd - n) / 86400000); }   // passed → next year
     if (days < 0 || days > 3) continue;
-    const when = days === 0 ? "Today! 🎇" : days === 1 ? "Tomorrow!" : `in ${days} days`;
-    return `<div style="display:flex;align-items:center;gap:9px;background:${h.col}15;border:1px solid ${h.col}44;border-radius:var(--r-md);padding:5px 12px;margin-bottom:3px;">
-      <span style="font-size:1.25em;line-height:1;flex-shrink:0">${h.emoji}</span>
-      <div style="font-size:clamp(12px,1.15vw,15px);font-weight:600;">${h.name} — ${when}</div>
-    </div>`;
+    if (!best || days < best.days) best = { ...h, days };
   }
-  return "";
+  if (!best) return "";
+  const when = best.days === 0 ? "Today! 🎇" : best.days === 1 ? "Tomorrow!" : `in ${best.days} days`;
+  return `<div style="display:flex;align-items:center;gap:9px;background:${best.col}15;border:1px solid ${best.col}44;border-radius:var(--r-md);padding:5px 12px;margin-bottom:3px;">
+    <span style="font-size:1.25em;line-height:1;flex-shrink:0">${best.emoji}</span>
+    <div style="font-size:clamp(12px,1.15vw,15px);font-weight:600;">${best.name} — ${when}</div>
+  </div>`;
 }
 
 function birthdayBanner() {
