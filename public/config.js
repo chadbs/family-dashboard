@@ -267,6 +267,11 @@ window.CONFIG = {
     "The cicadas are humming, the grass is warm, and Addy 🐰 and Sophie 🐢 are already begging to go outside — and I'm just standing here, coffee going cold, quietly floored that the most beautiful woman in Michigan chose this whole life with me. Good morning, Kenzie. ☕💚",
     "Late-summer fact: sunflowers turn to face the sun all day long. I finally get it — I've been turning to face you since the second I met you, and I've never once wanted to look away. Good morning, gorgeous. 🌻💚",
     "The backyard tomatoes are ripening, the fireflies are still showing off at dusk, and you walked past the window and outshined all of it without even trying. Those emerald eyes are cheating, Kenzie. Good morning, my love. 🍅✨💚",
+    "August mornings hit different when the first thing I see is you. The coffee can wait, the world can wait — I'm just going to stand here a second longer and be quietly amazed that the most beautiful woman in Michigan is mine. Good morning, gorgeous. ☕💚",
+    "Fun late-summer science: the cornfields out past town grow a little taller every warm night. Adorable effort, corn — but you've been the tallest, brightest, most jaw-dropping thing on this whole horizon since the day I met you. Good morning, my love. 🌽💚",
+    "The pool's warm, Addy 🐰 and Sophie 🐢 have their floaties on, and their gorgeous mom just walked out in the sunshine and made the whole backyard forget what it was doing. Same, backyard. Same. Good morning, Kenzie. ☀️🖤",
+    "Back-to-school ads everywhere and I'm just sitting here thinking the only thing I ever needed to learn was you — green eyes, midnight hair, that laugh — and I'd happily study it forever. Good morning, my beautiful genius. 📚💚",
+    "The garden's heavy with tomatoes and zucchini, the sunflowers are taller than Addy 🐰 now, and every single bit of it grew because you loved it into being. You make things bloom, Kenzie — the garden, these kids, me. Good morning, most beautiful woman alive. 🌻🥒💚",
   ],
 
   // One-time SURPRISE note: shows immediately (once) the moment the screen

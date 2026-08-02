@@ -46,7 +46,22 @@ function renderClock() {
   $("clock").innerHTML = `${h}:${m}<span style="font-size:.42em;color:var(--muted);font-weight:400;letter-spacing:0;"> ${ampm}</span>`;
   $("date").textContent = `${DOW[n.getDay()]}, ${MON[n.getMonth()]} ${n.getDate()}`;
   const hr = n.getHours();
-  $("greeting").textContent = hr < 12 ? "Good morning" : hr < 17 ? "Good afternoon" : "Good evening";
+  const base = hr < 12 ? "Good morning" : hr < 17 ? "Good afternoon" : "Good evening";
+  const emo = greetingEmoji();
+  $("greeting").textContent = emo ? `${base} ${emo}` : base;
+}
+
+// A tiny contextual emoji for the greeting: live sky wins (so it never lies
+// about rain/snow), otherwise a gentle nod to the season. Purely decorative —
+// re-runs each clock tick, so it lights up the moment the weather loads.
+function greetingEmoji() {
+  const w = lastWeather;
+  if (w) {
+    const sky = skyFromCondition(w.condition, (w.temperature_F != null && !isNaN(w.temperature_F)) ? Math.round(w.temperature_F) : null);
+    if (sky === "rainy") return "🌧️";
+    if (sky === "snow")  return "❄️";
+  }
+  return { summer: "☀️", fall: "🍂", winter: "⛄", spring: "🌷" }[currentSeason()] || "";
 }
 
 /* ---------------------------------------------------------------- weather icons */
@@ -419,7 +434,9 @@ const CHEERS = ["Great job!", "Nice!", "Woohoo!", "Way to go!", "Awesome!", "Hig
   "Hop hop! 🐰", "Turtle-rific! 🐢", "Wonderful!", "Super helper!", "Look at you go! 🌟", "Fantastic!", "Well done! 👏",
   "Ta-da! 🎊", "Yippee! 🎈", "Champion! 🏅", "Magnificent! 🌈", "Shell-abrate! 🐢", "Big helper! 💪", "Hip hip hooray! 🎉",
   "Egg-cellent! 🐣", "Boom! Nailed it! 💥", "You're a gem! 💎", "Two thumbs up! 👍", "Hoppy days! 🐰", "Sunshine helper! ☀️",
-  "Marvelous! 🌼", "Wowza! 😲", "Slow & steady wins! 🐢", "Absolutely ace! 🌟"];
+  "Marvelous! 🌼", "Wowza! 😲", "Slow & steady wins! 🐢", "Absolutely ace! 🌟",
+  "Hoppin' awesome! 🐰", "Sunshine superstar! ☀️", "Splash-tastic! 💦", "You're a firework! 🎆",
+  "Shell yeah! 🐢", "Cool as a cucumber! 🥒", "Berry good job! 🍓", "Bee-utiful work! 🐝"];
 const FUN_ANIMALS = ["🐰", "🐢"];   // the kids' favorites, always join the party
 function celebrate(x, y, accent, who) {
   const fx = $("fx"); if (!fx) return;
