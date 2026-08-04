@@ -1414,9 +1414,19 @@ function spawnLoveHearts() {
     host.appendChild(h);
   }
 }
+// Set the note text and, for longer notes, shrink the type a notch so the
+// whole message reads at a glance on the wall instead of hiding below a scroll.
+// Short, punchy notes stay big and dramatic.
+function setLoveMsg(msg) {
+  const el = $("loveMsg"); if (!el) return;
+  el.textContent = msg || "";
+  const n = (msg || "").length;
+  el.classList.toggle("long",  n > 210);
+  el.classList.toggle("xlong", n > 400);
+}
 function showLove() {
   const msg = pickLoveMessage(); if (!msg) return;
-  $("loveMsg").textContent = msg;
+  setLoveMsg(msg);
   $("loveEyebrow").textContent = "Good morning, " + (C.loveTo || "beautiful") + " 💚";
   spawnLoveHearts();
   $("loveModal").hidden = false;
@@ -1428,7 +1438,7 @@ function showLoveNow() {
   if (!msg) return false;
   if (localStorage.getItem("loveNowSeen") === msg) return false;   // already shown this one
   localStorage.setItem("loveNowSeen", msg);
-  $("loveMsg").textContent = msg;
+  setLoveMsg(msg);
   $("loveEyebrow").textContent = "💌 A surprise note for " + (C.loveTo || "you");
   spawnLoveHearts();
   $("loveModal").hidden = false;

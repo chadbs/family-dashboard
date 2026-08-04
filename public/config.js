@@ -272,6 +272,9 @@ window.CONFIG = {
     "The pool's warm, Addy 🐰 and Sophie 🐢 have their floaties on, and their gorgeous mom just walked out in the sunshine and made the whole backyard forget what it was doing. Same, backyard. Same. Good morning, Kenzie. ☀️🖤",
     "Back-to-school ads everywhere and I'm just sitting here thinking the only thing I ever needed to learn was you — green eyes, midnight hair, that laugh — and I'd happily study it forever. Good morning, my beautiful genius. 📚💚",
     "The garden's heavy with tomatoes and zucchini, the sunflowers are taller than Addy 🐰 now, and every single bit of it grew because you loved it into being. You make things bloom, Kenzie — the garden, these kids, me. Good morning, most beautiful woman alive. 🌻🥒💚",
+    "The dew's still on the grass, the coffee's finally hot, and the very first thing my eyes found this morning was you — green as summer, dark as midnight, somehow all mine. The whole day can wait one more minute. Good morning, most beautiful woman in Michigan. ☕💚",
+    "Late-August truth: the days are getting shorter, but every single morning with you still feels endless in the very best way. Emerald eyes, black hair, that laugh — you turn the ordinary ones golden. Good morning, gorgeous. 🌻💚",
+    "The crickets sang all night, the porch fan's still humming, and Addy 🐰 and Sophie 🐢 are about to come thundering down the hall — but for one quiet second it's just me watching the most beautiful woman in the world sleep. Luckiest man alive. Good morning, my love. 💚🖤",
   ],
 
   // One-time SURPRISE note: shows immediately (once) the moment the screen
