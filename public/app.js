@@ -1112,27 +1112,66 @@ function nextBirthday() {
   return best;
 }
 
-// Shows a small banner 0–3 days before major fixed-date holidays.
+// The date of the Nth given weekday in a month (weekday 0=Sun … 6=Sat).
+// n>=1 counts from the start of the month; n=-1 means the LAST such weekday.
+// Used for holidays that float (e.g. Thanksgiving = 4th Thursday of November).
+function nthWeekday(year, month1, weekday, n) {
+  if (n < 0) {
+    const last = new Date(year, month1, 0);               // day 0 of next month = last of this
+    const back = (last.getDay() - weekday + 7) % 7;
+    return new Date(year, month1 - 1, last.getDate() - back);
+  }
+  const first = new Date(year, month1 - 1, 1);
+  const fwd = (weekday - first.getDay() + 7) % 7;
+  return new Date(year, month1 - 1, 1 + fwd + (n - 1) * 7);
+}
+// Gregorian Easter Sunday (Meeus/Jones/Butcher algorithm) — so the bunnies 🐰
+// (the kids' favorite) show up at the right time each spring.
+function easterDate(year) {
+  const a = year % 19, b = Math.floor(year / 100), c = year % 100;
+  const d = Math.floor(b / 4), e = b % 4, f = Math.floor((b + 8) / 25);
+  const g = Math.floor((b - f + 1) / 3), h = (19 * a + b - d - g + 15) % 30;
+  const i = Math.floor(c / 4), k = c % 4, l = (32 + 2 * e + 2 * i - h - k) % 7;
+  const m = Math.floor((a + 11 * h + 22 * l) / 451);
+  const month = Math.floor((h + l - 7 * m + 114) / 31);   // 3 = March, 4 = April
+  const day = ((h + l - 7 * m + 114) % 31) + 1;
+  return new Date(year, month - 1, day);
+}
+
+// Shows a small banner 0–3 days before a major holiday. Builds concrete dates
+// for THIS year and NEXT (so the days before New Year's Day catch Jan 1 across
+// the year boundary), mixes in the floating ones (Easter 🐰, Thanksgiving 🦃),
+// and picks the nearest that's within the window.
 function holidayBanner() {
   const n = new Date(); n.setHours(0, 0, 0, 0);
-  const upcoming = [
-    { month: 1,  day: 1,  name: "New Year's Day", emoji: "🎊", col: "#8B5CF6" },
+  const fixed = [
+    { month: 1,  day: 1,  name: "New Year's Day",  emoji: "🎊", col: "#8B5CF6" },
     { month: 2,  day: 14, name: "Valentine's Day", emoji: "💝", col: "#F472B6" },
-    { month: 7,  day: 4,  name: "July 4th",       emoji: "🎆", col: "#EF4444" },
+    { month: 7,  day: 4,  name: "July 4th",        emoji: "🎆", col: "#EF4444" },
     { month: 10, day: 31, name: "Halloween",       emoji: "🎃", col: "#F97316" },
     { month: 12, day: 25, name: "Christmas",       emoji: "🎄", col: "#10B981" },
   ];
-  for (const h of upcoming) {
-    const hd = new Date(n.getFullYear(), h.month - 1, h.day);
-    const days = Math.round((hd - n) / 86400000);
-    if (days < 0 || days > 3) continue;
-    const when = days === 0 ? "Today! 🎇" : days === 1 ? "Tomorrow!" : `in ${days} days`;
-    return `<div style="display:flex;align-items:center;gap:9px;background:${h.col}15;border:1px solid ${h.col}44;border-radius:var(--r-md);padding:5px 12px;margin-bottom:3px;">
-      <span style="font-size:1.25em;line-height:1;flex-shrink:0">${h.emoji}</span>
-      <div style="font-size:clamp(12px,1.15vw,15px);font-weight:600;">${h.name} — ${when}</div>
-    </div>`;
+  const floating = y => [
+    { date: easterDate(y),        name: "Easter",       emoji: "🐰", col: "#F472B6" },
+    { date: nthWeekday(y, 11, 4, 4), name: "Thanksgiving", emoji: "🦃", col: "#D97706" },
+  ];
+  const all = [];
+  for (const y of [n.getFullYear(), n.getFullYear() + 1]) {
+    for (const h of fixed) all.push({ date: new Date(y, h.month - 1, h.day), name: h.name, emoji: h.emoji, col: h.col });
+    for (const h of floating(y)) all.push(h);
   }
-  return "";
+  let best = null;
+  for (const h of all) {
+    const days = Math.round((h.date - n) / 86400000);
+    if (days < 0 || days > 3) continue;
+    if (!best || days < best.days) best = { name: h.name, emoji: h.emoji, col: h.col, days };
+  }
+  if (!best) return "";
+  const when = best.days === 0 ? "Today! 🎇" : best.days === 1 ? "Tomorrow!" : `in ${best.days} days`;
+  return `<div style="display:flex;align-items:center;gap:9px;background:${best.col}15;border:1px solid ${best.col}44;border-radius:var(--r-md);padding:5px 12px;margin-bottom:3px;">
+    <span style="font-size:1.25em;line-height:1;flex-shrink:0">${best.emoji}</span>
+    <div style="font-size:clamp(12px,1.15vw,15px);font-weight:600;">${best.name} — ${when}</div>
+  </div>`;
 }
 
 function birthdayBanner() {
