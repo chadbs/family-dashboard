@@ -337,6 +337,7 @@ const CHORE_PICS = [
   [/leaf|rake/i, "🍂"], [/towel/i, "🧻"], [/face|hand/i, "🧼"],
   [/feed|food|bowl/i, "🥣"], [/homework|study/i, "✏️"], [/guitar|violin|cello/i, "🎸"], [/music|piano|practice/i, "🎹"],
   [/bath|shower/i, "🛁"], [/swim|pool/i, "🏊"], [/bike|cycle|scooter/i, "🚲"], [/mow|lawn|grass/i, "🌿"], [/garden|yard|weed/i, "🌻"],
+  [/sunscreen|sunblock/i, "🧴"], [/sprinkler|\bhose\b/i, "💦"], [/\bball\b|soccer|kick/i, "⚽"], [/coat|jacket/i, "🧥"],
   [/sock/i, "🧦"], [/potty|toilet/i, "🚽"], [/diaper|baby/i, "🍼"], [/backpack/i, "🎒"],
   [/puzzle/i, "🧩"], [/draw|color(?:ing)?|paint|art|crayon|marker/i, "🎨"], [/light|lamp/i, "💡"], [/nap|sleep/i, "😴"],
   [/pray|prayer|grace/i, "🙏"], [/hug|cuddle|kiss/i, "🤗"], [/bottle|sippy/i, "🍼"], [/wagon|pull.?toy|stroller/i, "🚂"], [/sticker|chart/i, "🏅"],
