@@ -327,7 +327,7 @@ function isKid(who) { return (C.kids || []).includes(who); }
 const CHORE_PICS = [
   [/window/i, "🧽"], [/shoe/i, "👟"], [/hair/i, "💇"], [/tooth|teeth|brush/i, "🦷"], [/\bbed\b|make.*bed/i, "🛏️"],
   [/toy|basement|play.?room/i, "🧸"], [/block|lego|duplo/i, "🧱"], [/dish|dishwash/i, "🍽️"], [/trash|garbage/i, "🗑️"], [/recycl/i, "♻️"],
-  [/\bdog\b|puppy|walk/i, "🐕"], [/\bcat\b|kitty/i, "🐈"], [/fish/i, "🐠"], [/chicken|coop/i, "🐔"],
+  [/\bdog\b|puppy|\bwalk\b/i, "🐕"], [/\bcat\b|kitty/i, "🐈"], [/fish/i, "🐠"], [/chicken|coop/i, "🐔"],
   [/bunny|rabbit/i, "🐰"], [/turtle|tortoise/i, "🐢"], [/hamster|guinea/i, "🐹"], [/bird|parakeet/i, "🐦"],
   [/plant|water/i, "🌱"], [/flower/i, "🌷"], [/vacuum|sweep/i, "🧹"], [/mop|floor/i, "💦"],
   [/laundry|fold|clothes/i, "🧺"], [/pajama|\bpjs?\b|dressed/i, "👕"], [/dresser|closet|hang.?up/i, "👚"],
@@ -336,11 +336,11 @@ const CHORE_PICS = [
   [/book|read/i, "📚"], [/\bcar\b|garage/i, "🚗"], [/mail/i, "📬"], [/snow|shovel/i, "❄️"],
   [/leaf|rake/i, "🍂"], [/towel/i, "🧻"], [/face|hand/i, "🧼"],
   [/feed|food|bowl/i, "🥣"], [/homework|study/i, "✏️"], [/guitar|violin|cello/i, "🎸"], [/music|piano|practice/i, "🎹"],
-  [/bath|shower/i, "🛁"], [/swim|pool/i, "🏊"], [/bike|cycle|scooter/i, "🚲"], [/mow|lawn|grass/i, "🌿"], [/garden|yard|weed/i, "🌻"],
+  [/bath|shower/i, "🛁"], [/swim|pool/i, "🏊"], [/sunscreen|sunblock/i, "🧴"], [/bike|cycle|scooter/i, "🚲"], [/mow|lawn|grass/i, "🌿"], [/garden|yard|weed/i, "🌻"],
   [/sock/i, "🧦"], [/potty|toilet/i, "🚽"], [/diaper|baby/i, "🍼"], [/backpack/i, "🎒"],
-  [/puzzle/i, "🧩"], [/draw|color(?:ing)?|paint|art|crayon|marker/i, "🎨"], [/light|lamp/i, "💡"], [/nap|sleep/i, "😴"],
+  [/puzzle/i, "🧩"], [/draw|color(?:ing)?|paint|art|crayon|marker|chalk/i, "🎨"], [/light|lamp/i, "💡"], [/nap|sleep/i, "😴"],
   [/pray|prayer|grace/i, "🙏"], [/hug|cuddle|kiss/i, "🤗"], [/bottle|sippy/i, "🍼"], [/wagon|pull.?toy|stroller/i, "🚂"], [/sticker|chart/i, "🏅"],
-  [/vitamin/i, "🍊"], [/wash/i, "🧼"], [/clean|tidy|pick.?up/i, "🧼"],
+  [/vitamin/i, "🍊"], [/put\b.*away/i, "📦"], [/wash/i, "🧼"], [/clean|tidy|pick.?up/i, "🧼"],
   // Last-resort friendly matches for common little-kid tasks that dodge every
   // specific word above (help / share / play outside / snacks). Kept dead last
   // so nothing regresses — they only ever replace a bare ⭐ with a clear picture.
@@ -1167,7 +1167,9 @@ function holidayBanner() {
     if (!best || days < best.days) best = { name: h.name, emoji: h.emoji, col: h.col, days };
   }
   if (!best) return "";
-  const when = best.days === 0 ? "Today! 🎇" : best.days === 1 ? "Tomorrow!" : `in ${best.days} days`;
+  // On the day itself, echo the holiday's own emoji (so it's never July-4th
+  // fireworks on Christmas). "in N days" gets a friendly gap otherwise.
+  const when = best.days === 0 ? `Today! ${best.emoji}` : best.days === 1 ? "Tomorrow!" : `in ${best.days} days`;
   return `<div style="display:flex;align-items:center;gap:9px;background:${best.col}15;border:1px solid ${best.col}44;border-radius:var(--r-md);padding:5px 12px;margin-bottom:3px;">
     <span style="font-size:1.25em;line-height:1;flex-shrink:0">${best.emoji}</span>
     <div style="font-size:clamp(12px,1.15vw,15px);font-weight:600;">${best.name} — ${when}</div>
