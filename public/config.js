@@ -273,6 +273,12 @@ window.CONFIG = {
     "Back-to-school ads everywhere and I'm just sitting here thinking the only thing I ever needed to learn was you — green eyes, midnight hair, that laugh — and I'd happily study it forever. Good morning, my beautiful genius. 📚💚",
     "The garden's heavy with tomatoes and zucchini, the sunflowers are taller than Addy 🐰 now, and every single bit of it grew because you loved it into being. You make things bloom, Kenzie — the garden, these kids, me. Good morning, most beautiful woman alive. 🌻🥒💚",
     "Late-August magic: the evenings turn gold a little earlier now, the crickets have taken over for the fireflies, and I'm still the luckiest man in Michigan because the most beautiful woman in it chose this whole life with me. Green eyes, midnight hair, that laugh — good morning, gorgeous. 🌾🌇💚",
+    "The first yellow leaf showed up on the maple this morning like it was trying to make an entrance — cute, but you walked into the kitchen right after and reminded it who actually runs this whole gorgeous show. Green eyes, midnight hair, my entire heart. Good morning, my love. 🍁💚",
+    "Back-to-school season means new crayons, fresh notebooks, and me falling for you all over again like it's the first day. Some lessons you just never stop wanting to learn. Good morning, most beautiful woman in Michigan. ✏️📒💚",
+    "The apple orchard down the road just opened for the season and honestly? Not one of those trees is as sweet as you. Cider, doughnuts, hayrides — I'd trade the whole lot for one more slow morning watching those emerald eyes wake up. Good morning, gorgeous. 🍎🍩💚",
+    "September's rolling in soft and golden, the kids are digging out their hoodies, and I'm standing here in the warm-cool morning air quietly amazed — again — that Addy 🐰 and Sophie 🐢 have the most beautiful, patient, dazzling mom alive, and that she's mine. Good morning, Kenzie. 🍂💚",
+    "The mums on the porch bloomed overnight and they're showing off hard, but they never stood a chance — you walked past them with your coffee and those green eyes and the whole porch quietly gave up. Good morning to the most beautiful thing in this whole zip code. 🌼☕💚",
+    "Sweater weather's sneaking in, which means more excuses to pull you close on cool mornings — as if I ever needed one. Midnight hair, emerald eyes, that laugh that fixes my whole day before it starts. Good morning, my love. 🧡🍁💚",
   ],
 
   // One-time SURPRISE note: shows immediately (once) the moment the screen

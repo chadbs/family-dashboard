@@ -1145,14 +1145,17 @@ function easterDate(year) {
 function holidayBanner() {
   const n = new Date(); n.setHours(0, 0, 0, 0);
   const fixed = [
-    { month: 1,  day: 1,  name: "New Year's Day",  emoji: "🎊", col: "#8B5CF6" },
-    { month: 2,  day: 14, name: "Valentine's Day", emoji: "💝", col: "#F472B6" },
-    { month: 7,  day: 4,  name: "July 4th",        emoji: "🎆", col: "#EF4444" },
-    { month: 10, day: 31, name: "Halloween",       emoji: "🎃", col: "#F97316" },
-    { month: 12, day: 25, name: "Christmas",       emoji: "🎄", col: "#10B981" },
+    { month: 1,  day: 1,  name: "New Year's Day",   emoji: "🎊", col: "#8B5CF6" },
+    { month: 2,  day: 14, name: "Valentine's Day",  emoji: "💝", col: "#F472B6" },
+    { month: 3,  day: 17, name: "St. Patrick's Day", emoji: "🍀", col: "#22C55E" },
+    { month: 7,  day: 4,  name: "July 4th",         emoji: "🎆", col: "#EF4444" },
+    { month: 10, day: 31, name: "Halloween",        emoji: "🎃", col: "#F97316" },
+    { month: 12, day: 25, name: "Christmas",        emoji: "🎄", col: "#10B981" },
   ];
   const floating = y => [
-    { date: easterDate(y),        name: "Easter",       emoji: "🐰", col: "#F472B6" },
+    { date: easterDate(y),           name: "Easter",       emoji: "🐰", col: "#F472B6" },
+    { date: nthWeekday(y, 5, 0, 2),  name: "Mother's Day", emoji: "💐", col: "#EC4899" },
+    { date: nthWeekday(y, 6, 0, 3),  name: "Father's Day", emoji: "👔", col: "#3B82F6" },
     { date: nthWeekday(y, 11, 4, 4), name: "Thanksgiving", emoji: "🦃", col: "#D97706" },
   ];
   const all = [];
