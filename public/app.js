@@ -340,11 +340,12 @@ const CHORE_PICS = [
   [/sock/i, "🧦"], [/potty|toilet/i, "🚽"], [/diaper|baby/i, "🍼"], [/backpack/i, "🎒"],
   [/puzzle/i, "🧩"], [/draw|color(?:ing)?|paint|art|crayon|marker|chalk/i, "🎨"], [/light|lamp/i, "💡"], [/nap|sleep/i, "😴"],
   [/pray|prayer|grace/i, "🙏"], [/hug|cuddle|kiss/i, "🤗"], [/bottle|sippy/i, "🍼"], [/wagon|pull.?toy|stroller/i, "🚂"], [/sticker|chart/i, "🏅"],
+  [/jammies|jammy|jamms/i, "👕"], [/plate/i, "🍽️"], [/helmet/i, "⛑️"], [/buckle|seat.?belt|car ?seat/i, "🚗"], [/nose|sneeze|tissue|kleenex/i, "🤧"],
   [/vitamin/i, "🍊"], [/put\b.*away/i, "📦"], [/wash/i, "🧼"], [/clean|tidy|pick.?up/i, "🧼"],
   // Last-resort friendly matches for common little-kid tasks that dodge every
   // specific word above (help / share / play outside / snacks). Kept dead last
   // so nothing regresses — they only ever replace a bare ⭐ with a clear picture.
-  [/\bhelp(?:er|ing)?\b|\bchores?\b/i, "🤝"], [/\bshare|\bkind\b|gentle|manners|\bnice\b/i, "💗"],
+  [/\bhelp(?:er|ing)?\b|\bchores?\b/i, "🤝"], [/\bshare|\bkind\b|gentle|manners|\bnice\b|please|thank|sorry|apolog/i, "💗"],
   [/outside|outdoor|playground|backyard|recess/i, "🌳"], [/snack|\bfruit\b|\bveggie|vegetable|\bapple\b/i, "🍎"],
 ];
 function chorePic(c) {
@@ -436,7 +437,9 @@ const CHEERS = ["Great job!", "Nice!", "Woohoo!", "Way to go!", "Awesome!", "Hig
   "Egg-cellent! 🐣", "Boom! Nailed it! 💥", "You're a gem! 💎", "Two thumbs up! 👍", "Hoppy days! 🐰", "Sunshine helper! ☀️",
   "Marvelous! 🌼", "Wowza! 😲", "Slow & steady wins! 🐢", "Absolutely ace! 🌟",
   "Hoppin' awesome! 🐰", "Sunshine superstar! ☀️", "Splash-tastic! 💦", "You're a firework! 🎆",
-  "Shell yeah! 🐢", "Cool as a cucumber! 🥒", "Berry good job! 🍓", "Bee-utiful work! 🐝"];
+  "Shell yeah! 🐢", "Cool as a cucumber! 🥒", "Berry good job! 🍓", "Bee-utiful work! 🐝",
+  "Watermelon winner! 🍉", "Sunflower tall! 🌻", "Firefly bright! ✨", "You're a-maize-ing! 🌽",
+  "Sandcastle strong! 🏖️", "Popsicle-perfect! 🍦", "Hoppy helper! 🐰", "Turtley the best! 🐢"];
 const FUN_ANIMALS = ["🐰", "🐢"];   // the kids' favorites, always join the party
 function celebrate(x, y, accent, who) {
   const fx = $("fx"); if (!fx) return;

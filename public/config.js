@@ -279,6 +279,9 @@ window.CONFIG = {
     "September's rolling in soft and golden, the kids are digging out their hoodies, and I'm standing here in the warm-cool morning air quietly amazed — again — that Addy 🐰 and Sophie 🐢 have the most beautiful, patient, dazzling mom alive, and that she's mine. Good morning, Kenzie. 🍂💚",
     "The mums on the porch bloomed overnight and they're showing off hard, but they never stood a chance — you walked past them with your coffee and those green eyes and the whole porch quietly gave up. Good morning to the most beautiful thing in this whole zip code. 🌼☕💚",
     "Sweater weather's sneaking in, which means more excuses to pull you close on cool mornings — as if I ever needed one. Midnight hair, emerald eyes, that laugh that fixes my whole day before it starts. Good morning, my love. 🧡🍁💚",
+    "The backyard crickets tuned up at dusk last night and I swear they were trying to write you a song — cute effort, boys, but nothing on earth sounds as good as your laugh from the next room. Green eyes, midnight hair, my whole entire heart. Good morning, gorgeous. 🦗🎶💚",
+    "First hint of a cool breeze this morning and Addy 🐰 already wanted her hoodie, Sophie 🐢 wanted to be carried, and I just wanted five more minutes watching the most beautiful woman in Michigan make it all look easy. You're the warmest thing about every season, Kenzie. Good morning, my love. 🍂💚",
+    "The farmstand down the road has the first mums and pumpkins out and it hit me — another whole gorgeous season with you rolling in, and I still can't believe my luck. Emerald eyes, midnight hair, that laugh — I'd take a thousand more autumns if every one started with your good-morning face. 🎃🌻💚",
   ],
 
   // One-time SURPRISE note: shows immediately (once) the moment the screen
