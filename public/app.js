@@ -332,11 +332,13 @@ const CHORE_PICS = [
   [/plant|water/i, "🌱"], [/flower/i, "🌷"], [/vacuum|sweep/i, "🧹"], [/mop|floor/i, "💦"],
   [/laundry|fold|clothes/i, "🧺"], [/pajama|\bpjs?\b|dressed/i, "👕"], [/dresser|closet|hang.?up/i, "👚"],
   [/blanket|pillow/i, "🛌"], [/stairs?/i, "👣"], [/dust/i, "✨"], [/wipe|counter/i, "🧴"],
-  [/\broom\b/i, "🚪"], [/table|set.*table/i, "🍽️"], [/grocer/i, "🛒"], [/lunch|meal|cook|kitchen/i, "🍱"],
+  [/\broom\b/i, "🚪"], [/table|set.*table/i, "🍽️"], [/grocer/i, "🛒"],
+  [/cookie|muffin|cupcake|\bbake|baking|batter|frosting/i, "🍪"], [/lunch|meal|cook|kitchen/i, "🍱"],
   [/book|read/i, "📚"], [/\bcar\b|garage/i, "🚗"], [/mail/i, "📬"], [/snow|shovel/i, "❄️"],
   [/leaf|rake/i, "🍂"], [/towel/i, "🧻"], [/face|hand/i, "🧼"],
   [/feed|food|bowl/i, "🥣"], [/homework|study/i, "✏️"], [/guitar|violin|cello/i, "🎸"], [/music|piano|practice/i, "🎹"],
-  [/bath|shower/i, "🛁"], [/swim|pool/i, "🏊"], [/sunscreen|sunblock/i, "🧴"], [/bike|cycle|scooter/i, "🚲"], [/mow|lawn|grass/i, "🌿"], [/garden|yard|weed/i, "🌻"],
+  [/bath|shower/i, "🛁"], [/swim|pool/i, "🏊"], [/sunscreen|sunblock/i, "🧴"], [/bike|cycle|scooter|trike|tricycle/i, "🚲"], [/mow|lawn|grass/i, "🌿"], [/garden|yard|weed/i, "🌻"],
+  [/sandbox|sand ?box|sand ?toy|\bsand\b/i, "🏖️"], [/sprinkler|splash ?pad|\bhose\b/i, "💦"],
   [/sock/i, "🧦"], [/potty|toilet/i, "🚽"], [/diaper|baby/i, "🍼"], [/backpack/i, "🎒"],
   [/puzzle/i, "🧩"], [/draw|color(?:ing)?|paint|art|crayon|marker|chalk/i, "🎨"], [/light|lamp/i, "💡"], [/nap|sleep/i, "😴"],
   [/pray|prayer|grace/i, "🙏"], [/hug|cuddle|kiss/i, "🤗"], [/bottle|sippy/i, "🍼"], [/wagon|pull.?toy|stroller/i, "🚂"], [/sticker|chart/i, "🏅"],
@@ -439,7 +441,9 @@ const CHEERS = ["Great job!", "Nice!", "Woohoo!", "Way to go!", "Awesome!", "Hig
   "Hoppin' awesome! 🐰", "Sunshine superstar! ☀️", "Splash-tastic! 💦", "You're a firework! 🎆",
   "Shell yeah! 🐢", "Cool as a cucumber! 🥒", "Berry good job! 🍓", "Bee-utiful work! 🐝",
   "Watermelon winner! 🍉", "Sunflower tall! 🌻", "Firefly bright! ✨", "You're a-maize-ing! 🌽",
-  "Sandcastle strong! 🏖️", "Popsicle-perfect! 🍦", "Hoppy helper! 🐰", "Turtley the best! 🐢"];
+  "Sandcastle strong! 🏖️", "Popsicle-perfect! 🍦", "Hoppy helper! 🐰", "Turtley the best! 🐢",
+  "Apple-solutely amazing! 🍎", "Sharp as a new crayon! ✏️", "Backpack-ready star! 🎒", "Golden as sunshine! 🌻",
+  "Sweet as a cookie! 🍪", "Hop to it, champ! 🐰", "Shell-tastic effort! 🐢", "Bright as a rainbow! 🌈"];
 const FUN_ANIMALS = ["🐰", "🐢"];   // the kids' favorites, always join the party
 function celebrate(x, y, accent, who) {
   const fx = $("fx"); if (!fx) return;
