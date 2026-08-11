@@ -52,15 +52,20 @@ function renderClock() {
 }
 
 // A tiny contextual emoji for the greeting: live sky wins (so it never lies
-// about rain/snow), otherwise a gentle nod to the season. Purely decorative —
-// re-runs each clock tick, so it lights up the moment the weather loads.
+// about rain/snow), then a hot-day palm to match the hero badge, then the time
+// of day (a moon after dark — never a daytime sun at night), else a gentle nod
+// to the season. Purely decorative — re-runs each clock tick, so it lights up
+// the moment the weather loads.
 function greetingEmoji() {
   const w = lastWeather;
   if (w) {
     const sky = skyFromCondition(w.condition, (w.temperature_F != null && !isNaN(w.temperature_F)) ? Math.round(w.temperature_F) : null);
     if (sky === "rainy") return "🌧️";
     if (sky === "snow")  return "❄️";
+    if (sky === "hot")   return "🌴";   // matches the hero's 🌴 badge — the kids love it
   }
+  const hr = new Date().getHours();
+  if (hr >= 19 || hr < 5) return "🌙";  // after dark: a moon, not a midday sun
   return { summer: "☀️", fall: "🍂", winter: "⛄", spring: "🌷" }[currentSeason()] || "";
 }
 
@@ -439,7 +444,9 @@ const CHEERS = ["Great job!", "Nice!", "Woohoo!", "Way to go!", "Awesome!", "Hig
   "Hoppin' awesome! 🐰", "Sunshine superstar! ☀️", "Splash-tastic! 💦", "You're a firework! 🎆",
   "Shell yeah! 🐢", "Cool as a cucumber! 🥒", "Berry good job! 🍓", "Bee-utiful work! 🐝",
   "Watermelon winner! 🍉", "Sunflower tall! 🌻", "Firefly bright! ✨", "You're a-maize-ing! 🌽",
-  "Sandcastle strong! 🏖️", "Popsicle-perfect! 🍦", "Hoppy helper! 🐰", "Turtley the best! 🐢"];
+  "Sandcastle strong! 🏖️", "Popsicle-perfect! 🍦", "Hoppy helper! 🐰", "Turtley the best! 🐢",
+  "Sharp as a new pencil! ✏️", "Gold-star effort! 🌟", "You totally crushed it! 💪", "Tip-top job! 🎩",
+  "Twinkle-twinkle superstar! ✨", "Peachy keen! 🍑", "Hoppin' hooray! 🐰", "Shell-ebration time! 🐢"];
 const FUN_ANIMALS = ["🐰", "🐢"];   // the kids' favorites, always join the party
 function celebrate(x, y, accent, who) {
   const fx = $("fx"); if (!fx) return;
