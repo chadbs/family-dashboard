@@ -306,6 +306,9 @@ window.CONFIG = {
     "The porch light's still on, the coffee's dripping, and I'm standing here at dawn quietly floored — again — that the funniest, kindest, most jaw-droppingly beautiful woman I've ever met said 'I do' to ME. Good morning, my love. ☕💚",
     "Every single morning I get is a good one, but the ones that start with your face are the reason I'll never once complain about an alarm clock. Green eyes, midnight hair, that laugh — good morning, Kenzie. 💚",
     "The cicadas are winding down and the crickets are taking over and summer's quietly packing its bags — but you, my love, are gorgeous in every season, in every light, at every hour. Good morning, most beautiful woman alive. 🍂💚",
+    "Warm rain rolled through before dawn and the whole backyard smells green and new — but I'd trade every fresh-washed morning for one more minute watching you sleep, midnight hair on the pillow, those emerald eyes about to open. Good morning, most beautiful woman in Michigan. 🌦️💚",
+    "The farmstand had the first sweet corn and sun-warm peaches today, and I stood there grinning like a fool — because not one golden ear, not one perfect peach, holds a candle to you across the kitchen with your coffee. Good morning, gorgeous. 🌽🍑💚",
+    "Screen door creaking, sprinkler ticking, Addy 🐰 and Sophie 🐢 already giggling in the yard — and their impossibly beautiful mom right in the middle of it, green eyes catching the morning light like she owns the sun. She kind of does. Good morning, my love. ☀️💚",
   ],
 
   // One-time SURPRISE note: shows immediately (once) the moment the screen

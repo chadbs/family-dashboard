@@ -331,8 +331,8 @@ function isKid(who) { return (C.kids || []).includes(who); }
 // whose font shows newer glyphs (🪟 🪥 🪴 …) as empty boxes, i.e. "no icon".
 const CHORE_PICS = [
   [/window/i, "🧽"], [/shoe/i, "👟"], [/hair/i, "💇"], [/tooth|teeth|brush/i, "🦷"], [/\bbed\b|make.*bed/i, "🛏️"],
-  [/toy|basement|play.?room/i, "🧸"], [/block|lego|duplo/i, "🧱"], [/dish|dishwash/i, "🍽️"], [/trash|garbage/i, "🗑️"], [/recycl/i, "♻️"],
-  [/\bdog\b|puppy|\bwalk\b/i, "🐕"], [/\bcat\b|kitty/i, "🐈"], [/fish/i, "🐠"], [/chicken|coop/i, "🐔"],
+  [/toy|basement|play.?room/i, "🧸"], [/block|lego|duplo/i, "🧱"], [/dish|dishwash/i, "🍽️"], [/trash|garbage/i, "🗑️"], [/recycl/i, "♻️"], [/compost/i, "🥬"],
+  [/\bdog\b|puppy|\bwalk\b/i, "🐕"], [/\bcat\b|kitty/i, "🐈"], [/fish/i, "🐠"], [/chicken|coop/i, "🐔"], [/\beggs?\b/i, "🥚"],
   [/bunny|rabbit/i, "🐰"], [/turtle|tortoise/i, "🐢"], [/hamster|guinea/i, "🐹"], [/bird|parakeet/i, "🐦"],
   [/plant|water/i, "🌱"], [/flower/i, "🌷"], [/vacuum|sweep/i, "🧹"], [/mop|floor/i, "💦"],
   [/laundry|fold|clothes/i, "🧺"], [/pajama|\bpjs?\b|dressed/i, "👕"], [/dresser|closet|hang.?up/i, "👚"],
