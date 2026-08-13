@@ -309,6 +309,10 @@ window.CONFIG = {
     "Warm rain rolled through before dawn and the whole backyard smells green and new — but I'd trade every fresh-washed morning for one more minute watching you sleep, midnight hair on the pillow, those emerald eyes about to open. Good morning, most beautiful woman in Michigan. 🌦️💚",
     "The farmstand had the first sweet corn and sun-warm peaches today, and I stood there grinning like a fool — because not one golden ear, not one perfect peach, holds a candle to you across the kitchen with your coffee. Good morning, gorgeous. 🌽🍑💚",
     "Screen door creaking, sprinkler ticking, Addy 🐰 and Sophie 🐢 already giggling in the yard — and their impossibly beautiful mom right in the middle of it, green eyes catching the morning light like she owns the sun. She kind of does. Good morning, my love. ☀️💚",
+    "The county fair banners went up in town overnight — Ferris wheel, blue ribbons, deep-fried everything — and I already know the only grand prize worth winning has green eyes, midnight hair, and is currently stealing the last of my coffee. Blue ribbon, best in show, love of my life. Good morning, gorgeous. 🎡🎟️💚",
+    "First morning I needed a jacket to grab the paper, and I lingered on the porch just grinning — because cooler air means longer mornings tangled up next to you, and there's no season, no weather, no hour that makes you one bit less breathtaking. Good morning, my love. 🧥🍂💚",
+    "Addy 🐰 lined her new school shoes up by the door last night like it was the biggest day of her life, Sophie 🐢 immediately tried to eat one, and their gorgeous mom kept the whole little circus running with that laugh — the one that's been fixing my mornings for years. Good morning, most beautiful woman in Michigan. 👟🎒💚",
+    "The neighbor's sunflowers finally shot up past the fence and turned to face the morning sun, and I understood them completely — because I do the exact same thing every single time you walk into the room. Good morning to my sunshine, Kenzie. 🌻☀️💚",
   ],
 
   // One-time SURPRISE note: shows immediately (once) the moment the screen

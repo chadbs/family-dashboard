@@ -1468,12 +1468,26 @@ function spawnLoveHearts() {
     host.appendChild(h);
   }
 }
+// A long note scrolls inside the card; flag it so the CSS can fade the bottom
+// edge and show a "scroll for more" nudge (cleared once you reach the end) — a
+// short note gets neither class and looks exactly as before.
+function updateLoveOverflow() {
+  const card = document.querySelector(".love-card");
+  const msg = $("loveMsg");
+  if (!card || !msg) return;
+  const overflow = msg.scrollHeight - msg.clientHeight > 4;
+  const atBottom = msg.scrollTop + msg.clientHeight >= msg.scrollHeight - 4;
+  card.classList.toggle("is-scrollable", overflow);
+  card.classList.toggle("at-bottom", !overflow || atBottom);
+}
 function showLove() {
   const msg = pickLoveMessage(); if (!msg) return;
   $("loveMsg").textContent = msg;
+  $("loveMsg").scrollTop = 0;
   $("loveEyebrow").textContent = "Good morning, " + (C.loveTo || "beautiful") + " 💚";
   spawnLoveHearts();
   $("loveModal").hidden = false;
+  requestAnimationFrame(updateLoveOverflow);
 }
 function hideLove() { $("loveModal").hidden = true; }
 // One-time surprise note: shows immediately, once per distinct message.
@@ -1483,9 +1497,11 @@ function showLoveNow() {
   if (localStorage.getItem("loveNowSeen") === msg) return false;   // already shown this one
   localStorage.setItem("loveNowSeen", msg);
   $("loveMsg").textContent = msg;
+  $("loveMsg").scrollTop = 0;
   $("loveEyebrow").textContent = "💌 A surprise note for " + (C.loveTo || "you");
   spawnLoveHearts();
   $("loveModal").hidden = false;
+  requestAnimationFrame(updateLoveOverflow);
   return true;
 }
 function maybeShowLove() {
@@ -1499,6 +1515,7 @@ function maybeShowLove() {
   showLove();
 }
 $("loveModal").addEventListener("click", hideLove);
+$("loveMsg").addEventListener("scroll", updateLoveOverflow);
 document.addEventListener("keydown", (e) => { if (e.key === "Escape") { hideLove(); closeForecast(); } });
 
 /* ---------------------------------------------------------------- voice assistant

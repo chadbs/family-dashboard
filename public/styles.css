@@ -647,6 +647,22 @@ html[data-skin="glass"] .gdeal { color: #FFD9A8; }
   padding: clamp(12px, 1.4vw, 16px) clamp(26px, 3vw, 40px);
   box-shadow: 0 10px 26px rgba(16,185,129,.4); transition: transform .12s var(--ease); }
 .love-close:active { transform: scale(.96); }
+/* When a note is taller than the card it scrolls (see .love-msg above). To make
+   that obvious on a glanceable wall display — so a long note never looks cut off
+   mid-sentence — fade its bottom edge and float a gentle "scroll for more" nudge.
+   Both are added/removed by JS (updateLoveOverflow) and vanish once you reach the
+   end. Short notes get neither class, so they look exactly as before. */
+.love-card.is-scrollable .love-msg {
+  -webkit-mask-image: linear-gradient(to bottom, #000 82%, transparent 100%);
+          mask-image: linear-gradient(to bottom, #000 82%, transparent 100%); }
+.love-card.is-scrollable.at-bottom .love-msg {
+  -webkit-mask-image: none; mask-image: none; }
+.love-more { flex: 0 0 auto; align-self: center; display: none;
+  margin-top: clamp(8px, 1.2vw, 14px); font-size: clamp(12px, 1.2vw, 15px);
+  font-weight: 600; letter-spacing: .4px; color: #34d399; opacity: .92;
+  animation: love-more-bob 1.6s ease-in-out infinite; }
+.love-card.is-scrollable:not(.at-bottom) .love-more { display: block; }
+@keyframes love-more-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(3px); } }
 .love-hearts { position: absolute; inset: 0; z-index: 1; pointer-events: none; overflow: hidden; }
 .love-heart { position: absolute; bottom: -42px; opacity: 0; will-change: transform;
   animation-name: love-float; animation-timing-function: ease-in; animation-iteration-count: infinite; }
@@ -663,7 +679,7 @@ html[data-skin="glass"] .gdeal { color: #FFD9A8; }
 }
 @media (prefers-reduced-motion: reduce) {
   .love-heart { display: none; }
-  .love-card, .love-modal { animation: none; }
+  .love-card, .love-modal, .love-more { animation: none; }
 }
 
 /* ---------- Voice assistant ---------- */
