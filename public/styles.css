@@ -191,6 +191,16 @@ html[data-sky="hot"] .sky-fx span {
   background: radial-gradient(circle, #FFD166, transparent 70%);
   animation: sky-shimmer 3.4s ease-in infinite;
 }
+/* A deep-freeze clear day (no "snow" in the condition, just bitter cold) gets a
+   few slow frost specks drifting in the still air — so cold days react like the
+   hot ones already do, instead of only tinting. */
+html[data-sky="cold"] .sky-fx { opacity: 1; }
+html[data-sky="cold"] .sky-fx span {
+  width: 4px; height: 4px; border-radius: 50%;
+  background: rgba(214, 232, 250, .8);
+  box-shadow: 0 0 5px rgba(214, 232, 250, .5);
+  animation: sky-drift-frost 9s linear infinite;
+}
 .sky-fx span:nth-child(1) { left: 6%;  animation-delay: 0s;   }
 .sky-fx span:nth-child(2) { left: 18%; animation-delay: .3s;  }
 .sky-fx span:nth-child(3) { left: 30%; animation-delay: .9s;  }
@@ -201,6 +211,7 @@ html[data-sky="hot"] .sky-fx span {
 .sky-fx span:nth-child(8) { left: 92%; animation-delay: .2s;  }
 @keyframes sky-fall { to { transform: translateY(160px); opacity: 0; } }
 @keyframes sky-fall-snow { to { transform: translateY(160px) translateX(10px); opacity: .2; } }
+@keyframes sky-drift-frost { to { transform: translateY(150px) translateX(-8px); opacity: .15; } }
 @keyframes sky-shimmer { 0% { transform: translateY(0) scale(.6); opacity: 0; } 30% { opacity: .8; } to { transform: translateY(-120px) scale(1.3); opacity: 0; } }
 @media (prefers-reduced-motion: reduce) {
   .sky-fx span { animation: none; display: none; }

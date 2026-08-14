@@ -446,7 +446,9 @@ const CHEERS = ["Great job!", "Nice!", "Woohoo!", "Way to go!", "Awesome!", "Hig
   "Watermelon winner! 🍉", "Sunflower tall! 🌻", "Firefly bright! ✨", "You're a-maize-ing! 🌽",
   "Sandcastle strong! 🏖️", "Popsicle-perfect! 🍦", "Hoppy helper! 🐰", "Turtley the best! 🐢",
   "Sharp as a new pencil! ✏️", "Gold-star effort! 🌟", "You totally crushed it! 💪", "Tip-top job! 🎩",
-  "Twinkle-twinkle superstar! ✨", "Peachy keen! 🍑", "Hoppin' hooray! 🐰", "Shell-ebration time! 🐢"];
+  "Twinkle-twinkle superstar! ✨", "Peachy keen! 🍑", "Hoppin' hooray! 🐰", "Shell-ebration time! 🐢",
+  "Top of the class! 🍎", "Sharp as a crayon! 🖍️", "Cricket-loud cheers! 🦗", "Acorn-solutely great! 🌰",
+  "Leaf it to you! 🍁", "Golden-hour good! 🌅", "Hoppin' honor roll! 🐰", "Shell of a job! 🐢"];
 const FUN_ANIMALS = ["🐰", "🐢"];   // the kids' favorites, always join the party
 function celebrate(x, y, accent, who) {
   const fx = $("fx"); if (!fx) return;
