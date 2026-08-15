@@ -340,7 +340,7 @@ const CHORE_PICS = [
   [/\broom\b/i, "🚪"], [/table|set.*table/i, "🍽️"], [/grocer/i, "🛒"], [/lunch|meal|cook|kitchen/i, "🍱"],
   [/book|read/i, "📚"], [/\bcar\b|garage/i, "🚗"], [/mail/i, "📬"], [/snow|shovel/i, "❄️"],
   [/leaf|rake/i, "🍂"], [/towel/i, "🧻"], [/face|hand/i, "🧼"],
-  [/feed|food|bowl/i, "🥣"], [/homework|study/i, "✏️"], [/guitar|violin|cello/i, "🎸"], [/music|piano|practice/i, "🎹"],
+  [/feed|food|bowl/i, "🥣"], [/homework|study/i, "✏️"], [/soccer|baseball|basketball|kickball|\bt.?ball\b|\bsport/i, "⚽"], [/guitar|violin|cello/i, "🎸"], [/music|piano|practice/i, "🎹"],
   [/bath|shower/i, "🛁"], [/swim|pool/i, "🏊"], [/sunscreen|sunblock/i, "🧴"], [/bike|cycle|scooter/i, "🚲"], [/mow|lawn|grass/i, "🌿"], [/garden|yard|weed/i, "🌻"],
   [/sock/i, "🧦"], [/potty|toilet/i, "🚽"], [/diaper|baby/i, "🍼"], [/backpack/i, "🎒"],
   [/puzzle/i, "🧩"], [/draw|color(?:ing)?|paint|art|crayon|marker|chalk/i, "🎨"], [/light|lamp/i, "💡"], [/nap|sleep/i, "😴"],
@@ -352,6 +352,9 @@ const CHORE_PICS = [
   // so nothing regresses — they only ever replace a bare ⭐ with a clear picture.
   [/\bhelp(?:er|ing)?\b|\bchores?\b/i, "🤝"], [/\bshare|\bkind\b|gentle|manners|\bnice\b|please|thank|sorry|apolog/i, "💗"],
   [/outside|outdoor|playground|backyard|recess/i, "🌳"], [/snack|\bfruit\b|\bveggie|vegetable|\bapple\b/i, "🍎"],
+  // Gentle daily-routine words that dodge every specific match above — still
+  // dead last, so they only ever upgrade a bare ⭐ to something clearer.
+  [/quiet|\brest\b|settle|calm.?down/i, "🤫"], [/bedtime|tuck.?in/i, "🌙"], [/screen|ipad/i, "📺"],
 ];
 function chorePic(c) {
   if (c.pic) return c.pic;                                  // explicit picture wins
@@ -448,7 +451,9 @@ const CHEERS = ["Great job!", "Nice!", "Woohoo!", "Way to go!", "Awesome!", "Hig
   "Sharp as a new pencil! ✏️", "Gold-star effort! 🌟", "You totally crushed it! 💪", "Tip-top job! 🎩",
   "Twinkle-twinkle superstar! ✨", "Peachy keen! 🍑", "Hoppin' hooray! 🐰", "Shell-ebration time! 🐢",
   "Top of the class! 🍎", "Sharp as a crayon! 🖍️", "Cricket-loud cheers! 🦗", "Acorn-solutely great! 🌰",
-  "Leaf it to you! 🍁", "Golden-hour good! 🌅", "Hoppin' honor roll! 🐰", "Shell of a job! 🐢"];
+  "Leaf it to you! 🍁", "Golden-hour good! 🌅", "Hoppin' honor roll! 🐰", "Shell of a job! 🐢",
+  "Crunchy-leaf champion! 🍂", "Apple of my eye! 🍎", "Harvest-moon high five! 🌕", "Cider-sweet job! 🍏",
+  "Hoppin' hero! 🐰", "Turtle power! 🐢", "Pumpkin-spice perfect! 🎃", "Cozy-sweater cozy-good! 🧡"];
 const FUN_ANIMALS = ["🐰", "🐢"];   // the kids' favorites, always join the party
 function celebrate(x, y, accent, who) {
   const fx = $("fx"); if (!fx) return;
