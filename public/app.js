@@ -66,6 +66,11 @@ function greetingEmoji() {
   }
   const hr = new Date().getHours();
   if (hr >= 19 || hr < 5) return "🌙";  // after dark: a moon, not a midday sun
+  // Back-to-school flourish: a cheerful backpack on weekday mornings in the
+  // late-Aug → mid-Sep window (the kids gearing up for the new school year).
+  // Just a seasonal nod — real weather (rain/snow/heat) still wins above.
+  const bts = new Date(), md = (bts.getMonth() + 1) * 100 + bts.getDate(), dow = bts.getDay();
+  if (md >= 815 && md <= 910 && dow >= 1 && dow <= 5 && hr < 12) return "🎒";
   return { summer: "☀️", fall: "🍂", winter: "⛄", spring: "🌷" }[currentSeason()] || "";
 }
 
@@ -339,6 +344,7 @@ const CHORE_PICS = [
   [/blanket|pillow/i, "🛌"], [/stairs?/i, "👣"], [/dust/i, "✨"], [/wipe|counter/i, "🧴"],
   [/\broom\b/i, "🚪"], [/table|set.*table/i, "🍽️"], [/grocer/i, "🛒"], [/lunch|meal|cook|kitchen/i, "🍱"],
   [/book|read/i, "📚"], [/\bcar\b|garage/i, "🚗"], [/mail/i, "📬"], [/snow|shovel/i, "❄️"],
+  [/pencil|sharpen|spelling|worksheet/i, "✏️"],
   [/leaf|rake/i, "🍂"], [/towel/i, "🧻"], [/face|hand/i, "🧼"],
   [/feed|food|bowl/i, "🥣"], [/homework|study/i, "✏️"], [/guitar|violin|cello/i, "🎸"], [/music|piano|practice/i, "🎹"],
   [/bath|shower/i, "🛁"], [/swim|pool/i, "🏊"], [/sunscreen|sunblock/i, "🧴"], [/bike|cycle|scooter/i, "🚲"], [/mow|lawn|grass/i, "🌿"], [/garden|yard|weed/i, "🌻"],
