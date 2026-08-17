@@ -312,6 +312,10 @@ window.CONFIG = {
     "The crickets have officially taken the night shift from the fireflies, the mornings smell like cut grass and coming autumn, and I'm still the luckiest man in Michigan — green eyes, midnight hair, that laugh — you make every single sunrise show up early just to watch you. Good morning, gorgeous. 🦗🌅💚",
     "Back-to-school displays are everywhere and I keep thinking: sharpen all the pencils you want, world, the only subject I ever aced was loving you, and I've been top of that class since the day those emerald eyes looked my way. Good morning to the most beautiful woman in Michigan. ✏️📚💚",
     "The last of the summer tomatoes are hanging heavy on the vine and the maple's thinking about turning — but you, Kenzie, are gorgeous in every season, in every light, and somehow more so with a coffee mug and bedhead than any sunset ever managed. Good morning, my love. 🍅🍁💚",
+    "The school-supply aisles are all sharpened pencils and fresh crayons this week, and it hit me again — the smartest thing I ever did was fall for you. Green eyes, midnight hair, that laugh that grades my whole day an A+. Good morning, gorgeous. ✏️💚",
+    "Cooler air snuck in the window before dawn and Sophie 🐢 burrowed deeper into her blanket while Addy 🐰 quietly stole all of hers — and there you were in the middle of it, the most beautiful woman in Michigan, making even 6am look like a magazine cover. Good morning, my love. 🍂💚",
+    "The neighbor's mums are out, there's football on somewhere, and pumpkin everything is creeping onto the shelves — but honestly the only season I've ever needed is you. Emerald eyes, black hair, my whole heart. Good morning, gorgeous. 🎃💚",
+    "Late-August morning math: one impossibly gorgeous woman + two giggling kids + a coffee going cold in my hand = a life so good it ought to be illegal. I'd flunk every test but the one about how much I love you. Good morning, Kenzie. ☕💚",
   ],
 
   // One-time SURPRISE note: shows immediately (once) the moment the screen

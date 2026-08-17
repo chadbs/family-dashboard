@@ -356,7 +356,7 @@ const CHORE_PICS = [
   // Last-resort friendly matches for common little-kid tasks that dodge every
   // specific word above (help / share / play outside / snacks). Kept dead last
   // so nothing regresses — they only ever replace a bare ⭐ with a clear picture.
-  [/\bhelp(?:er|ing)?\b|\bchores?\b/i, "🤝"], [/\bshare|\bkind\b|gentle|manners|\bnice\b|please|thank|sorry|apolog/i, "💗"],
+  [/\bhelp(?:er|ing)?\b|\bchores?\b|\bjobs?\b/i, "🤝"], [/\blisten(?:ing)?\b|ears?\b/i, "👂"], [/\bshare|\bkind\b|gentle|manners|\bnice\b|please|thank|sorry|apolog/i, "💗"],
   [/outside|outdoor|playground|backyard|recess/i, "🌳"], [/snack|\bfruit\b|\bveggie|vegetable|\bapple\b/i, "🍎"],
 ];
 function chorePic(c) {
@@ -454,7 +454,8 @@ const CHEERS = ["Great job!", "Nice!", "Woohoo!", "Way to go!", "Awesome!", "Hig
   "Sharp as a new pencil! ✏️", "Gold-star effort! 🌟", "You totally crushed it! 💪", "Tip-top job! 🎩",
   "Twinkle-twinkle superstar! ✨", "Peachy keen! 🍑", "Hoppin' hooray! 🐰", "Shell-ebration time! 🐢",
   "Top of the class! 🍎", "Sharp as a crayon! 🖍️", "Cricket-loud cheers! 🦗", "Acorn-solutely great! 🌰",
-  "Leaf it to you! 🍁", "Golden-hour good! 🌅", "Hoppin' honor roll! 🐰", "Shell of a job! 🐢"];
+  "Leaf it to you! 🍁", "Golden-hour good! 🌅", "Hoppin' honor roll! 🐰", "Shell of a job! 🐢",
+  "Fresh-notebook sharp! 📓", "A-plus awesome! 💯", "Bookbag brilliant! 🎒", "Recess-level great! 🏃", "Smart cookie! 🍪"];
 const FUN_ANIMALS = ["🐰", "🐢"];   // the kids' favorites, always join the party
 function celebrate(x, y, accent, who) {
   const fx = $("fx"); if (!fx) return;
