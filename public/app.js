@@ -339,7 +339,10 @@ const CHORE_PICS = [
   [/toy|basement|play.?room/i, "🧸"], [/block|lego|duplo/i, "🧱"], [/dish|dishwash/i, "🍽️"], [/trash|garbage/i, "🗑️"], [/recycl/i, "♻️"], [/compost/i, "🥬"],
   [/\bdog\b|puppy|\bwalk\b/i, "🐕"], [/\bcat\b|kitty/i, "🐈"], [/fish/i, "🐠"], [/chicken|coop/i, "🐔"], [/\beggs?\b/i, "🥚"],
   [/bunny|rabbit/i, "🐰"], [/turtle|tortoise/i, "🐢"], [/hamster|guinea/i, "🐹"], [/bird|parakeet/i, "🐦"],
-  [/plant|water/i, "🌱"], [/flower/i, "🌷"], [/vacuum|sweep/i, "🧹"], [/mop|floor/i, "💦"],
+  // Drinking water (a water bottle / staying hydrated) reads as a droplet, so it
+  // never lands on the "water the PLANTS" seedling below. Must stay before /water/.
+  [/water ?bottle|drink.*water|\bhydrate|refill.*bottle/i, "💧"],
+  [/plant|water/i, "🌱"], [/flower/i, "🌷"], [/vacuum|sweep|broom/i, "🧹"], [/mop|floor/i, "💦"],
   [/laundry|fold|clothes/i, "🧺"], [/pajama|\bpjs?\b|dressed/i, "👕"], [/dresser|closet|hang.?up/i, "👚"],
   [/blanket|pillow/i, "🛌"], [/stairs?/i, "👣"], [/dust/i, "✨"], [/wipe|counter/i, "🧴"],
   [/\broom\b/i, "🚪"], [/table|set.*table/i, "🍽️"], [/grocer/i, "🛒"], [/lunch|meal|cook|kitchen/i, "🍱"],
@@ -350,6 +353,7 @@ const CHORE_PICS = [
   [/bath|shower/i, "🛁"], [/swim|pool/i, "🏊"], [/sunscreen|sunblock/i, "🧴"], [/bike|cycle|scooter/i, "🚲"], [/mow|lawn|grass/i, "🌿"], [/garden|yard|weed/i, "🌻"],
   [/sock/i, "🧦"], [/potty|toilet/i, "🚽"], [/diaper|baby/i, "🍼"], [/backpack/i, "🎒"],
   [/puzzle/i, "🧩"], [/draw|color(?:ing)?|paint|art|crayon|marker|chalk/i, "🎨"], [/light|lamp/i, "💡"], [/nap|sleep/i, "😴"],
+  [/quiet ?time|calm.?down|rest ?time|settle/i, "🤫"],
   [/pray|prayer|grace/i, "🙏"], [/hug|cuddle|kiss/i, "🤗"], [/bottle|sippy/i, "🍼"], [/wagon|pull.?toy|stroller/i, "🚂"], [/sticker|chart/i, "🏅"],
   [/jammies|jammy|jamms/i, "👕"], [/plate/i, "🍽️"], [/helmet/i, "⛑️"], [/buckle|seat.?belt|car ?seat/i, "🚗"], [/nose|sneeze|tissue|kleenex/i, "🤧"],
   [/vitamin/i, "🍊"], [/put\b.*away/i, "📦"], [/wash/i, "🧼"], [/clean|tidy|pick.?up/i, "🧼"],
@@ -455,7 +459,9 @@ const CHEERS = ["Great job!", "Nice!", "Woohoo!", "Way to go!", "Awesome!", "Hig
   "Twinkle-twinkle superstar! ✨", "Peachy keen! 🍑", "Hoppin' hooray! 🐰", "Shell-ebration time! 🐢",
   "Top of the class! 🍎", "Sharp as a crayon! 🖍️", "Cricket-loud cheers! 🦗", "Acorn-solutely great! 🌰",
   "Leaf it to you! 🍁", "Golden-hour good! 🌅", "Hoppin' honor roll! 🐰", "Shell of a job! 🐢",
-  "Fresh-notebook sharp! 📓", "A-plus awesome! 💯", "Bookbag brilliant! 🎒", "Recess-level great! 🏃", "Smart cookie! 🍪"];
+  "Fresh-notebook sharp! 📓", "A-plus awesome! 💯", "Bookbag brilliant! 🎒", "Recess-level great! 🏃", "Smart cookie! 🍪",
+  "Apple-picking perfect! 🍎", "Cozy-sweater great! 🧡", "Golden-leaf good! 🍁", "First-day fantastic! 🎒",
+  "Crisp as fall air! 🍂", "Pumpkin-spice proud! 🎃", "Acorn awesome! 🌰", "Shell-tacular fall day! 🐢"];
 const FUN_ANIMALS = ["🐰", "🐢"];   // the kids' favorites, always join the party
 function celebrate(x, y, accent, who) {
   const fx = $("fx"); if (!fx) return;
