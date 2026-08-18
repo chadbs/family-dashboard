@@ -156,12 +156,12 @@ body {
 /* ---------- Weather hero ---------- */
 .hero {
   position: relative;
-  flex-direction: column; align-items: stretch; justify-content: flex-start; gap: clamp(6px, .7vw, 10px);
+  flex-direction: column; align-items: stretch; justify-content: flex-start; gap: clamp(4px, .5vw, 8px);
   overflow: hidden;
   background:
     radial-gradient(120% 160% at 100% 0%, var(--sky-1) 0%, transparent 55%),
     var(--card);
-  padding: clamp(8px, .9vw, 13px) clamp(14px, 1.5vw, 22px);
+  padding: clamp(6px, .6vw, 10px) clamp(14px, 1.5vw, 22px);
 }
 .hero-top { position: relative; z-index: 1; display: flex; align-items: center; justify-content: space-between; gap: clamp(10px, 1.4vw, 22px); }
 
@@ -240,22 +240,25 @@ html[data-sky="cold"] .sky-fx span {
 .m-val.rain { color: var(--rain); }
 
 /* ---------- 7-day forecast strip (under the weather hero) ---------- */
+/* Sized deliberately tight: this row lives inside the hero card's fixed
+   height budget alongside the "now" readout, so it has to fit without
+   pushing the hero taller (that would starve the week-strip below it). */
 .forecast { position: relative; z-index: 1; display: grid; grid-template-columns: repeat(7, 1fr); gap: clamp(3px, .4vw, 7px);
-  border-top: 1px solid var(--line); padding-top: clamp(5px, .7vw, 10px); }
+  border-top: 1px solid var(--line); padding-top: clamp(3px, .4vw, 6px); }
 .forecast:empty { display: none; }
-.fc-day { font-family: inherit; display: flex; flex-direction: column; align-items: center; gap: clamp(1px, .25vw, 3px);
-  background: transparent; border: 1px solid transparent; border-radius: var(--r-md); padding: clamp(3px, .4vw, 6px) 2px;
+.fc-day { font-family: inherit; display: flex; flex-direction: column; align-items: center; gap: clamp(0px, .15vw, 2px);
+  background: transparent; border: 1px solid transparent; border-radius: var(--r-md); padding: clamp(2px, .25vw, 4px) 2px;
   cursor: pointer; color: var(--ink); transition: background .2s var(--ease), transform .12s var(--ease); }
 .fc-day:hover { background: var(--card-2); }
 .fc-day:active { transform: scale(.96); }
 .fc-day.is-today { background: var(--card-2); border-color: var(--line-2); }
-.fc-dow { font-size: clamp(10px, .95vw, 13px); font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .4px; }
+.fc-dow { font-size: clamp(8px, .75vw, 10px); font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .4px; }
 .fc-day.is-today .fc-dow { color: var(--accent); }
-.fc-ic { width: clamp(20px, 2vw, 28px); height: clamp(20px, 2vw, 28px); }
+.fc-ic { width: clamp(14px, 1.4vw, 18px); height: clamp(14px, 1.4vw, 18px); }
 .fc-ic svg { width: 100%; height: 100%; }
 .fc-t { display: flex; gap: 4px; align-items: baseline; font-variant-numeric: tabular-nums; }
-.fc-t b { font-size: clamp(12px, 1.2vw, 16px); font-weight: 700; }
-.fc-t i { font-size: clamp(10px, 1vw, 14px); font-style: normal; color: var(--muted); }
+.fc-t b { font-size: clamp(10px, 1vw, 13px); font-weight: 700; }
+.fc-t i { font-size: clamp(8px, .85vw, 11px); font-style: normal; color: var(--muted); }
 .fc-drop { font-size: .8em; margin-left: 1px; }
 
 /* ---------- Forecast detail modal ---------- */
