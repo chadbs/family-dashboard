@@ -350,6 +350,9 @@ const CHORE_PICS = [
   [/pencil|sharpen|spelling|worksheet/i, "✏️"],
   [/leaf|rake/i, "🍂"], [/towel/i, "🧻"], [/face|hand/i, "🧼"],
   [/feed|food|bowl/i, "🥣"], [/homework|study/i, "✏️"], [/guitar|violin|cello/i, "🎸"], [/music|piano|practice/i, "🎹"],
+  // Breakfast, a cup of milk, and singing are everyday little-kid tasks that
+  // slipped through to the bare ⭐ — a clear picture reads better on the wall.
+  [/breakfast|cereal|pancake|waffle|oatmeal/i, "🥞"], [/\bmilk\b/i, "🥛"], [/\bsing(?:ing|s)?\b|\bsong\b|choir|karaoke/i, "🎤"],
   [/bath|shower/i, "🛁"], [/swim|pool/i, "🏊"], [/sunscreen|sunblock/i, "🧴"], [/bike|cycle|scooter/i, "🚲"], [/mow|lawn|grass/i, "🌿"], [/garden|yard|weed/i, "🌻"],
   [/sock/i, "🧦"], [/potty|toilet/i, "🚽"], [/diaper|baby/i, "🍼"], [/backpack/i, "🎒"],
   [/puzzle/i, "🧩"], [/draw|color(?:ing)?|paint|art|crayon|marker|chalk/i, "🎨"], [/light|lamp/i, "💡"], [/nap|sleep/i, "😴"],
@@ -461,7 +464,9 @@ const CHEERS = ["Great job!", "Nice!", "Woohoo!", "Way to go!", "Awesome!", "Hig
   "Leaf it to you! 🍁", "Golden-hour good! 🌅", "Hoppin' honor roll! 🐰", "Shell of a job! 🐢",
   "Fresh-notebook sharp! 📓", "A-plus awesome! 💯", "Bookbag brilliant! 🎒", "Recess-level great! 🏃", "Smart cookie! 🍪",
   "Apple-picking perfect! 🍎", "Cozy-sweater great! 🧡", "Golden-leaf good! 🍁", "First-day fantastic! 🎒",
-  "Crisp as fall air! 🍂", "Pumpkin-spice proud! 🎃", "Acorn awesome! 🌰", "Shell-tacular fall day! 🐢"];
+  "Crisp as fall air! 🍂", "Pumpkin-spice proud! 🎃", "Acorn awesome! 🌰", "Shell-tacular fall day! 🐢",
+  "Sing it loud! 🎤", "Pancake-perfect! 🥞", "Strong like your milk! 🥛", "Cricket-choir approved! 🦗",
+  "Last-of-summer star! 🌅", "Watermelon-sweet job! 🍉", "You're the bee's knees! 🐝", "Hoppin' good tune! 🐰🎶"];
 const FUN_ANIMALS = ["🐰", "🐢"];   // the kids' favorites, always join the party
 function celebrate(x, y, accent, who) {
   const fx = $("fx"); if (!fx) return;

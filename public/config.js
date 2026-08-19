@@ -318,6 +318,10 @@ window.CONFIG = {
     "Cooler air snuck in the window before dawn and Sophie 🐢 burrowed deeper into her blanket while Addy 🐰 quietly stole all of hers — and there you were in the middle of it, the most beautiful woman in Michigan, making even 6am look like a magazine cover. Good morning, my love. 🍂💚",
     "The neighbor's mums are out, there's football on somewhere, and pumpkin everything is creeping onto the shelves — but honestly the only season I've ever needed is you. Emerald eyes, black hair, my whole heart. Good morning, gorgeous. 🎃💚",
     "Late-August morning math: one impossibly gorgeous woman + two giggling kids + a coffee going cold in my hand = a life so good it ought to be illegal. I'd flunk every test but the one about how much I love you. Good morning, Kenzie. ☕💚",
+    "The zucchini's gone rogue, the tomatoes won't quit, and there's basil on every windowsill — the whole kitchen smells like the end of summer and you're standing in the middle of it in the morning light. I'd bottle this exact minute if I could. Good morning, most beautiful woman in Michigan. 🍅🌿💚",
+    "Crickets pulled the night shift, a cool thread of air came through the screen before dawn, and I woke up before the alarm just so I could watch those emerald eyes open one more slow late-summer morning. Best view in the state, no contest. Good morning, my love. 🦗🌅💚",
+    "The back-to-school aisles are all fresh crayons and lunchboxes and I keep grinning like a goof — because packing tiny snacks and wiping tiny faces with you is the only syllabus I ever wanted. Green eyes, midnight hair, that laugh — good morning, gorgeous. 🍎🥪💚",
+    "Sunflowers taller than the fence, one shy yellow leaf on the maple, and you in the doorway with your coffee looking like summer's grand finale and fall's opening act all at once. However the seasons turn, Kenzie, you're the most beautiful thing in every single one. Good morning, my love. 🌻🍁💚",
   ],
 
   // One-time SURPRISE note: shows immediately (once) the moment the screen
