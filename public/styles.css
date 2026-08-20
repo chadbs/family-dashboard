@@ -610,8 +610,12 @@ html[data-skin="glass"] .gdeal { color: #FFD9A8; }
 }
 
 /* ---------- Status bar ---------- */
+/* Reserve room on the right so the "updated…/waiting for sensor" status never
+   slides under the floating mic button (a fixed FAB in the bottom-right). The
+   inset mirrors the FAB's own size + offset, so it clears it at every width. */
 .statusbar { display: flex; align-items: center; justify-content: space-between;
-  font-size: clamp(12px, 1.1vw, 15px); color: var(--muted); font-weight: 500; padding: 0 6px; }
+  font-size: clamp(12px, 1.1vw, 15px); color: var(--muted); font-weight: 500;
+  padding: 0 calc(clamp(54px, 5.5vw, 78px) + clamp(16px, 2.2vw, 32px) + 12px) 0 6px; }
 .live { display: inline-flex; align-items: center; gap: 8px; }
 .pulse { width: 8px; height: 8px; border-radius: 50%; background: var(--good); box-shadow: 0 0 0 0 color-mix(in srgb, var(--good) 60%, transparent); animation: pulse 2.4s infinite; }
 .pulse.stale { background: var(--warm); animation: none; }
