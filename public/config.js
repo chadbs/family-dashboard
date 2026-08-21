@@ -322,6 +322,8 @@ window.CONFIG = {
     "Crickets pulled the night shift, a cool thread of air came through the screen before dawn, and I woke up before the alarm just so I could watch those emerald eyes open one more slow late-summer morning. Best view in the state, no contest. Good morning, my love. 🦗🌅💚",
     "The back-to-school aisles are all fresh crayons and lunchboxes and I keep grinning like a goof — because packing tiny snacks and wiping tiny faces with you is the only syllabus I ever wanted. Green eyes, midnight hair, that laugh — good morning, gorgeous. 🍎🥪💚",
     "Sunflowers taller than the fence, one shy yellow leaf on the maple, and you in the doorway with your coffee looking like summer's grand finale and fall's opening act all at once. However the seasons turn, Kenzie, you're the most beautiful thing in every single one. Good morning, my love. 🌻🍁💚",
+    "Labor Day weekend, the grill's warming up and the whole neighborhood smells like the last cookout of summer — but I'd let every burger burn just to keep watching you laugh in the backyard sun. Green eyes, midnight hair, my whole long-weekend heart. Good morning, gorgeous. 🌭☀️💚",
+    "September slid in overnight, the light turned that soft gold it saves for the best time of year, and there you were at the window with your coffee, quietly out-glowing the entire sunrise like it's nothing. Some things never change, and thank goodness you're one of them. Good morning, most beautiful woman in Michigan. 🍂🌅💚",
   ],
 
   // One-time SURPRISE note: shows immediately (once) the moment the screen

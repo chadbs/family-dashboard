@@ -1184,8 +1184,10 @@ function holidayBanner() {
   ];
   const floating = y => [
     { date: easterDate(y),           name: "Easter",       emoji: "🐰", col: "#F472B6" },
+    { date: nthWeekday(y, 5, 1, -1), name: "Memorial Day", emoji: "🇺🇸", col: "#3B82F6" },
     { date: nthWeekday(y, 5, 0, 2),  name: "Mother's Day", emoji: "💐", col: "#EC4899" },
     { date: nthWeekday(y, 6, 0, 3),  name: "Father's Day", emoji: "👔", col: "#3B82F6" },
+    { date: nthWeekday(y, 9, 1, 1),  name: "Labor Day",    emoji: "🏖️", col: "#0EA5E9" },
     { date: nthWeekday(y, 11, 4, 4), name: "Thanksgiving", emoji: "🦃", col: "#D97706" },
   ];
   const all = [];
