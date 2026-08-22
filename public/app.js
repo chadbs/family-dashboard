@@ -350,6 +350,9 @@ const CHORE_PICS = [
   [/pencil|sharpen|spelling|worksheet/i, "✏️"],
   [/leaf|rake/i, "🍂"], [/towel/i, "🧻"], [/face|hand/i, "🧼"],
   [/feed|food|bowl/i, "🥣"], [/homework|study/i, "✏️"], [/guitar|violin|cello/i, "🎸"], [/music|piano|practice/i, "🎹"],
+  // Wiggles-out routines little ones love — dancing and stretching/exercise —
+  // that otherwise slip through to the bare ⭐.
+  [/dance|ballet|twirl|boogie/i, "💃"], [/exercise|stretch|yoga|workout|jumping ?jack|wiggle/i, "🤸"],
   // Breakfast, a cup of milk, and singing are everyday little-kid tasks that
   // slipped through to the bare ⭐ — a clear picture reads better on the wall.
   [/breakfast|cereal|pancake|waffle|oatmeal/i, "🥞"], [/\bmilk\b/i, "🥛"], [/\bsing(?:ing|s)?\b|\bsong\b|choir|karaoke/i, "🎤"],
