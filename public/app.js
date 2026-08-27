@@ -335,6 +335,9 @@ function isKid(who) { return (C.kids || []).includes(who); }
 // LAST. Only emoji from Emoji 12 or older — the wall may run an older Windows
 // whose font shows newer glyphs (🪟 🪥 🪴 …) as empty boxes, i.e. "no icon".
 const CHORE_PICS = [
+  // Brushing a PET is grooming, not teeth — keep these ahead of the /brush/
+  // (teeth) token below so "brush the cat/dog" shows the animal, not a 🦷.
+  [/brush.*\b(?:cat|kitty)\b/i, "🐈"], [/brush.*\b(?:dog|puppy)\b/i, "🐕"],
   [/window/i, "🧽"], [/shoe/i, "👟"], [/hair/i, "💇"], [/tooth|teeth|brush/i, "🦷"], [/\bbed\b|make.*bed/i, "🛏️"],
   [/toy|basement|play.?room/i, "🧸"], [/block|lego|duplo/i, "🧱"], [/dish|dishwash/i, "🍽️"], [/trash|garbage/i, "🗑️"], [/recycl/i, "♻️"], [/compost/i, "🥬"],
   [/\bdog\b|puppy|\bwalk\b/i, "🐕"], [/\bcat\b|kitty/i, "🐈"], [/fish/i, "🐠"], [/chicken|coop/i, "🐔"], [/\beggs?\b/i, "🥚"],
