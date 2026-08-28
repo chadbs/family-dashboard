@@ -469,7 +469,8 @@ const CHEERS = ["Great job!", "Nice!", "Woohoo!", "Way to go!", "Awesome!", "Hig
   "Apple-picking perfect! 🍎", "Cozy-sweater great! 🧡", "Golden-leaf good! 🍁", "First-day fantastic! 🎒",
   "Crisp as fall air! 🍂", "Pumpkin-spice proud! 🎃", "Acorn awesome! 🌰", "Shell-tacular fall day! 🐢",
   "Sing it loud! 🎤", "Pancake-perfect! 🥞", "Strong like your milk! 🥛", "Cricket-choir approved! 🦗",
-  "Last-of-summer star! 🌅", "Watermelon-sweet job! 🍉", "You're the bee's knees! 🐝", "Hoppin' good tune! 🐰🎶"];
+  "Last-of-summer star! 🌅", "Watermelon-sweet job! 🍉", "You're the bee's knees! 🐝", "Hoppin' good tune! 🐰🎶",
+  "Backpack-ready brilliant! 🎒", "Bunny-hop brilliant! 🐰", "Turtle-powered pro! 🐢", "Crayon-box creative! 🖍️"];
 const FUN_ANIMALS = ["🐰", "🐢"];   // the kids' favorites, always join the party
 function celebrate(x, y, accent, who) {
   const fx = $("fx"); if (!fx) return;
