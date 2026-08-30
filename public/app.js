@@ -347,11 +347,14 @@ const CHORE_PICS = [
   [/water ?bottle|drink.*water|\bhydrate|refill.*bottle/i, "💧"],
   [/plant|water/i, "🌱"], [/flower/i, "🌷"], [/vacuum|sweep|broom/i, "🧹"], [/mop|floor/i, "💦"],
   [/laundry|fold|clothes/i, "🧺"], [/pajama|\bpjs?\b|dressed/i, "👕"], [/dresser|closet|hang.?up/i, "👚"],
+  // Cool-weather layers (jackets/boots/etc.) — timely as fall rolls in, so
+  // "put on your jacket" reads clearly instead of a bare ⭐.
+  [/jacket|\bcoat\b|boots|mittens|\bgloves\b|hoodie|sweater|scarf|snowsuit/i, "🧥"],
   [/blanket|pillow/i, "🛌"], [/stairs?/i, "👣"], [/dust/i, "✨"], [/wipe|counter/i, "🧴"],
   [/\broom\b/i, "🚪"], [/table|set.*table/i, "🍽️"], [/grocer/i, "🛒"], [/lunch|meal|cook|kitchen/i, "🍱"],
-  [/book|read/i, "📚"], [/\bcar\b|garage/i, "🚗"], [/mail/i, "📬"], [/snow|shovel/i, "❄️"],
+  [/book|read|story ?time|storytime|bedtime story/i, "📚"], [/\bcar\b|garage/i, "🚗"], [/mail/i, "📬"], [/snow|shovel/i, "❄️"],
   [/pencil|sharpen|spelling|worksheet/i, "✏️"],
-  [/leaf|rake/i, "🍂"], [/towel/i, "🧻"], [/face|hand/i, "🧼"],
+  [/leaf|rake/i, "🍂"], [/pumpkin|jack.?o.?lantern/i, "🎃"], [/towel/i, "🧻"], [/face|hand/i, "🧼"],
   [/feed|food|bowl/i, "🥣"], [/homework|study/i, "✏️"], [/guitar|violin|cello/i, "🎸"], [/music|piano|practice/i, "🎹"],
   // Breakfast, a cup of milk, and singing are everyday little-kid tasks that
   // slipped through to the bare ⭐ — a clear picture reads better on the wall.
@@ -367,7 +370,7 @@ const CHORE_PICS = [
   // specific word above (help / share / play outside / snacks). Kept dead last
   // so nothing regresses — they only ever replace a bare ⭐ with a clear picture.
   [/\bhelp(?:er|ing)?\b|\bchores?\b|\bjobs?\b/i, "🤝"], [/\blisten(?:ing)?\b|ears?\b/i, "👂"], [/\bshare|\bkind\b|gentle|manners|\bnice\b|please|thank|sorry|apolog/i, "💗"],
-  [/outside|outdoor|playground|backyard|recess/i, "🌳"], [/snack|\bfruit\b|\bveggie|vegetable|\bapple\b/i, "🍎"],
+  [/outside|outdoor|playground|backyard|recess/i, "🌳"], [/snack|\bfruit\b|\bveggie|vegetable|\bapples?\b/i, "🍎"],
 ];
 function chorePic(c) {
   if (c.pic) return c.pic;                                  // explicit picture wins
@@ -470,7 +473,10 @@ const CHEERS = ["Great job!", "Nice!", "Woohoo!", "Way to go!", "Awesome!", "Hig
   "Crisp as fall air! 🍂", "Pumpkin-spice proud! 🎃", "Acorn awesome! 🌰", "Shell-tacular fall day! 🐢",
   "Sing it loud! 🎤", "Pancake-perfect! 🥞", "Strong like your milk! 🥛", "Cricket-choir approved! 🦗",
   "Last-of-summer star! 🌅", "Watermelon-sweet job! 🍉", "You're the bee's knees! 🐝", "Hoppin' good tune! 🐰🎶",
-  "Backpack-ready brilliant! 🎒", "Bunny-hop brilliant! 🐰", "Turtle-powered pro! 🐢", "Crayon-box creative! 🖍️"];
+  "Backpack-ready brilliant! 🎒", "Bunny-hop brilliant! 🐰", "Turtle-powered pro! 🐢", "Crayon-box creative! 🖍️",
+  "Apple-orchard awesome! 🍎", "Cider-sweet job! 🍎", "Hay-ride happy! 🚜", "Pumpkin-patch perfect! 🎃",
+  "Cozy-hoodie hooray! 🧥", "Crunchy-leaf champ! 🍁", "First-bell fantastic! 🔔", "Sharpened-pencil sharp! ✏️",
+  "Hoppin' into fall! 🐰🍂", "Shell-tember superstar! 🐢", "Golden-morning great! 🌅", "Acorn-tastic! 🌰"];
 const FUN_ANIMALS = ["🐰", "🐢"];   // the kids' favorites, always join the party
 function celebrate(x, y, accent, who) {
   const fx = $("fx"); if (!fx) return;
