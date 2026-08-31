@@ -1,165 +1,165 @@
 {
   "whole milk": {
     "meijer": 3.31,
-    "aldi": 2.89,
+    "aldi": 3.15,
     "deal": null,
-    "at": "2026-08-24T20:52:59.000Z"
+    "at": "2026-08-31T12:37:03.739Z"
   },
   "greek yogurt": {
-    "meijer": 4.59,
+    "meijer": 4.47,
     "aldi": 3.85,
     "deal": null,
-    "at": "2026-08-24T20:52:59.000Z"
+    "at": "2026-08-31T12:37:03.739Z"
   },
   "chicken breast": {
     "meijer": 2.29,
-    "aldi": 2.19,
-    "deal": "Weekly ad: Chicken Breast $2.29/lb",
-    "at": "2026-08-24T20:52:59.000Z"
+    "aldi": 3.29,
+    "deal": null,
+    "at": "2026-08-31T12:37:03.739Z"
   },
   "chicken thighs": {
     "meijer": 2.69,
     "aldi": 3.59,
     "deal": null,
-    "at": "2026-08-24T20:52:59.000Z"
+    "at": "2026-08-31T12:37:03.739Z"
   },
   "ground beef": {
-    "meijer": 5.29,
-    "aldi": 6.19,
-    "deal": "Weekly ad: Ground Chuck $5.29/lb",
-    "at": "2026-08-24T20:52:59.000Z"
+    "meijer": 2.49,
+    "aldi": 5.29,
+    "deal": "Weekly ad: $2.49/lb",
+    "at": "2026-08-31T12:37:03.739Z"
   },
   "pork": {
-    "meijer": 2.79,
-    "aldi": 1.99,
+    "meijer": 5.69,
+    "aldi": 4.59,
     "deal": null,
-    "at": "2026-08-24T20:52:59.000Z"
+    "at": "2026-08-31T12:37:03.739Z"
   },
   "italian sausage": {
     "meijer": 4.99,
     "aldi": 3.25,
     "deal": null,
-    "at": "2026-08-24T20:52:59.000Z"
+    "at": "2026-08-31T12:37:03.739Z"
   },
   "shrimp": {
     "meijer": 12.59,
-    "aldi": 10.99,
+    "aldi": 8.25,
     "deal": null,
-    "at": "2026-08-24T20:52:59.000Z"
+    "at": "2026-08-31T12:37:03.739Z"
   },
   "flank steak": {
-    "meijer": 13.29,
+    "meijer": 12.99,
     "aldi": null,
     "deal": null,
-    "at": "2026-08-24T20:52:59.000Z"
+    "at": "2026-08-31T12:37:03.739Z"
   },
   "eggs": {
     "meijer": 2.59,
     "aldi": 1.85,
     "deal": null,
-    "at": "2026-08-24T20:52:59.000Z"
+    "at": "2026-08-31T12:37:03.739Z"
   },
   "broccoli": {
-    "meijer": 1.70,
+    "meijer": 1.49,
     "aldi": 2.09,
     "deal": null,
-    "at": "2026-08-24T20:52:59.000Z"
+    "at": "2026-08-31T12:37:03.739Z"
   },
   "bell pepper": {
-    "meijer": 0.99,
-    "aldi": 0.85,
+    "meijer": 1.69,
+    "aldi": 2.49,
     "deal": null,
-    "at": "2026-08-24T20:52:59.000Z"
+    "at": "2026-08-31T12:37:03.739Z"
   },
   "potatoes": {
-    "meijer": 0.6,
-    "aldi": 0.79,
+    "meijer": 1.49,
+    "aldi": 3.93,
     "deal": null,
-    "at": "2026-08-24T20:52:59.000Z"
+    "at": "2026-08-31T12:37:03.739Z"
   },
   "corn": {
-    "meijer": 0.25,
+    "meijer": 0.85,
     "aldi": 0.81,
-    "deal": "Weekly ad: Sweet Corn 4/$1",
-    "at": "2026-08-24T20:52:59.000Z"
+    "deal": null,
+    "at": "2026-08-31T12:37:03.739Z"
   },
   "lettuce": {
-    "meijer": 1.49,
-    "aldi": 1.22,
+    "meijer": 0.92,
+    "aldi": 1.99,
     "deal": null,
-    "at": "2026-08-24T20:52:59.000Z"
+    "at": "2026-08-31T12:37:03.739Z"
   },
   "tomato": {
-    "meijer": 3.99,
-    "aldi": 2.29,
-    "deal": null,
-    "at": "2026-08-24T20:52:59.000Z"
+    "meijer": 1.29,
+    "aldi": 3.19,
+    "deal": "Weekly ad: Vine Ripe $1.29/lb",
+    "at": "2026-08-31T12:37:03.739Z"
   },
   "onion": {
     "meijer": 1.49,
-    "aldi": 1.13,
+    "aldi": 2.65,
     "deal": null,
-    "at": "2026-08-24T20:52:59.000Z"
+    "at": "2026-08-31T12:37:03.739Z"
   },
   "green onion": {
-    "meijer": 1.71,
-    "aldi": 0.95,
+    "meijer": 1.09,
+    "aldi": 1.19,
     "deal": null,
-    "at": "2026-08-24T20:52:59.000Z"
+    "at": "2026-08-31T12:37:03.739Z"
   },
   "mushrooms": {
-    "meijer": 3.66,
-    "aldi": 1.89,
+    "meijer": 3.39,
+    "aldi": 1.75,
     "deal": null,
-    "at": "2026-08-24T20:52:59.000Z"
+    "at": "2026-08-31T12:37:03.739Z"
   },
   "lemons": {
-    "meijer": 0.90,
-    "aldi": 0.46,
+    "meijer": 0.9,
+    "aldi": 4.09,
     "deal": null,
-    "at": "2026-08-24T20:52:59.000Z"
+    "at": "2026-08-31T12:37:03.739Z"
   },
   "garlic": {
-    "meijer": 0.90,
-    "aldi": 0.63,
+    "meijer": 0.37,
+    "aldi": 0.89,
     "deal": null,
-    "at": "2026-08-24T20:52:59.000Z"
+    "at": "2026-08-31T12:37:03.739Z"
   },
   "cherry tomatoes": {
-    "meijer": 4.99,
-    "aldi": 3.99,
+    "meijer": 3.59,
+    "aldi": 1.99,
     "deal": null,
-    "at": "2026-08-24T20:52:59.000Z"
+    "at": "2026-08-31T12:37:03.739Z"
   },
   "avocado": {
-    "meijer": 2.99,
-    "aldi": 0.59,
+    "meijer": 0.92,
+    "aldi": 0.89,
     "deal": null,
-    "at": "2026-08-24T20:52:59.000Z"
+    "at": "2026-08-31T12:37:03.739Z"
   },
   "lime": {
-    "meijer": 0.59,
-    "aldi": 0.55,
+    "meijer": 2.99,
+    "aldi": 2.75,
     "deal": null,
-    "at": "2026-08-24T20:52:59.000Z"
+    "at": "2026-08-31T12:37:03.739Z"
   },
   "baby spinach": {
     "meijer": 4.24,
-    "aldi": 3.09,
+    "aldi": 1.55,
     "deal": null,
-    "at": "2026-08-24T20:52:59.000Z"
+    "at": "2026-08-31T12:37:03.739Z"
   },
   "cheese slices": {
-    "meijer": 3.20,
-    "aldi": 2.05,
+    "meijer": 2.28,
+    "aldi": 1.95,
     "deal": null,
-    "at": "2026-08-24T20:52:59.000Z"
+    "at": "2026-08-31T12:37:03.739Z"
   },
   "heavy cream": {
     "meijer": 3.66,
-    "aldi": 3.07,
+    "aldi": 4.09,
     "deal": null,
-    "at": "2026-08-24T20:52:59.000Z"
+    "at": "2026-08-31T12:37:03.739Z"
   },
   "butter": {
     "meijer": 3.09,
@@ -169,27 +169,27 @@
   },
   "fresh mozzarella": {
     "meijer": 4.49,
-    "aldi": 3.65,
+    "aldi": 3.29,
     "deal": null,
-    "at": "2026-08-24T20:52:59.000Z"
+    "at": "2026-08-31T12:37:03.739Z"
   },
   "feta": {
-    "meijer": 4.58,
-    "aldi": 3.95,
+    "meijer": 2.28,
+    "aldi": 1.95,
     "deal": null,
-    "at": "2026-08-24T20:52:59.000Z"
+    "at": "2026-08-31T12:37:03.739Z"
   },
   "cashews": {
     "meijer": 5.49,
-    "aldi": 4.69,
+    "aldi": 11.55,
     "deal": null,
-    "at": "2026-08-24T20:52:59.000Z"
+    "at": "2026-08-31T12:37:03.739Z"
   },
   "ramen noodles": {
     "meijer": 0.69,
-    "aldi": 2.49,
+    "aldi": 1.65,
     "deal": null,
-    "at": "2026-08-24T20:52:59.000Z"
+    "at": "2026-08-31T12:37:03.739Z"
   },
   "canned whole tomatoes": {
     "meijer": 1.49,
@@ -198,16 +198,16 @@
     "at": "2026-08-24T20:52:59.000Z"
   },
   "corn tortillas": {
-    "meijer": 2.59,
+    "meijer": 3.49,
     "aldi": 2.15,
     "deal": null,
-    "at": "2026-08-24T20:52:59.000Z"
+    "at": "2026-08-31T12:37:03.739Z"
   },
   "shelf-stable gnocchi": {
     "meijer": 2.99,
-    "aldi": 1.89,
+    "aldi": 2.09,
     "deal": null,
-    "at": "2026-08-24T20:52:59.000Z"
+    "at": "2026-08-31T12:37:03.739Z"
   },
   "baby potatoes": {
     "meijer": 3.99,
@@ -225,13 +225,13 @@
     "meijer": 0.99,
     "aldi": 1.05,
     "deal": null,
-    "at": "2026-08-24T20:52:59.000Z"
+    "at": "2026-08-31T12:37:03.739Z"
   },
   "fresh thyme": {
     "meijer": 3.89,
     "aldi": 1.75,
     "deal": null,
-    "at": "2026-08-24T20:52:59.000Z"
+    "at": "2026-08-31T12:37:03.739Z"
   },
   "fresh rosemary": {
     "meijer": 4.99,
