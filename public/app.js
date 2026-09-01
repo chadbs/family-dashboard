@@ -359,6 +359,12 @@ const CHORE_PICS = [
   // Breakfast, a cup of milk, and singing are everyday little-kid tasks that
   // slipped through to the bare ⭐ — a clear picture reads better on the wall.
   [/breakfast|cereal|pancake|waffle|oatmeal/i, "🥞"], [/\bmilk\b/i, "🥛"], [/\bsing(?:ing|s)?\b|\bsong\b|choir|karaoke/i, "🎤"],
+  // "Eat dinner/supper" is an everyday little-kid chart line that slipped past
+  // /lunch/ and /breakfast/ to a bare ⭐ — a plate reads clearly on the wall.
+  [/dinner|supper/i, "🍽️"],
+  // Dancing / wiggles — a joyful get-the-energy-out task; 💃 is a very old,
+  // universally-supported glyph (never an empty box on the wall's Windows font).
+  [/danc(?:e|ing)|wiggle|boogie/i, "💃"],
   [/bath|shower/i, "🛁"], [/swim|pool/i, "🏊"], [/sunscreen|sunblock/i, "🧴"], [/bike|cycle|scooter/i, "🚲"], [/mow|lawn|grass/i, "🌿"], [/garden|yard|weed/i, "🌻"],
   [/sock/i, "🧦"], [/potty|toilet/i, "🚽"], [/diaper|baby/i, "🍼"], [/backpack/i, "🎒"],
   [/puzzle/i, "🧩"], [/draw|color(?:ing)?|paint|art|crayon|marker|chalk/i, "🎨"], [/light|lamp/i, "💡"], [/nap|sleep/i, "😴"],
@@ -476,7 +482,9 @@ const CHEERS = ["Great job!", "Nice!", "Woohoo!", "Way to go!", "Awesome!", "Hig
   "Backpack-ready brilliant! 🎒", "Bunny-hop brilliant! 🐰", "Turtle-powered pro! 🐢", "Crayon-box creative! 🖍️",
   "Apple-orchard awesome! 🍎", "Cider-sweet job! 🍎", "Hay-ride happy! 🚜", "Pumpkin-patch perfect! 🎃",
   "Cozy-hoodie hooray! 🧥", "Crunchy-leaf champ! 🍁", "First-bell fantastic! 🔔", "Sharpened-pencil sharp! ✏️",
-  "Hoppin' into fall! 🐰🍂", "Shell-tember superstar! 🐢", "Golden-morning great! 🌅", "Acorn-tastic! 🌰"];
+  "Hoppin' into fall! 🐰🍂", "Shell-tember superstar! 🐢", "Golden-morning great! 🌅", "Acorn-tastic! 🌰",
+  "Cozy-season champ! 🧥", "Pumpkin-patch pro! 🎃", "Maple-leaf marvelous! 🍁", "Sweater-weather star! 🧡",
+  "Hoppin' good harvest! 🐰🌽", "Turtle-tastic autumn! 🐢🍂", "Crisp-morning champion! 🌤️", "Mums the word — amazing! 🌼"];
 const FUN_ANIMALS = ["🐰", "🐢"];   // the kids' favorites, always join the party
 function celebrate(x, y, accent, who) {
   const fx = $("fx"); if (!fx) return;
