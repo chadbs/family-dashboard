@@ -70,7 +70,7 @@ function backupState() {
 // and an atomic temp-then-rename write.
 const HUB      = path.join(DATA_DIR, "hub.json");
 const HUB_PAGE = path.join(ROOT, "hub", "dist", "hub.html");
-const HUB_DOCS  = ["config", "routine", "checks", "plan", "daily", "weather", "rewards", "rewardShop"];
+const HUB_DOCS  = ["config", "routine", "checks", "plan", "daily", "weather", "rewards", "rewardShop", "chores", "cart"];
 const HUB_COLLS = ["recipes", "jobs", "projects", "grocery"];
 
 // Where the hosted family app lives, if it has been deployed. Read fresh each

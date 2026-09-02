@@ -39,6 +39,8 @@ const DOCS = [
   "weather",
   "rewards",
   "rewardShop",
+  "chores",
+  "cart",
 ] as const;
 const COLLS = ["recipes", "jobs", "projects", "grocery"] as const;
 
@@ -185,6 +187,207 @@ async function sensorReading() {
   return s.value.reading;
 }
 
+/* ---------- prices ---------- */
+
+/* public/prices.json is written nightly by the price-sweep routine and
+   committed, so every push carries fresh Meijer/ALDI prices up here. */
+let pricesCache: { at: number; body: string } | null = null;
+
+async function prices() {
+  if (pricesCache && Date.now() - pricesCache.at < 5 * 60 * 1000) return pricesCache.body;
+  try {
+    const body = await Deno.readTextFile(new URL("../public/prices.json", import.meta.url));
+    JSON.parse(body);
+    pricesCache = { at: Date.now(), body };
+    return body;
+  } catch {
+    return "{}";
+  }
+}
+
+/* ---------- recipe import ---------- */
+
+/* Kenzie's pins all point at recipe blogs, and nearly every recipe blog
+   carries a schema.org Recipe block (JSON-LD) for Google. That block is the
+   clean recipe with none of the page's ads: name, photo, ingredients, steps,
+   time, servings, author. This pulls it out, so a link becomes a recipe in
+   the box with one paste. */
+
+const UA =
+  "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1";
+
+async function fetchPage(url: string) {
+  const res = await fetch(url, {
+    headers: { "user-agent": UA, accept: "text/html,application/xhtml+xml" },
+    redirect: "follow",
+  });
+  if (!res.ok) throw new Error("page " + res.status);
+  const text = await res.text();
+  return { html: text, finalUrl: res.url || url };
+}
+
+/* A Pinterest pin page is not the recipe; it points at the blog. Best
+   effort: find the pin's outbound link and follow that instead. */
+function pinterestSource(html: string): string | null {
+  const m =
+    html.match(/"link"\s*:\s*"(https?:\\\/\\\/[^"]+?)"/) ||
+    html.match(/property="og:see_also"\s+content="(https?:[^"]+)"/) ||
+    html.match(/"sourceUrl"\s*:\s*"(https?:[^"]+?)"/);
+  if (!m) return null;
+  const u = m[1].replace(/\\\//g, "/");
+  return /pinterest\./i.test(u) ? null : u;
+}
+
+function decodeEntities(s: string) {
+  return s
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;|&apos;/g, "'")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&#(\d+);/g, (_, n) => String.fromCharCode(Number(n)));
+}
+
+function stripTags(s: string) {
+  return decodeEntities(String(s).replace(/<[^>]+>/g, " ")).replace(/\s+/g, " ").trim();
+}
+
+function findRecipeNode(node: unknown): Obj | null {
+  if (!node) return null;
+  if (Array.isArray(node)) {
+    for (const n of node) {
+      const hit = findRecipeNode(n);
+      if (hit) return hit;
+    }
+    return null;
+  }
+  if (!isObj(node)) return null;
+  const t = node["@type"];
+  const types = Array.isArray(t) ? t : [t];
+  if (types.some((x) => typeof x === "string" && /recipe/i.test(x))) return node;
+  if (node["@graph"]) return findRecipeNode(node["@graph"]);
+  if (node["mainEntity"]) return findRecipeNode(node["mainEntity"]);
+  return null;
+}
+
+function isoDuration(v: unknown): string {
+  if (typeof v !== "string") return "";
+  const m = /^P(?:(\d+)D)?T?(?:(\d+)H)?(?:(\d+)M)?/i.exec(v.trim());
+  if (!m) return "";
+  const mins = (Number(m[1] || 0) * 24 + Number(m[2] || 0)) * 60 + Number(m[3] || 0);
+  if (!mins) return "";
+  if (mins < 60) return mins + " min";
+  const h = Math.floor(mins / 60);
+  const r = mins % 60;
+  return r ? h + " hr " + r + " min" : h + " hr";
+}
+
+function firstString(v: unknown): string {
+  if (typeof v === "string") return v.trim();
+  if (Array.isArray(v)) return firstString(v[0]);
+  if (isObj(v)) return firstString(v["url"] ?? v["name"] ?? v["@id"] ?? v["text"]);
+  return "";
+}
+
+function stepsFrom(v: unknown, out: string[] = []): string[] {
+  if (!v) return out;
+  if (typeof v === "string") {
+    /* One big string: split on line breaks or numbered steps. */
+    stripTags(v)
+      .split(/\n+|(?<=\.)\s+(?=\d+[.)]\s)/)
+      .map((s) => s.replace(/^\s*\d+[.)]\s*/, "").trim())
+      .filter((s) => s.length > 3)
+      .forEach((s) => out.push(s));
+    return out;
+  }
+  if (Array.isArray(v)) {
+    v.forEach((x) => stepsFrom(x, out));
+    return out;
+  }
+  if (isObj(v)) {
+    if (v["itemListElement"]) return stepsFrom(v["itemListElement"], out);
+    const text = firstString(v["text"]) || firstString(v["name"]);
+    if (text) out.push(stripTags(text));
+  }
+  return out;
+}
+
+function extractRecipe(html: string, pageUrl: string) {
+  const blocks = [...html.matchAll(/<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)];
+  let node: Obj | null = null;
+  for (const b of blocks) {
+    try {
+      node = findRecipeNode(JSON.parse(b[1].trim()));
+    } catch {
+      /* some sites ship slightly broken JSON; try the next block */
+    }
+    if (node) break;
+  }
+
+  const og = (prop: string) => {
+    const m =
+      html.match(new RegExp('<meta[^>]+property=["\']og:' + prop + '["\'][^>]+content=["\']([^"\']+)', "i")) ||
+      html.match(new RegExp('<meta[^>]+content=["\']([^"\']+)["\'][^>]+property=["\']og:' + prop + '["\']', "i"));
+    return m ? decodeEntities(m[1]) : "";
+  };
+
+  const host = (() => {
+    try {
+      return new URL(pageUrl).hostname.replace(/^www\./, "");
+    } catch {
+      return "";
+    }
+  })();
+
+  if (!node) {
+    return {
+      found: false,
+      name: og("title") || "",
+      image: og("image") || "",
+      source: og("site_name") || host,
+      sourceUrl: pageUrl,
+      ingredients: [] as string[],
+      steps: [] as string[],
+      time: "",
+      servings: "",
+    };
+  }
+
+  const ingredients = ([] as unknown[])
+    .concat(node["recipeIngredient"] ?? node["ingredients"] ?? [])
+    .map((x) => stripTags(String(x)))
+    .filter(Boolean);
+  const steps = stepsFrom(node["recipeInstructions"]);
+  const author = firstString(node["author"]);
+  const yieldV = node["recipeYield"];
+  const servings = Array.isArray(yieldV) ? String(yieldV[0]) : yieldV ? String(yieldV) : "";
+
+  return {
+    found: true,
+    name: stripTags(firstString(node["name"]) || og("title")),
+    image: firstString(node["image"]) || og("image") || "",
+    source: author || og("site_name") || host,
+    sourceUrl: pageUrl,
+    ingredients,
+    steps,
+    time: isoDuration(node["totalTime"]) || isoDuration(node["cookTime"]) || "",
+    servings: servings.replace(/[^\d].*$/, "").trim() || servings.trim(),
+    keywords: stripTags(firstString(node["keywords"]) || ""),
+  };
+}
+
+async function importRecipe(rawUrl: string) {
+  let url = rawUrl.trim();
+  if (!/^https?:\/\//i.test(url)) url = "https://" + url;
+  let page = await fetchPage(url);
+  if (/pinterest\./i.test(new URL(page.finalUrl).hostname)) {
+    const src = pinterestSource(page.html);
+    if (src) page = await fetchPage(src);
+  }
+  return extractRecipe(page.html, page.finalUrl);
+}
+
 /* ---------- the page ---------- */
 
 let pageCache: string | null = null;
@@ -256,6 +459,31 @@ async function handler(req: Request): Promise<Response> {
     if (!isObj(reading)) return json({ ok: false, error: "reading must be an object" }, 400);
     await kv.set(["hub", "meta", "sensor"], { at: Date.now(), reading });
     return json({ ok: true });
+  }
+
+  if (p === "/api/prices") {
+    return new Response(await prices(), {
+      headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store" },
+    });
+  }
+
+  /* A link in, a recipe out. */
+  if (p === "/api/import" && req.method === "POST") {
+    let body: { url?: string };
+    try {
+      body = await req.json();
+    } catch {
+      return json({ ok: false, error: "invalid json" }, 400);
+    }
+    if (!body || typeof body.url !== "string" || !body.url.trim()) {
+      return json({ ok: false, error: "url required" }, 400);
+    }
+    try {
+      const recipe = await importRecipe(body.url);
+      return json({ ok: true, recipe });
+    } catch (e) {
+      return json({ ok: false, error: String((e as Error)?.message || e) }, 200);
+    }
   }
 
   if (p === "/manifest.webmanifest") {

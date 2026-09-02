@@ -1,0 +1,76 @@
+/* The kids' chore chart. Big pictures, big taps, an unmistakable "done". */
+
+.chore-kids { display: flex; flex-direction: column; gap: 14px; }
+.chore-kid { display: flex; flex-direction: column; gap: 10px; }
+.chore-kid-head { display: flex; align-items: center; gap: 9px; }
+.chore-kid-emoji { font-size: 1.5rem; line-height: 1; }
+.chore-kid-name { font-family: var(--serif); font-size: 1.25rem; flex: 1; }
+.chore-kid-count { font-size: 0.82rem; color: var(--ink-2); font-weight: 600; }
+
+.chore-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(118px, 1fr));
+  gap: 10px;
+}
+
+.chore-tile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-height: 132px;
+  padding: 16px 10px 12px;
+  border-radius: var(--r);
+  border: 1.5px solid var(--line);
+  background: var(--surface);
+  color: var(--ink);
+  cursor: pointer;
+  text-align: center;
+  transition: transform 0.12s ease, border-color 0.15s ease, background 0.15s ease;
+}
+.chore-tile:active { transform: scale(0.96); }
+.chore-pic { font-size: 2.6rem; line-height: 1; }
+.chore-name { font-size: 0.92rem; font-weight: 600; line-height: 1.2; }
+.chore-meta { display: flex; gap: 6px; align-items: center; font-size: 0.72rem; color: var(--ink-3); }
+.chore-cad { text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700; }
+.chore-check {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--leaf);
+  color: var(--surface);
+  opacity: 0;
+  transform: scale(0.6);
+  transition: opacity 0.15s ease, transform 0.18s cubic-bezier(0.2, 0.8, 0.3, 1.4);
+}
+.chore-check svg { width: 14px; height: 14px; }
+.chore-tile[aria-pressed="true"] { border-color: var(--leaf); background: var(--leaf-soft); }
+.chore-tile[aria-pressed="true"] .chore-check { opacity: 1; transform: scale(1); }
+.chore-tile[aria-pressed="true"] .chore-name { color: var(--leaf); }
+.chore-pop { animation: chore-pop 0.45s cubic-bezier(0.2, 0.8, 0.3, 1.4); }
+@keyframes chore-pop { 30% { transform: scale(1.06); } }
+
+.chore-edit-row { display: flex; flex-direction: column; gap: 6px; padding: 10px; border-radius: var(--r-sm); background: var(--surface-2); }
+.chore-edit-line { display: flex; gap: 6px; align-items: center; }
+.chore-edit-line .input, .chore-edit-line .select { min-height: 40px; }
+.chore-pic-input { width: 64px; flex: 0 0 64px; text-align: center; font-size: 1.3rem; padding: 4px; }
+.chore-stars-input { width: 64px; flex: 0 0 64px; text-align: center; }
+
+/* ---- on the wall: bigger, touchable from a stool ---- */
+.wall-chores { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(16px, 2.5vw, 36px); flex: 1; align-content: center; }
+.wall-chores .chore-kid-head { gap: 12px; margin-bottom: 4px; }
+.wall-chores .chore-kid-emoji { font-size: clamp(1.8rem, 3vw, 3rem); }
+.wall-chores .chore-kid-name { font-size: clamp(1.4rem, 2.4vw, 2.4rem); }
+.wall-chores .chore-kid-count { font-size: clamp(0.85rem, 1.2vw, 1.15rem); }
+.wall-chores .chore-grid { grid-template-columns: repeat(auto-fill, minmax(clamp(120px, 11vw, 170px), 1fr)); gap: clamp(8px, 1.2vw, 16px); }
+.wall-chores .chore-tile { min-height: clamp(130px, 15vw, 190px); }
+.wall-chores .chore-pic { font-size: clamp(2.6rem, 5vw, 4.6rem); }
+.wall-chores .chore-name { font-size: clamp(0.95rem, 1.4vw, 1.3rem); }
+.wall-chores .chore-check { width: clamp(26px, 2.6vw, 36px); height: clamp(26px, 2.6vw, 36px); }
+@media (max-width: 760px) { .wall-chores { grid-template-columns: 1fr; } }

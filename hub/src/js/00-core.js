@@ -15,6 +15,8 @@ const DOC_PATHS = {
   weather: "weather/current",
   rewards: "rewards/state",
   rewardShop: "rewards/shop",
+  chores: "chores/board",
+  cart: "cart/request",
 };
 
 const COLL_NAMES = ["recipes", "jobs", "projects", "grocery"];
@@ -168,6 +170,8 @@ const Store = (function () {
     weather: {},
     rewards: {},
     rewardShop: {},
+    chores: {},
+    cart: {},
   };
   const docExists = {};
   const docQueue = {};

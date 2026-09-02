@@ -388,8 +388,24 @@ const Display = (function () {
     );
   }
 
+  /* The one panel the kids touch: their chores, tappable on the wall. A tap
+     drops a star in the jar and holds the rotation so the panel does not
+     slide away mid-tap. */
+  function panelChores() {
+    if (typeof Chores === "undefined") return null;
+    const blocks = Chores.kidBlocks({ big: true });
+    if (!blocks.length) return null;
+    return UI.h(
+      "div",
+      { class: "wall-panel" },
+      eyebrow("Chores"),
+      UI.h("div", { class: "wall-chores" }, blocks)
+    );
+  }
+
   const PANELS = [
     panelCleaning,
+    panelChores,
     panelTonight,
     panelStars,
     panelAttention,
@@ -446,7 +462,15 @@ const Display = (function () {
     renderDots(panelIdx);
   }
 
+  /* A touch anywhere holds the current panel for a while — a kid working
+     through their chores must not have the screen change under them. */
+  let holdUntil = 0;
+  function hold() {
+    holdUntil = Date.now() + 45000;
+  }
+
   function rotate() {
+    if (Date.now() < holdUntil) return;
     showPanel((panelIdx + 1) % PANELS.length, true);
   }
 
@@ -486,6 +510,7 @@ const Display = (function () {
     Router.go("display");
     setInterval(tickClock, 1000);
     setInterval(rotate, ROTATE_MS);
+    document.addEventListener("pointerdown", hold, { passive: true });
   }
 
   Router.on("display", renderDisplay);
