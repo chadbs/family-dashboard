@@ -1,0 +1,26 @@
+/* Recipe photos — the box gets a lot nicer once her pins come over. */
+
+/* Cards keep their natural height, so a card with a photo does not stretch
+   its neighbours into tall empty boxes. The photo stands in for the emoji. */
+.recipe-grid { align-items: start; }
+.rcard { overflow: hidden; }
+.r-photo + .r-top .r-emoji { display: none; }
+.r-photo + .r-top { min-height: 0; justify-content: flex-end; }
+.r-photo {
+  margin: -14px -14px 6px;
+  aspect-ratio: 4 / 3;
+  background-size: cover;
+  background-position: center;
+  background-color: var(--surface-3);
+  border-bottom: 1px solid var(--line);
+}
+
+.r-hero {
+  margin: -16px -16px 0;
+  aspect-ratio: 16 / 9;
+  background-size: cover;
+  background-position: center;
+  background-color: var(--surface-3);
+  border-bottom: 1px solid var(--line);
+}
+@media (min-width: 900px) { .r-hero { border-radius: 0; } }

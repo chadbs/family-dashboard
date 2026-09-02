@@ -603,6 +603,9 @@ const Rewards = (function () {
     if (list.length) root.appendChild(renderJars(sh));
     else root.appendChild(UI.empty("star", "Add kids in “Edit the rewards” to start giving stars."));
 
+    /* The chore chart: where most of the stars actually come from. */
+    if (typeof Chores !== "undefined" && list.length) root.appendChild(Chores.section());
+
     root.appendChild(renderShop(sh));
     root.appendChild(renderRecent(st));
 

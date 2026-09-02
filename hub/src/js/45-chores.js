@@ -51,10 +51,15 @@ const Chores = (function () {
     return "\u{2B50}";
   }
 
+  /* The list and the ticks are read independently: the very first tap
+     creates the document with only a `done` map (a merge), and the chart
+     must still show the starting list — with that tick on it. */
   function board() {
-    const doc = Store.get("chores");
-    if (doc && Array.isArray(doc.list)) return doc;
-    return SEED_CHORES;
+    const doc = Store.get("chores") || {};
+    return {
+      list: Array.isArray(doc.list) ? doc.list : SEED_CHORES.list,
+      done: doc.done && typeof doc.done === "object" ? doc.done : {},
+    };
   }
 
   function list() {

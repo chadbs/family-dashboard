@@ -327,6 +327,130 @@
     },
   };
 
+  /* ---------- Prices, stores, the cart order ---------- */
+
+  /* Meijer vs ALDI prices from the nightly sweep. Fetched once a session in
+     server mode; absent everywhere else, and the list simply shows no prices. */
+  const Prices = (function () {
+    let map = {};
+    let tried = false;
+    async function load() {
+      if (tried || Store.mode !== "server") return;
+      tried = true;
+      try {
+        const res = await fetch("/api/prices", { cache: "no-store" });
+        const d = await res.json();
+        map = d && typeof d === "object" ? (d.prices || d) : {};
+        Router.refresh();
+      } catch (e) {
+        /* no prices this session */
+      }
+    }
+    /* "Whole milk (3 gallons)" should find the "whole milk" entry. */
+    function forItem(name) {
+      const t = String(name || "").toLowerCase().replace(/\(.*?\)/g, " ").replace(/\s+/g, " ").trim();
+      if (!t) return null;
+      if (map[t]) return map[t];
+      let best = null, bestLen = 0;
+      Object.keys(map).forEach(function (k) {
+        if ((t.indexOf(k) >= 0 || k.indexOf(t) >= 0) && k.length > bestLen) { best = map[k]; bestLen = k.length; }
+      });
+      return best;
+    }
+    function any() { return Object.keys(map).length > 0; }
+    return { load: load, forItem: forItem, any: any };
+  })();
+
+  const DEAL_LINKS = [
+    { name: "Meijer weekly ad", url: "https://www.meijer.com/shopping/weekly-ad.html" },
+    { name: "mPerks coupons", url: "https://www.meijer.com/shopping/mperks.html" },
+    { name: "ALDI weekly ad", url: "https://www.aldi.us/weekly-specials/our-weekly-ads/" },
+  ];
+
+  function normStore(s) {
+    const v = String(s || "").toLowerCase();
+    if (v.indexOf("aldi") >= 0) return "Aldi";
+    if (v.indexOf("meijer") >= 0) return "Meijer";
+    return "";
+  }
+
+  /* Which store an item goes to, the same rule the wall used: the family's
+     own choice for that item, else the cheaper store when both prices are
+     known, else what the recipe said, else Meijer. */
+  function storeFor(it) {
+    if (it.pref) return normStore(it.pref) || "Meijer";
+    const p = Prices.forItem(it.name);
+    if (p && typeof p.meijer === "number" && typeof p.aldi === "number") return p.aldi < p.meijer ? "Aldi" : "Meijer";
+    return normStore(it.store) || "Meijer";
+  }
+
+  function money(n) {
+    return "$" + (Math.round(n * 100) / 100).toFixed(2);
+  }
+
+  function cartItems() {
+    return Store.list("grocery").filter(function (it) { return !it.done && !it.skip; });
+  }
+
+  const Cart = {
+    request: function () {
+      const items = cartItems();
+      if (!items.length) {
+        UI.toast("Nothing to order yet. Build the list first.");
+        return;
+      }
+      const week = Plan.week(new Date());
+      const dinners = DAY_KEYS.map(function (k) { return week[k] ? Plan.describe(week[k]).name : ""; }).filter(Boolean);
+      Store.setDoc("cart", {
+        status: "pending",
+        requestedAt: new Date().toISOString(),
+        week: Fmt.weekKey(new Date()),
+        items: items.map(function (it) { return { name: it.name, qty: it.qty || "", store: storeFor(it), pref: it.prefText || "" }; }),
+        dinners: dinners,
+        summary: "",
+        links: {},
+      });
+      UI.toast("Cart order sent. Chad's PC starts on it at 7:12 or 5:12.");
+    },
+    clear: function () {
+      Store.setDoc("cart", {});
+    },
+  };
+
+  function cartStatusCard() {
+    const c = Store.get("cart") || {};
+    if (!c.status) return null;
+    const lines = {
+      pending: ["Cart order waiting", "Chad's PC picks it up at 7:12am and 5:12pm and fills the Meijer and ALDI carts."],
+      building: ["Filling the carts now", "Meijer first, then ALDI. A few minutes."],
+      done: ["Carts are ready", c.summary || "Open them below and check out when you're ready."],
+      error: ["The cart build hit a snag", c.summary || "It will try again next time, or ask Chad."],
+    };
+    const l = lines[c.status] || [c.status, ""];
+    const kids = [
+      UI.h("div", { class: "cs-line" }, c.status === "building" ? UI.h("span", { class: "spinner" }) : null, UI.h("span", { text: l[0] })),
+      l[1] ? UI.h("div", { class: "cs-sub", text: l[1] }) : null,
+    ];
+    if (c.status === "done" && c.links && (c.links.meijer || c.links.aldi)) {
+      kids.push(
+        UI.h(
+          "div",
+          { class: "cart-links" },
+          c.links.meijer ? UI.h("a", { class: "btn btn-primary", href: c.links.meijer, target: "_blank", rel: "noopener noreferrer" }, "Open Meijer cart") : null,
+          c.links.aldi ? UI.h("a", { class: "btn", href: c.links.aldi, target: "_blank", rel: "noopener noreferrer" }, "Open ALDI cart") : null
+        )
+      );
+    }
+    kids.push(
+      UI.h(
+        "button",
+        { class: "btn btn-sm", type: "button", on: { click: function () { Cart.clear(); UI.toast("Cleared the cart order."); } } },
+        c.status === "done" || c.status === "error" ? "Dismiss" : "Cancel the order"
+      )
+    );
+    return UI.h("div", { class: "cart-status", "data-state": c.status }, kids);
+  }
+
   /* ---------- Grocery ---------- */
 
   const Grocery = {
@@ -594,18 +718,103 @@
     );
   }
 
-  function groceryGroups(items) {
-    const byCat = {};
-    items.forEach(function (it) {
-      const c = it.cat && CAT_ORDER.indexOf(it.cat) >= 0 ? it.cat : "Other";
-      (byCat[c] = byCat[c] || []).push(it);
+  function openItemSheet(it) {
+    const qty = UI.h("input", { class: "input", type: "text", value: it.qty || "", placeholder: "How much" });
+    const store = UI.h(
+      "select",
+      { class: "select" },
+      UI.h("option", { value: "", text: "Cheapest store (" + storeFor(Object.assign({}, it, { pref: "" })) + ")" }),
+      UI.h("option", { value: "Meijer", text: "Always Meijer", selected: normStore(it.pref) === "Meijer" ? true : null }),
+      UI.h("option", { value: "Aldi", text: "Always ALDI", selected: normStore(it.pref) === "Aldi" ? true : null })
+    );
+    const prefText = UI.h("input", { class: "input", type: "text", value: it.prefText || "", placeholder: "Brand or kind we like (optional)" });
+    const s = UI.sheet({
+      title: it.name,
+      body: UI.h("div", { class: "stack" }, UI.h("div", { class: "field" }, UI.h("label", { text: "Amount" }), qty), UI.h("div", { class: "field" }, UI.h("label", { text: "Store" }), store), UI.h("div", { class: "field" }, UI.h("label", { text: "What to get" }), prefText)),
+      actions: [
+        UI.h("button", { class: "btn btn-danger", type: "button", on: { click: function () { Store.remove("grocery", it.id); s.close(); } } }, "Remove"),
+        UI.h("button", { class: "btn btn-primary", type: "button", on: { click: function () { Store.patch("grocery", it.id, { qty: qty.value.trim(), pref: store.value, prefText: prefText.value.trim() }); s.close(); } } }, "Save"),
+      ],
     });
-    return CAT_ORDER.filter(function (c) { return byCat[c] && byCat[c].length; }).map(function (c) {
-      const list = byCat[c].slice().sort(function (a, b) {
-        if (!!a.done !== !!b.done) return a.done ? 1 : -1;
-        return (a.name || "").localeCompare(b.name || "");
-      });
-      return UI.h("div", { class: "grocery-group" }, UI.h("div", { class: "g-head", text: c }), list.map(checkRow));
+  }
+
+  function groceryRow(it) {
+    const p = Prices.forItem(it.name);
+    const st = storeFor(it);
+    const sub = [];
+    if (p && (typeof p.meijer === "number" || typeof p.aldi === "number")) {
+      const parts = [];
+      if (typeof p.meijer === "number") parts.push(UI.h("span", { class: "g-price" }, st === "Meijer" ? UI.h("b", { text: "Meijer " + money(p.meijer) }) : "Meijer " + money(p.meijer)));
+      if (typeof p.aldi === "number") parts.push(UI.h("span", { class: "g-price" }, st === "Aldi" ? UI.h("b", { text: "ALDI " + money(p.aldi) }) : "ALDI " + money(p.aldi)));
+      sub.push(parts);
+      if (p.deal) sub.push(UI.h("span", { class: "g-deal", text: String(p.deal) }));
+    } else if (UI.state.groceryBy !== "store") {
+      sub.push(UI.h("span", { text: st }));
+    }
+    if (it.src && it.src !== "added") sub.push(UI.h("span", { text: it.src }));
+
+    /* Name and amount share the first line, so a phone-width row never has
+       to squeeze four things across; the prices sit underneath. */
+    const main = UI.h(
+      "div",
+      { class: "g-main", on: { click: function () { openItemSheet(it); } } },
+      UI.h(
+        "div",
+        { class: "g-line" },
+        UI.h("span", { class: "g-name", text: it.name }),
+        it.qty ? UI.h("span", { class: "g-qty", text: it.qty }) : null
+      ),
+      sub.length ? UI.h("div", { class: "g-sub" }, sub) : null
+    );
+    return UI.h(
+      "div",
+      { class: "g-row", "data-done": it.done ? "true" : "false", "data-skip": it.skip ? "true" : "false" },
+      UI.h("button", { class: "box", type: "button", "aria-label": it.done ? "Not in the cart" : "In the cart", on: { click: function () { Store.patch("grocery", it.id, { done: !it.done }); } } }, UI.icon("check")),
+      main,
+      UI.h("button", { class: "g-have", type: "button", "aria-pressed": it.skip ? "true" : "false", title: "Already have it at home", on: { click: function () { Store.patch("grocery", it.id, { skip: !it.skip }); } } }, it.skip ? "have it" : "have it?")
+    );
+  }
+
+  function sortItems(list) {
+    return list.slice().sort(function (a, b) {
+      if (!!a.done !== !!b.done) return a.done ? 1 : -1;
+      if (!!a.skip !== !!b.skip) return a.skip ? 1 : -1;
+      const ca = CAT_ORDER.indexOf(a.cat), cb = CAT_ORDER.indexOf(b.cat);
+      if (ca !== cb) return (ca < 0 ? 99 : ca) - (cb < 0 ? 99 : cb);
+      return (a.name || "").localeCompare(b.name || "");
+    });
+  }
+
+  function groupTotal(list) {
+    let total = 0, priced = 0;
+    list.forEach(function (it) {
+      if (it.done || it.skip) return;
+      const p = Prices.forItem(it.name);
+      const st = storeFor(it);
+      const v = p ? (st === "Aldi" ? p.aldi : p.meijer) : null;
+      if (typeof v === "number") { total += v; priced++; }
+    });
+    return { total: total, priced: priced };
+  }
+
+  function groceryGroups(items) {
+    const byStore = UI.state.groceryBy === "store";
+    const buckets = {};
+    items.forEach(function (it) {
+      const k = byStore ? storeFor(it) : (it.cat && CAT_ORDER.indexOf(it.cat) >= 0 ? it.cat : "Other");
+      (buckets[k] = buckets[k] || []).push(it);
+    });
+    const order = byStore ? ["Meijer", "Aldi"] : CAT_ORDER;
+    return order.filter(function (k) { return buckets[k] && buckets[k].length; }).map(function (k) {
+      const list = sortItems(buckets[k]);
+      const t = byStore && Prices.any() ? groupTotal(list) : null;
+      return UI.h(
+        "div",
+        { class: "grocery-group" },
+        UI.h("div", { class: "g-head", text: k === "Aldi" ? "ALDI" : k }),
+        list.map(groceryRow),
+        t && t.priced ? UI.h("div", { class: "g-total" }, UI.h("span", { text: "About " + t.priced + " priced item" + (t.priced === 1 ? "" : "s") }), UI.h("b", { text: "~" + money(t.total) })) : null
+      );
     });
   }
 
@@ -701,15 +910,52 @@
       return wrap;
     }
 
+    Prices.load();
+    if (!UI.state.groceryBy) UI.state.groceryBy = "store";
+
+    const status = cartStatusCard();
+    if (status) wrap.appendChild(status);
+
+    const seg = UI.h(
+      "div",
+      { class: "segmented" },
+      UI.h("button", { type: "button", "aria-pressed": UI.state.groceryBy === "store" ? "true" : "false", on: { click: function () { UI.state.groceryBy = "store"; Router.refresh(); } } }, "By store"),
+      UI.h("button", { type: "button", "aria-pressed": UI.state.groceryBy !== "store" ? "true" : "false", on: { click: function () { UI.state.groceryBy = "aisle"; Router.refresh(); } } }, "By aisle")
+    );
+    wrap.appendChild(seg);
+
     wrap.appendChild(UI.h("div", { class: "card" }, groceryGroups(items)));
 
     const doneN = items.filter(function (i) { return i.done; }).length;
+    const toOrder = cartItems().length;
     wrap.appendChild(
       UI.h(
         "div",
         { class: "spread" },
         UI.h("span", { class: "tiny muted", text: items.length + " item" + (items.length === 1 ? "" : "s") + " · " + doneN + " in the cart" }),
         UI.h("button", { class: "btn btn-danger btn-sm", type: "button", on: { click: openClearSheet } }, "Clear the list")
+      )
+    );
+
+    const c = Store.get("cart") || {};
+    if (Store.mode === "server" && toOrder && (!c.status || c.status === "done" || c.status === "error")) {
+      wrap.appendChild(
+        UI.h(
+          "button",
+          { class: "btn btn-primary btn-block", type: "button", on: { click: function () { Cart.request(); } } },
+          UI.icon("cart"),
+          "Build my carts (" + toOrder + " item" + (toOrder === 1 ? "" : "s") + ")"
+        )
+      );
+    }
+
+    wrap.appendChild(
+      UI.h(
+        "div",
+        { class: "deal-links" },
+        DEAL_LINKS.map(function (d) {
+          return UI.h("a", { href: d.url, target: "_blank", rel: "noopener noreferrer" }, UI.icon("external"), d.name);
+        })
       )
     );
 

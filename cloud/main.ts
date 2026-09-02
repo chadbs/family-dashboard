@@ -290,13 +290,33 @@ function firstString(v: unknown): string {
   return "";
 }
 
+/* An author is a person's name or nothing. Some sites only reference the
+   author by a schema id like "https://site/#/schema/person/abc" — that is
+   not a name and must never be shown as one. */
+function authorName(v: unknown): string {
+  if (typeof v === "string") return /^https?:\/\//i.test(v) ? "" : v.trim();
+  if (Array.isArray(v)) {
+    for (const x of v) {
+      const n = authorName(x);
+      if (n) return n;
+    }
+    return "";
+  }
+  if (isObj(v)) {
+    const n = v["name"];
+    return typeof n === "string" && !/^https?:\/\//i.test(n) ? n.trim() : "";
+  }
+  return "";
+}
+
 function stepsFrom(v: unknown, out: string[] = []): string[] {
   if (!v) return out;
   if (typeof v === "string") {
-    /* One big string: split on line breaks or numbered steps. */
-    stripTags(v)
-      .split(/\n+|(?<=\.)\s+(?=\d+[.)]\s)/)
-      .map((s) => s.replace(/^\s*\d+[.)]\s*/, "").trim())
+    /* One big string: paragraphs, list items and line breaks are the step
+       boundaries, then numbered "1." prefixes come off. */
+    v.replace(/<\/?(?:li|p|br|div|h\d)[^>]*>/gi, "\n")
+      .split(/\n+/)
+      .map((s) => stripTags(s).replace(/^\s*(?:step\s*)?\d+[.):]\s*/i, "").trim())
       .filter((s) => s.length > 3)
       .forEach((s) => out.push(s));
     return out;
@@ -356,10 +376,11 @@ function extractRecipe(html: string, pageUrl: string) {
 
   const ingredients = ([] as unknown[])
     .concat(node["recipeIngredient"] ?? node["ingredients"] ?? [])
-    .map((x) => stripTags(String(x)))
+    .map((x) => stripTags(String(x)).replace(/\s*\(\s*\$[^)]*\)\s*/g, " ").replace(/\s+/g, " ").trim())
     .filter(Boolean);
-  const steps = stepsFrom(node["recipeInstructions"]);
-  const author = firstString(node["author"]);
+  let steps = stepsFrom(node["recipeInstructions"]);
+  if (!steps.length && node["description"]) steps = stepsFrom(node["description"]);
+  const author = authorName(node["author"]);
   const yieldV = node["recipeYield"];
   const servings = Array.isArray(yieldV) ? String(yieldV[0]) : yieldV ? String(yieldV) : "";
 

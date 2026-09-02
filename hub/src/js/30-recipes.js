@@ -239,6 +239,7 @@ const Recipes = (function () {
     const card = h(
       "button",
       { class: "rcard", type: "button" },
+      r.image ? h("div", { class: "r-photo", style: { backgroundImage: "url(" + JSON.stringify(String(r.image)) + ")" } }) : null,
       h(
         "div",
         { class: "r-top" },
@@ -374,6 +375,9 @@ const Recipes = (function () {
     const sheetApi = UI.sheet({
       title: recipe.name || "Recipe",
       body: [
+        recipe.image
+          ? h("div", { class: "r-hero", style: { backgroundImage: "url(" + JSON.stringify(String(recipe.image)) + ")" }, role: "img", "aria-label": recipe.name || "" })
+          : null,
         sourceRow,
         chipsRow,
         UI.section("Ingredients", null, ingredientsBody),
@@ -453,7 +457,9 @@ const Recipes = (function () {
     const urlInput = h("input", { class: "input", type: "url", placeholder: "https://…", value: initial.sourceUrl || "" });
     const emojiInput = h("input", { class: "input", type: "text", placeholder: "🍽️", maxlength: "8", value: initial.emoji || "" });
 
+    const imageInput = h("input", { class: "input", type: "url", placeholder: "Photo link (optional)", value: initial.image || "" });
     const rows = [field("Name", nameInput), field("Link", urlInput), field("Emoji", emojiInput)];
+    if (level === "full") rows.push(field("Photo", imageInput));
 
     let sourceInput, timeInput, servingsInput, ingredientsArea, stepsArea;
     const selectedTags = (initial.tags || []).slice();
@@ -512,6 +518,7 @@ const Recipes = (function () {
         value: {
           name: name,
           emoji: (emojiInput.value || "").trim() || "🍽️",
+          image: full ? (imageInput.value || "").trim() : (initial.image || ""),
           source: full ? (sourceInput.value || "").trim() : "",
           sourceUrl: (urlInput.value || "").trim(),
           time: full ? (timeInput.value || "").trim() : "",
@@ -591,9 +598,11 @@ const Recipes = (function () {
       doors.appendChild(
         doorBtn(
           "link",
-          "Just the link",
-          "Save the name and the link now, fill in the rest later.",
-          function () { showManualForm("minimal"); }
+          "From a link",
+          Store.mode === "server"
+            ? "Paste the link from a pin or a blog. The recipe comes over clean, photo and all."
+            : "Save the name and the link now, fill in the rest later.",
+          function () { showLinkForm(""); }
         )
       );
       doors.appendChild(
@@ -617,6 +626,109 @@ const Recipes = (function () {
       );
       btn.addEventListener("click", onClick);
       return btn;
+    }
+
+    /* The Pinterest path. She opens the pin, taps the link (or copies the
+       pin's own URL), pastes it here. The server reads the recipe block the
+       blog publishes for Google and hands back the clean recipe. */
+    function showLinkForm(prefillUrl) {
+      const urlInput = h("input", {
+        class: "input",
+        type: "url",
+        placeholder: "https://…",
+        value: prefillUrl || "",
+        data: { keep: "import-url" },
+      });
+      const canImport = Store.mode === "server";
+      const goBtn = h("button", { class: "btn btn-primary btn-block", type: "button" }, canImport ? "Bring it over" : "Save the link");
+      goBtn.addEventListener("click", function () {
+        const u = (urlInput.value || "").trim();
+        if (!u) {
+          UI.toast("Paste the link first.");
+          return;
+        }
+        if (!canImport) {
+          const form = buildRecipeForm({ sourceUrl: u }, "minimal");
+          showFormWithSave(form);
+          return;
+        }
+        handleImport(u);
+      });
+      urlInput.addEventListener("keydown", function (e) {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          goBtn.click();
+        }
+      });
+      sheetApi.setBody(
+        h(
+          "div",
+          { class: "stack" },
+          field("The link", urlInput),
+          h("p", {
+            class: "tiny muted",
+            text: canImport
+              ? "Works with the blog the pin points to, and usually with the pin itself."
+              : "",
+          }),
+          goBtn
+        )
+      );
+      sheetApi.scrollTop();
+      if (window.matchMedia("(min-width: 900px)").matches) urlInput.focus();
+    }
+
+    async function handleImport(url) {
+      sheetApi.setBody(
+        h("div", { class: "thinking" }, h("div", { class: "spinner" }), h("span", { text: "Reading the recipe…" }))
+      );
+      let out = null;
+      try {
+        const res = await fetch("/api/import", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url: url }),
+        });
+        out = await res.json();
+      } catch (e) {
+        out = null;
+      }
+      if (!out || !out.ok || !out.recipe) {
+        UI.toast("Couldn't reach that page. Saved the link; fill the rest in when you can.");
+        showFormWithSave(buildRecipeForm({ sourceUrl: url }, "minimal"));
+        return;
+      }
+      const r = out.recipe;
+      const ings = (r.ingredients || []).map(parseIngredientLine);
+      const parsed = {
+        name: r.name || "",
+        emoji: guessEmoji(r.name || "", r.keywords || ""),
+        image: r.image || "",
+        source: r.source || "",
+        sourceUrl: r.sourceUrl || url,
+        time: r.time || "",
+        servings: r.servings || "",
+        tags: guessTags(r),
+        ingredients: ings,
+        steps: r.steps || [],
+      };
+      if (!r.found) UI.toast("That page didn't publish a recipe block. Fill in what's missing.");
+      showReviewForm(parsed);
+    }
+
+    function showFormWithSave(form) {
+      const saveBtn = h("button", { class: "btn btn-primary btn-block", type: "button" }, "Save to the box");
+      saveBtn.addEventListener("click", function () {
+        const res = form.collect();
+        if (res.error) {
+          UI.toast(res.error);
+          return;
+        }
+        saveRecipe(res.value, null);
+        sheetApi.close();
+      });
+      sheetApi.setBody(h("div", { class: "stack" }, form.el, saveBtn));
+      sheetApi.scrollTop();
     }
 
     function showManualForm(level) {
@@ -710,7 +822,7 @@ const Recipes = (function () {
         h(
           "div",
           { class: "stack" },
-          h("p", { class: "muted tiny", text: "Check everything below before saving — fix anything Claude got wrong." }),
+          h("p", { class: "muted tiny", text: "Check it over before saving — fix anything that came across wrong." }),
           form.el,
           saveBtn
         )
@@ -758,6 +870,38 @@ const Recipes = (function () {
     if (url) p += "The person also gave this source link: " + url + "\n\n";
     p += 'The pasted recipe text:\n"""\n' + text.slice(0, 6000) + '\n"""\n';
     return p;
+  }
+
+  /* A cheap emoji for an imported recipe, from its name. Editable anyway. */
+  const EMOJI_GUESSES = [
+    [/pizza/i, "🍕"], [/taco|burrito|quesadilla|enchilada/i, "🌮"], [/burger/i, "🍔"],
+    [/pasta|spaghetti|penne|ziti|lasagna|linguine|gnocchi|mac and cheese|macaroni/i, "🍝"],
+    [/soup|chili|stew|chowder/i, "🍲"], [/salad/i, "🥗"], [/shrimp|prawn/i, "🍤"],
+    [/salmon|fish|cod|tilapia|tuna/i, "🐟"], [/chicken|turkey/i, "🍗"], [/steak|beef|roast|brisket/i, "🥩"],
+    [/pork|ribs|bacon|ham/i, "🥓"], [/rice|risotto|fried rice/i, "🍚"], [/ramen|noodle|pho|stir[- ]?fry/i, "🍜"],
+    [/curry/i, "🍛"], [/egg|frittata|omelet|quiche/i, "🍳"], [/pancake|waffle|french toast/i, "🥞"],
+    [/bread|roll|bun|biscuit/i, "🍞"], [/cookie|brownie|cake|pie|muffin|dessert|bar/i, "🍪"],
+    [/sandwich|panini|grilled cheese/i, "🥪"], [/potato/i, "🥔"], [/corn/i, "🌽"], [/broccoli|veggie|vegetable/i, "🥦"],
+  ];
+  function guessEmoji(name, keywords) {
+    const hay = name + " " + keywords;
+    for (let i = 0; i < EMOJI_GUESSES.length; i++) if (EMOJI_GUESSES[i][0].test(hay)) return EMOJI_GUESSES[i][1];
+    return "🍽️";
+  }
+
+  function guessTags(r) {
+    const hay = ((r.name || "") + " " + (r.keywords || "") + " " + (r.steps || []).join(" ")).toLowerCase();
+    const tags = [];
+    const mins = parseInt((r.time || "").replace(/\D+/g, ""), 10);
+    if (/slow cooker|crock ?pot/.test(hay)) tags.push("slow-cooker");
+    if (/sheet pan|one pan|one-pan|skillet/.test(hay)) tags.push("one-pan");
+    if (/grill/.test(hay)) tags.push("grill");
+    if (/soup|chili|stew/.test(hay)) tags.push("soup");
+    if (/pasta|spaghetti|penne|noodle|lasagna/.test(hay)) tags.push("pasta");
+    if (/vegetarian|meatless|vegan/.test(hay)) tags.push("vegetarian");
+    if (r.time && /min/.test(r.time) && !/hr/.test(r.time) && mins && mins <= 25) tags.push("quick");
+    if (r.time && !/hr/.test(r.time) && mins && mins <= 45) tags.push("weeknight");
+    return tags.filter(function (t, i, a) { return TAG_VOCAB.indexOf(t) >= 0 && a.indexOf(t) === i; }).slice(0, 5);
   }
 
   function normalizeParsed(data, url) {

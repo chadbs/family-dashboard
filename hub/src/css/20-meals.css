@@ -1,0 +1,80 @@
+/* Grocery list with prices, stores and the cart order. */
+
+.g-row { display: flex; align-items: center; gap: 12px; padding: 11px 14px; min-height: 54px; }
+.g-row .box {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  border-radius: 7px;
+  border: 1.75px solid var(--line-2);
+  display: grid;
+  place-items: center;
+  color: transparent;
+  background: none;
+  cursor: pointer;
+  padding: 0;
+}
+.g-row .box svg { width: 15px; height: 15px; }
+.g-row[data-done="true"] .box { background: var(--leaf); border-color: var(--leaf); color: var(--surface); }
+.g-row[data-done="true"] .g-name { color: var(--ink-3); text-decoration: line-through; }
+.g-row[data-skip="true"] .g-name { color: var(--ink-3); }
+.g-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; cursor: pointer; }
+.g-line { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+.g-name { font-weight: 500; line-height: 1.3; overflow-wrap: anywhere; }
+.g-line .g-qty { flex-shrink: 0; }
+.g-sub { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; font-size: 0.78rem; color: var(--ink-3); }
+.g-price { font-variant-numeric: tabular-nums; }
+.g-price b { font-weight: 650; color: var(--ink-2); }
+.g-deal { color: var(--tulip); font-weight: 700; }
+.g-qty { flex-shrink: 0; font-size: 0.83rem; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.g-have {
+  flex-shrink: 0;
+  min-height: 32px;
+  padding: 0 10px;
+  border-radius: var(--r-pill);
+  border: 1px solid var(--line);
+  background: none;
+  color: var(--ink-3);
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.g-have[aria-pressed="true"] { background: var(--surface-3); color: var(--ink-2); border-color: var(--line-2); }
+
+.g-total { display: flex; justify-content: space-between; align-items: baseline; padding: 8px 14px 10px; font-size: 0.82rem; color: var(--ink-2); border-top: 1px dashed var(--line); }
+.g-total b { font-variant-numeric: tabular-nums; color: var(--ink); }
+
+.deal-links { display: flex; flex-wrap: wrap; gap: 8px; }
+.deal-links a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 0 12px;
+  border-radius: var(--r-pill);
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--ink-2);
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+.deal-links a svg { width: 14px; height: 14px; }
+
+.cart-status {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 16px;
+  border-radius: var(--r);
+  border: 1px solid var(--line);
+  background: var(--surface);
+}
+.cart-status[data-state="pending"], .cart-status[data-state="building"] { border-color: color-mix(in srgb, var(--delft) 40%, transparent); background: var(--delft-soft); }
+.cart-status[data-state="done"] { border-color: color-mix(in srgb, var(--leaf) 40%, transparent); background: var(--leaf-soft); }
+.cart-status[data-state="error"] { border-color: color-mix(in srgb, var(--tulip) 40%, transparent); background: var(--tulip-soft); }
+.cart-status .cs-line { display: flex; align-items: center; gap: 10px; font-weight: 550; font-size: 0.92rem; }
+.cart-status .cs-line .spinner { flex-shrink: 0; }
+.cart-status .cs-sub { font-size: 0.83rem; color: var(--ink-2); }
+.cart-links { display: flex; gap: 8px; flex-wrap: wrap; }
+.cart-links .btn { flex: 1; min-width: 140px; }

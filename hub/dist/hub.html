@@ -1159,6 +1159,54 @@ main {
    action — size it to its label instead of letting the column stretch it. */
 .pcard .btn-sm { align-self: flex-start; }
 
+/* ============================================================
+   Phones — the app is mostly opened on one, usually one-handed.
+   ============================================================ */
+
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+button, .row, .check, .dayrow, .rcard, .door, .chore-tile { touch-action: manipulation; }
+body { overscroll-behavior-y: none; }
+
+/* Installed to the home screen, the page runs under the notch. */
+.view { padding-top: calc(20px + env(safe-area-inset-top, 0px)); }
+
+@media (max-width: 480px) {
+  :root { --gutter: 16px; }
+  .view { gap: 20px; }
+  .page-head .title { font-size: 1.95rem; }
+  .card { border-radius: 18px; }
+  .section-head h2 { font-size: 0.92rem; }
+  .sunstrip { padding: 10px 0; }
+  .sunstrip .val { font-size: 0.9rem; }
+  .sunstrip .key { font-size: 0.62rem; }
+  .wx-temp { font-size: 2.7rem; }
+  .wx-stat { min-width: 60px; padding: 0 4px; }
+  .wx-stat-val { font-size: 0.9rem; }
+  .btn-row > .btn { min-width: 0; }
+  .recipe-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .rcard { padding: 12px; min-height: 120px; }
+  .rcard .r-name { font-size: 1rem; }
+  .r-photo { margin: -12px -12px 6px; }
+  .jars { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .sheet-head { padding: 14px 14px 10px; }
+  .sheet-body { padding: 14px; gap: 14px; }
+  .sheet-head h2 { font-size: 1.22rem; }
+  .deal-links a { min-height: 34px; padding: 0 10px; font-size: 0.78rem; }
+}
+
+/* Very narrow phones (SE-sized): keep five tabs legible. */
+@media (max-width: 360px) {
+  .tabbar button { font-size: 0.62rem; }
+  .tabbar button svg { width: 20px; height: 20px; }
+}
+
+/* Landscape phone: the bottom bar would eat half the screen. */
+@media (max-width: 899px) and (max-height: 460px) {
+  :root { --tabbar: 52px; }
+  .tabbar button { flex-direction: row; gap: 6px; }
+  .tabbar button svg { width: 18px; height: 18px; }
+}
+
 
 /* ==== css/05-weather.css ==== */
 /* Weather card — the backyard number is the loudest thing on the screen,
@@ -1243,6 +1291,192 @@ main {
 
 .wx-stale { padding-top: 2px; }
 .banner-slot { padding: 12px; }
+
+
+/* ==== css/20-meals.css ==== */
+/* Grocery list with prices, stores and the cart order. */
+
+.g-row { display: flex; align-items: center; gap: 12px; padding: 11px 14px; min-height: 54px; }
+.g-row .box {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  border-radius: 7px;
+  border: 1.75px solid var(--line-2);
+  display: grid;
+  place-items: center;
+  color: transparent;
+  background: none;
+  cursor: pointer;
+  padding: 0;
+}
+.g-row .box svg { width: 15px; height: 15px; }
+.g-row[data-done="true"] .box { background: var(--leaf); border-color: var(--leaf); color: var(--surface); }
+.g-row[data-done="true"] .g-name { color: var(--ink-3); text-decoration: line-through; }
+.g-row[data-skip="true"] .g-name { color: var(--ink-3); }
+.g-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; cursor: pointer; }
+.g-line { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+.g-name { font-weight: 500; line-height: 1.3; overflow-wrap: anywhere; }
+.g-line .g-qty { flex-shrink: 0; }
+.g-sub { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; font-size: 0.78rem; color: var(--ink-3); }
+.g-price { font-variant-numeric: tabular-nums; }
+.g-price b { font-weight: 650; color: var(--ink-2); }
+.g-deal { color: var(--tulip); font-weight: 700; }
+.g-qty { flex-shrink: 0; font-size: 0.83rem; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.g-have {
+  flex-shrink: 0;
+  min-height: 32px;
+  padding: 0 10px;
+  border-radius: var(--r-pill);
+  border: 1px solid var(--line);
+  background: none;
+  color: var(--ink-3);
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.g-have[aria-pressed="true"] { background: var(--surface-3); color: var(--ink-2); border-color: var(--line-2); }
+
+.g-total { display: flex; justify-content: space-between; align-items: baseline; padding: 8px 14px 10px; font-size: 0.82rem; color: var(--ink-2); border-top: 1px dashed var(--line); }
+.g-total b { font-variant-numeric: tabular-nums; color: var(--ink); }
+
+.deal-links { display: flex; flex-wrap: wrap; gap: 8px; }
+.deal-links a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 0 12px;
+  border-radius: var(--r-pill);
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--ink-2);
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+.deal-links a svg { width: 14px; height: 14px; }
+
+.cart-status {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 16px;
+  border-radius: var(--r);
+  border: 1px solid var(--line);
+  background: var(--surface);
+}
+.cart-status[data-state="pending"], .cart-status[data-state="building"] { border-color: color-mix(in srgb, var(--delft) 40%, transparent); background: var(--delft-soft); }
+.cart-status[data-state="done"] { border-color: color-mix(in srgb, var(--leaf) 40%, transparent); background: var(--leaf-soft); }
+.cart-status[data-state="error"] { border-color: color-mix(in srgb, var(--tulip) 40%, transparent); background: var(--tulip-soft); }
+.cart-status .cs-line { display: flex; align-items: center; gap: 10px; font-weight: 550; font-size: 0.92rem; }
+.cart-status .cs-line .spinner { flex-shrink: 0; }
+.cart-status .cs-sub { font-size: 0.83rem; color: var(--ink-2); }
+.cart-links { display: flex; gap: 8px; flex-wrap: wrap; }
+.cart-links .btn { flex: 1; min-width: 140px; }
+
+
+/* ==== css/30-recipes.css ==== */
+/* Recipe photos — the box gets a lot nicer once her pins come over. */
+
+.rcard { overflow: hidden; }
+.r-photo {
+  margin: -14px -14px 6px;
+  aspect-ratio: 4 / 3;
+  background-size: cover;
+  background-position: center;
+  background-color: var(--surface-3);
+  border-bottom: 1px solid var(--line);
+}
+
+.r-hero {
+  margin: -16px -16px 0;
+  aspect-ratio: 16 / 9;
+  background-size: cover;
+  background-position: center;
+  background-color: var(--surface-3);
+  border-bottom: 1px solid var(--line);
+}
+@media (min-width: 900px) { .r-hero { border-radius: 0; } }
+
+
+/* ==== css/45-chores.css ==== */
+/* The kids' chore chart. Big pictures, big taps, an unmistakable "done". */
+
+.chore-kids { display: flex; flex-direction: column; gap: 14px; }
+.chore-kid { display: flex; flex-direction: column; gap: 10px; }
+.chore-kid-head { display: flex; align-items: center; gap: 9px; }
+.chore-kid-emoji { font-size: 1.5rem; line-height: 1; }
+.chore-kid-name { font-family: var(--serif); font-size: 1.25rem; flex: 1; }
+.chore-kid-count { font-size: 0.82rem; color: var(--ink-2); font-weight: 600; }
+
+.chore-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(118px, 1fr));
+  gap: 10px;
+}
+
+.chore-tile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-height: 132px;
+  padding: 16px 10px 12px;
+  border-radius: var(--r);
+  border: 1.5px solid var(--line);
+  background: var(--surface);
+  color: var(--ink);
+  cursor: pointer;
+  text-align: center;
+  transition: transform 0.12s ease, border-color 0.15s ease, background 0.15s ease;
+}
+.chore-tile:active { transform: scale(0.96); }
+.chore-pic { font-size: 2.6rem; line-height: 1; }
+.chore-name { font-size: 0.92rem; font-weight: 600; line-height: 1.2; }
+.chore-meta { display: flex; gap: 6px; align-items: center; font-size: 0.72rem; color: var(--ink-3); }
+.chore-cad { text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700; }
+.chore-check {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--leaf);
+  color: var(--surface);
+  opacity: 0;
+  transform: scale(0.6);
+  transition: opacity 0.15s ease, transform 0.18s cubic-bezier(0.2, 0.8, 0.3, 1.4);
+}
+.chore-check svg { width: 14px; height: 14px; }
+.chore-tile[aria-pressed="true"] { border-color: var(--leaf); background: var(--leaf-soft); }
+.chore-tile[aria-pressed="true"] .chore-check { opacity: 1; transform: scale(1); }
+.chore-tile[aria-pressed="true"] .chore-name { color: var(--leaf); }
+.chore-pop { animation: chore-pop 0.45s cubic-bezier(0.2, 0.8, 0.3, 1.4); }
+@keyframes chore-pop { 30% { transform: scale(1.06); } }
+
+.chore-edit-row { display: flex; flex-direction: column; gap: 6px; padding: 10px; border-radius: var(--r-sm); background: var(--surface-2); }
+.chore-edit-line { display: flex; gap: 6px; align-items: center; }
+.chore-edit-line .input, .chore-edit-line .select { min-height: 40px; }
+.chore-pic-input { width: 64px; flex: 0 0 64px; text-align: center; font-size: 1.3rem; padding: 4px; }
+.chore-stars-input { width: 64px; flex: 0 0 64px; text-align: center; }
+
+/* ---- on the wall: bigger, touchable from a stool ---- */
+.wall-chores { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(16px, 2.5vw, 36px); flex: 1; align-content: center; }
+.wall-chores .chore-kid-head { gap: 12px; margin-bottom: 4px; }
+.wall-chores .chore-kid-emoji { font-size: clamp(1.8rem, 3vw, 3rem); }
+.wall-chores .chore-kid-name { font-size: clamp(1.4rem, 2.4vw, 2.4rem); }
+.wall-chores .chore-kid-count { font-size: clamp(0.85rem, 1.2vw, 1.15rem); }
+.wall-chores .chore-grid { grid-template-columns: repeat(auto-fill, minmax(clamp(120px, 11vw, 170px), 1fr)); gap: clamp(8px, 1.2vw, 16px); }
+.wall-chores .chore-tile { min-height: clamp(130px, 15vw, 190px); }
+.wall-chores .chore-pic { font-size: clamp(2.6rem, 5vw, 4.6rem); }
+.wall-chores .chore-name { font-size: clamp(0.95rem, 1.4vw, 1.3rem); }
+.wall-chores .chore-check { width: clamp(26px, 2.6vw, 36px); height: clamp(26px, 2.6vw, 36px); }
+@media (max-width: 760px) { .wall-chores { grid-template-columns: 1fr; } }
 
 
 /* ==== css/50-rewards.css ==== */
@@ -3621,6 +3855,8 @@ const DOC_PATHS = {
   weather: "weather/current",
   rewards: "rewards/state",
   rewardShop: "rewards/shop",
+  chores: "chores/board",
+  cart: "cart/request",
 };
 
 const COLL_NAMES = ["recipes", "jobs", "projects", "grocery"];
@@ -3774,6 +4010,8 @@ const Store = (function () {
     weather: {},
     rewards: {},
     rewardShop: {},
+    chores: {},
+    cart: {},
   };
   const docExists = {};
   const docQueue = {};
@@ -5830,6 +6068,130 @@ const Weather = (function () {
     },
   };
 
+  /* ---------- Prices, stores, the cart order ---------- */
+
+  /* Meijer vs ALDI prices from the nightly sweep. Fetched once a session in
+     server mode; absent everywhere else, and the list simply shows no prices. */
+  const Prices = (function () {
+    let map = {};
+    let tried = false;
+    async function load() {
+      if (tried || Store.mode !== "server") return;
+      tried = true;
+      try {
+        const res = await fetch("/api/prices", { cache: "no-store" });
+        const d = await res.json();
+        map = d && typeof d === "object" ? (d.prices || d) : {};
+        Router.refresh();
+      } catch (e) {
+        /* no prices this session */
+      }
+    }
+    /* "Whole milk (3 gallons)" should find the "whole milk" entry. */
+    function forItem(name) {
+      const t = String(name || "").toLowerCase().replace(/\(.*?\)/g, " ").replace(/\s+/g, " ").trim();
+      if (!t) return null;
+      if (map[t]) return map[t];
+      let best = null, bestLen = 0;
+      Object.keys(map).forEach(function (k) {
+        if ((t.indexOf(k) >= 0 || k.indexOf(t) >= 0) && k.length > bestLen) { best = map[k]; bestLen = k.length; }
+      });
+      return best;
+    }
+    function any() { return Object.keys(map).length > 0; }
+    return { load: load, forItem: forItem, any: any };
+  })();
+
+  const DEAL_LINKS = [
+    { name: "Meijer weekly ad", url: "https://www.meijer.com/shopping/weekly-ad.html" },
+    { name: "mPerks coupons", url: "https://www.meijer.com/shopping/mperks.html" },
+    { name: "ALDI weekly ad", url: "https://www.aldi.us/weekly-specials/our-weekly-ads/" },
+  ];
+
+  function normStore(s) {
+    const v = String(s || "").toLowerCase();
+    if (v.indexOf("aldi") >= 0) return "Aldi";
+    if (v.indexOf("meijer") >= 0) return "Meijer";
+    return "";
+  }
+
+  /* Which store an item goes to, the same rule the wall used: the family's
+     own choice for that item, else the cheaper store when both prices are
+     known, else what the recipe said, else Meijer. */
+  function storeFor(it) {
+    if (it.pref) return normStore(it.pref) || "Meijer";
+    const p = Prices.forItem(it.name);
+    if (p && typeof p.meijer === "number" && typeof p.aldi === "number") return p.aldi < p.meijer ? "Aldi" : "Meijer";
+    return normStore(it.store) || "Meijer";
+  }
+
+  function money(n) {
+    return "$" + (Math.round(n * 100) / 100).toFixed(2);
+  }
+
+  function cartItems() {
+    return Store.list("grocery").filter(function (it) { return !it.done && !it.skip; });
+  }
+
+  const Cart = {
+    request: function () {
+      const items = cartItems();
+      if (!items.length) {
+        UI.toast("Nothing to order yet. Build the list first.");
+        return;
+      }
+      const week = Plan.week(new Date());
+      const dinners = DAY_KEYS.map(function (k) { return week[k] ? Plan.describe(week[k]).name : ""; }).filter(Boolean);
+      Store.setDoc("cart", {
+        status: "pending",
+        requestedAt: new Date().toISOString(),
+        week: Fmt.weekKey(new Date()),
+        items: items.map(function (it) { return { name: it.name, qty: it.qty || "", store: storeFor(it), pref: it.prefText || "" }; }),
+        dinners: dinners,
+        summary: "",
+        links: {},
+      });
+      UI.toast("Cart order sent. Chad's PC starts on it at 7:12 or 5:12.");
+    },
+    clear: function () {
+      Store.setDoc("cart", {});
+    },
+  };
+
+  function cartStatusCard() {
+    const c = Store.get("cart") || {};
+    if (!c.status) return null;
+    const lines = {
+      pending: ["Cart order waiting", "Chad's PC picks it up at 7:12am and 5:12pm and fills the Meijer and ALDI carts."],
+      building: ["Filling the carts now", "Meijer first, then ALDI. A few minutes."],
+      done: ["Carts are ready", c.summary || "Open them below and check out when you're ready."],
+      error: ["The cart build hit a snag", c.summary || "It will try again next time, or ask Chad."],
+    };
+    const l = lines[c.status] || [c.status, ""];
+    const kids = [
+      UI.h("div", { class: "cs-line" }, c.status === "building" ? UI.h("span", { class: "spinner" }) : null, UI.h("span", { text: l[0] })),
+      l[1] ? UI.h("div", { class: "cs-sub", text: l[1] }) : null,
+    ];
+    if (c.status === "done" && c.links && (c.links.meijer || c.links.aldi)) {
+      kids.push(
+        UI.h(
+          "div",
+          { class: "cart-links" },
+          c.links.meijer ? UI.h("a", { class: "btn btn-primary", href: c.links.meijer, target: "_blank", rel: "noopener noreferrer" }, "Open Meijer cart") : null,
+          c.links.aldi ? UI.h("a", { class: "btn", href: c.links.aldi, target: "_blank", rel: "noopener noreferrer" }, "Open ALDI cart") : null
+        )
+      );
+    }
+    kids.push(
+      UI.h(
+        "button",
+        { class: "btn btn-sm", type: "button", on: { click: function () { Cart.clear(); UI.toast("Cleared the cart order."); } } },
+        c.status === "done" || c.status === "error" ? "Dismiss" : "Cancel the order"
+      )
+    );
+    return UI.h("div", { class: "cart-status", "data-state": c.status }, kids);
+  }
+
   /* ---------- Grocery ---------- */
 
   const Grocery = {
@@ -6097,18 +6459,103 @@ const Weather = (function () {
     );
   }
 
-  function groceryGroups(items) {
-    const byCat = {};
-    items.forEach(function (it) {
-      const c = it.cat && CAT_ORDER.indexOf(it.cat) >= 0 ? it.cat : "Other";
-      (byCat[c] = byCat[c] || []).push(it);
+  function openItemSheet(it) {
+    const qty = UI.h("input", { class: "input", type: "text", value: it.qty || "", placeholder: "How much" });
+    const store = UI.h(
+      "select",
+      { class: "select" },
+      UI.h("option", { value: "", text: "Cheapest store (" + storeFor(Object.assign({}, it, { pref: "" })) + ")" }),
+      UI.h("option", { value: "Meijer", text: "Always Meijer", selected: normStore(it.pref) === "Meijer" ? true : null }),
+      UI.h("option", { value: "Aldi", text: "Always ALDI", selected: normStore(it.pref) === "Aldi" ? true : null })
+    );
+    const prefText = UI.h("input", { class: "input", type: "text", value: it.prefText || "", placeholder: "Brand or kind we like (optional)" });
+    const s = UI.sheet({
+      title: it.name,
+      body: UI.h("div", { class: "stack" }, UI.h("div", { class: "field" }, UI.h("label", { text: "Amount" }), qty), UI.h("div", { class: "field" }, UI.h("label", { text: "Store" }), store), UI.h("div", { class: "field" }, UI.h("label", { text: "What to get" }), prefText)),
+      actions: [
+        UI.h("button", { class: "btn btn-danger", type: "button", on: { click: function () { Store.remove("grocery", it.id); s.close(); } } }, "Remove"),
+        UI.h("button", { class: "btn btn-primary", type: "button", on: { click: function () { Store.patch("grocery", it.id, { qty: qty.value.trim(), pref: store.value, prefText: prefText.value.trim() }); s.close(); } } }, "Save"),
+      ],
     });
-    return CAT_ORDER.filter(function (c) { return byCat[c] && byCat[c].length; }).map(function (c) {
-      const list = byCat[c].slice().sort(function (a, b) {
-        if (!!a.done !== !!b.done) return a.done ? 1 : -1;
-        return (a.name || "").localeCompare(b.name || "");
-      });
-      return UI.h("div", { class: "grocery-group" }, UI.h("div", { class: "g-head", text: c }), list.map(checkRow));
+  }
+
+  function groceryRow(it) {
+    const p = Prices.forItem(it.name);
+    const st = storeFor(it);
+    const sub = [];
+    if (p && (typeof p.meijer === "number" || typeof p.aldi === "number")) {
+      const parts = [];
+      if (typeof p.meijer === "number") parts.push(UI.h("span", { class: "g-price" }, st === "Meijer" ? UI.h("b", { text: "Meijer " + money(p.meijer) }) : "Meijer " + money(p.meijer)));
+      if (typeof p.aldi === "number") parts.push(UI.h("span", { class: "g-price" }, st === "Aldi" ? UI.h("b", { text: "ALDI " + money(p.aldi) }) : "ALDI " + money(p.aldi)));
+      sub.push(parts);
+      if (p.deal) sub.push(UI.h("span", { class: "g-deal", text: String(p.deal) }));
+    } else if (UI.state.groceryBy !== "store") {
+      sub.push(UI.h("span", { text: st }));
+    }
+    if (it.src && it.src !== "added") sub.push(UI.h("span", { text: it.src }));
+
+    /* Name and amount share the first line, so a phone-width row never has
+       to squeeze four things across; the prices sit underneath. */
+    const main = UI.h(
+      "div",
+      { class: "g-main", on: { click: function () { openItemSheet(it); } } },
+      UI.h(
+        "div",
+        { class: "g-line" },
+        UI.h("span", { class: "g-name", text: it.name }),
+        it.qty ? UI.h("span", { class: "g-qty", text: it.qty }) : null
+      ),
+      sub.length ? UI.h("div", { class: "g-sub" }, sub) : null
+    );
+    return UI.h(
+      "div",
+      { class: "g-row", "data-done": it.done ? "true" : "false", "data-skip": it.skip ? "true" : "false" },
+      UI.h("button", { class: "box", type: "button", "aria-label": it.done ? "Not in the cart" : "In the cart", on: { click: function () { Store.patch("grocery", it.id, { done: !it.done }); } } }, UI.icon("check")),
+      main,
+      UI.h("button", { class: "g-have", type: "button", "aria-pressed": it.skip ? "true" : "false", title: "Already have it at home", on: { click: function () { Store.patch("grocery", it.id, { skip: !it.skip }); } } }, it.skip ? "have it" : "have it?")
+    );
+  }
+
+  function sortItems(list) {
+    return list.slice().sort(function (a, b) {
+      if (!!a.done !== !!b.done) return a.done ? 1 : -1;
+      if (!!a.skip !== !!b.skip) return a.skip ? 1 : -1;
+      const ca = CAT_ORDER.indexOf(a.cat), cb = CAT_ORDER.indexOf(b.cat);
+      if (ca !== cb) return (ca < 0 ? 99 : ca) - (cb < 0 ? 99 : cb);
+      return (a.name || "").localeCompare(b.name || "");
+    });
+  }
+
+  function groupTotal(list) {
+    let total = 0, priced = 0;
+    list.forEach(function (it) {
+      if (it.done || it.skip) return;
+      const p = Prices.forItem(it.name);
+      const st = storeFor(it);
+      const v = p ? (st === "Aldi" ? p.aldi : p.meijer) : null;
+      if (typeof v === "number") { total += v; priced++; }
+    });
+    return { total: total, priced: priced };
+  }
+
+  function groceryGroups(items) {
+    const byStore = UI.state.groceryBy === "store";
+    const buckets = {};
+    items.forEach(function (it) {
+      const k = byStore ? storeFor(it) : (it.cat && CAT_ORDER.indexOf(it.cat) >= 0 ? it.cat : "Other");
+      (buckets[k] = buckets[k] || []).push(it);
+    });
+    const order = byStore ? ["Meijer", "Aldi"] : CAT_ORDER;
+    return order.filter(function (k) { return buckets[k] && buckets[k].length; }).map(function (k) {
+      const list = sortItems(buckets[k]);
+      const t = byStore && Prices.any() ? groupTotal(list) : null;
+      return UI.h(
+        "div",
+        { class: "grocery-group" },
+        UI.h("div", { class: "g-head", text: k === "Aldi" ? "ALDI" : k }),
+        list.map(groceryRow),
+        t && t.priced ? UI.h("div", { class: "g-total" }, UI.h("span", { text: "About " + t.priced + " priced item" + (t.priced === 1 ? "" : "s") }), UI.h("b", { text: "~" + money(t.total) })) : null
+      );
     });
   }
 
@@ -6204,15 +6651,52 @@ const Weather = (function () {
       return wrap;
     }
 
+    Prices.load();
+    if (!UI.state.groceryBy) UI.state.groceryBy = "store";
+
+    const status = cartStatusCard();
+    if (status) wrap.appendChild(status);
+
+    const seg = UI.h(
+      "div",
+      { class: "segmented" },
+      UI.h("button", { type: "button", "aria-pressed": UI.state.groceryBy === "store" ? "true" : "false", on: { click: function () { UI.state.groceryBy = "store"; Router.refresh(); } } }, "By store"),
+      UI.h("button", { type: "button", "aria-pressed": UI.state.groceryBy !== "store" ? "true" : "false", on: { click: function () { UI.state.groceryBy = "aisle"; Router.refresh(); } } }, "By aisle")
+    );
+    wrap.appendChild(seg);
+
     wrap.appendChild(UI.h("div", { class: "card" }, groceryGroups(items)));
 
     const doneN = items.filter(function (i) { return i.done; }).length;
+    const toOrder = cartItems().length;
     wrap.appendChild(
       UI.h(
         "div",
         { class: "spread" },
         UI.h("span", { class: "tiny muted", text: items.length + " item" + (items.length === 1 ? "" : "s") + " · " + doneN + " in the cart" }),
         UI.h("button", { class: "btn btn-danger btn-sm", type: "button", on: { click: openClearSheet } }, "Clear the list")
+      )
+    );
+
+    const c = Store.get("cart") || {};
+    if (Store.mode === "server" && toOrder && (!c.status || c.status === "done" || c.status === "error")) {
+      wrap.appendChild(
+        UI.h(
+          "button",
+          { class: "btn btn-primary btn-block", type: "button", on: { click: function () { Cart.request(); } } },
+          UI.icon("cart"),
+          "Build my carts (" + toOrder + " item" + (toOrder === 1 ? "" : "s") + ")"
+        )
+      );
+    }
+
+    wrap.appendChild(
+      UI.h(
+        "div",
+        { class: "deal-links" },
+        DEAL_LINKS.map(function (d) {
+          return UI.h("a", { href: d.url, target: "_blank", rel: "noopener noreferrer" }, UI.icon("external"), d.name);
+        })
       )
     );
 
@@ -6523,6 +7007,7 @@ const Recipes = (function () {
     const card = h(
       "button",
       { class: "rcard", type: "button" },
+      r.image ? h("div", { class: "r-photo", style: { backgroundImage: "url(" + JSON.stringify(String(r.image)) + ")" } }) : null,
       h(
         "div",
         { class: "r-top" },
@@ -6658,6 +7143,9 @@ const Recipes = (function () {
     const sheetApi = UI.sheet({
       title: recipe.name || "Recipe",
       body: [
+        recipe.image
+          ? h("div", { class: "r-hero", style: { backgroundImage: "url(" + JSON.stringify(String(recipe.image)) + ")" }, role: "img", "aria-label": recipe.name || "" })
+          : null,
         sourceRow,
         chipsRow,
         UI.section("Ingredients", null, ingredientsBody),
@@ -6737,7 +7225,9 @@ const Recipes = (function () {
     const urlInput = h("input", { class: "input", type: "url", placeholder: "https://…", value: initial.sourceUrl || "" });
     const emojiInput = h("input", { class: "input", type: "text", placeholder: "🍽️", maxlength: "8", value: initial.emoji || "" });
 
+    const imageInput = h("input", { class: "input", type: "url", placeholder: "Photo link (optional)", value: initial.image || "" });
     const rows = [field("Name", nameInput), field("Link", urlInput), field("Emoji", emojiInput)];
+    if (level === "full") rows.push(field("Photo", imageInput));
 
     let sourceInput, timeInput, servingsInput, ingredientsArea, stepsArea;
     const selectedTags = (initial.tags || []).slice();
@@ -6796,6 +7286,7 @@ const Recipes = (function () {
         value: {
           name: name,
           emoji: (emojiInput.value || "").trim() || "🍽️",
+          image: full ? (imageInput.value || "").trim() : (initial.image || ""),
           source: full ? (sourceInput.value || "").trim() : "",
           sourceUrl: (urlInput.value || "").trim(),
           time: full ? (timeInput.value || "").trim() : "",
@@ -6875,9 +7366,11 @@ const Recipes = (function () {
       doors.appendChild(
         doorBtn(
           "link",
-          "Just the link",
-          "Save the name and the link now, fill in the rest later.",
-          function () { showManualForm("minimal"); }
+          "From a link",
+          Store.mode === "server"
+            ? "Paste the link from a pin or a blog. The recipe comes over clean, photo and all."
+            : "Save the name and the link now, fill in the rest later.",
+          function () { showLinkForm(""); }
         )
       );
       doors.appendChild(
@@ -6901,6 +7394,109 @@ const Recipes = (function () {
       );
       btn.addEventListener("click", onClick);
       return btn;
+    }
+
+    /* The Pinterest path. She opens the pin, taps the link (or copies the
+       pin's own URL), pastes it here. The server reads the recipe block the
+       blog publishes for Google and hands back the clean recipe. */
+    function showLinkForm(prefillUrl) {
+      const urlInput = h("input", {
+        class: "input",
+        type: "url",
+        placeholder: "https://…",
+        value: prefillUrl || "",
+        data: { keep: "import-url" },
+      });
+      const canImport = Store.mode === "server";
+      const goBtn = h("button", { class: "btn btn-primary btn-block", type: "button" }, canImport ? "Bring it over" : "Save the link");
+      goBtn.addEventListener("click", function () {
+        const u = (urlInput.value || "").trim();
+        if (!u) {
+          UI.toast("Paste the link first.");
+          return;
+        }
+        if (!canImport) {
+          const form = buildRecipeForm({ sourceUrl: u }, "minimal");
+          showFormWithSave(form);
+          return;
+        }
+        handleImport(u);
+      });
+      urlInput.addEventListener("keydown", function (e) {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          goBtn.click();
+        }
+      });
+      sheetApi.setBody(
+        h(
+          "div",
+          { class: "stack" },
+          field("The link", urlInput),
+          h("p", {
+            class: "tiny muted",
+            text: canImport
+              ? "Works with the blog the pin points to, and usually with the pin itself."
+              : "",
+          }),
+          goBtn
+        )
+      );
+      sheetApi.scrollTop();
+      if (window.matchMedia("(min-width: 900px)").matches) urlInput.focus();
+    }
+
+    async function handleImport(url) {
+      sheetApi.setBody(
+        h("div", { class: "thinking" }, h("div", { class: "spinner" }), h("span", { text: "Reading the recipe…" }))
+      );
+      let out = null;
+      try {
+        const res = await fetch("/api/import", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url: url }),
+        });
+        out = await res.json();
+      } catch (e) {
+        out = null;
+      }
+      if (!out || !out.ok || !out.recipe) {
+        UI.toast("Couldn't reach that page. Saved the link; fill the rest in when you can.");
+        showFormWithSave(buildRecipeForm({ sourceUrl: url }, "minimal"));
+        return;
+      }
+      const r = out.recipe;
+      const ings = (r.ingredients || []).map(parseIngredientLine);
+      const parsed = {
+        name: r.name || "",
+        emoji: guessEmoji(r.name || "", r.keywords || ""),
+        image: r.image || "",
+        source: r.source || "",
+        sourceUrl: r.sourceUrl || url,
+        time: r.time || "",
+        servings: r.servings || "",
+        tags: guessTags(r),
+        ingredients: ings,
+        steps: r.steps || [],
+      };
+      if (!r.found) UI.toast("That page didn't publish a recipe block. Fill in what's missing.");
+      showReviewForm(parsed);
+    }
+
+    function showFormWithSave(form) {
+      const saveBtn = h("button", { class: "btn btn-primary btn-block", type: "button" }, "Save to the box");
+      saveBtn.addEventListener("click", function () {
+        const res = form.collect();
+        if (res.error) {
+          UI.toast(res.error);
+          return;
+        }
+        saveRecipe(res.value, null);
+        sheetApi.close();
+      });
+      sheetApi.setBody(h("div", { class: "stack" }, form.el, saveBtn));
+      sheetApi.scrollTop();
     }
 
     function showManualForm(level) {
@@ -7042,6 +7638,38 @@ const Recipes = (function () {
     if (url) p += "The person also gave this source link: " + url + "\n\n";
     p += 'The pasted recipe text:\n"""\n' + text.slice(0, 6000) + '\n"""\n';
     return p;
+  }
+
+  /* A cheap emoji for an imported recipe, from its name. Editable anyway. */
+  const EMOJI_GUESSES = [
+    [/pizza/i, "🍕"], [/taco|burrito|quesadilla|enchilada/i, "🌮"], [/burger/i, "🍔"],
+    [/pasta|spaghetti|penne|ziti|lasagna|linguine|gnocchi|mac and cheese|macaroni/i, "🍝"],
+    [/soup|chili|stew|chowder/i, "🍲"], [/salad/i, "🥗"], [/shrimp|prawn/i, "🍤"],
+    [/salmon|fish|cod|tilapia|tuna/i, "🐟"], [/chicken|turkey/i, "🍗"], [/steak|beef|roast|brisket/i, "🥩"],
+    [/pork|ribs|bacon|ham/i, "🥓"], [/rice|risotto|fried rice/i, "🍚"], [/ramen|noodle|pho|stir[- ]?fry/i, "🍜"],
+    [/curry/i, "🍛"], [/egg|frittata|omelet|quiche/i, "🍳"], [/pancake|waffle|french toast/i, "🥞"],
+    [/bread|roll|bun|biscuit/i, "🍞"], [/cookie|brownie|cake|pie|muffin|dessert|bar/i, "🍪"],
+    [/sandwich|panini|grilled cheese/i, "🥪"], [/potato/i, "🥔"], [/corn/i, "🌽"], [/broccoli|veggie|vegetable/i, "🥦"],
+  ];
+  function guessEmoji(name, keywords) {
+    const hay = name + " " + keywords;
+    for (let i = 0; i < EMOJI_GUESSES.length; i++) if (EMOJI_GUESSES[i][0].test(hay)) return EMOJI_GUESSES[i][1];
+    return "🍽️";
+  }
+
+  function guessTags(r) {
+    const hay = ((r.name || "") + " " + (r.keywords || "") + " " + (r.steps || []).join(" ")).toLowerCase();
+    const tags = [];
+    const mins = parseInt((r.time || "").replace(/\D+/g, ""), 10);
+    if (/slow cooker|crock ?pot/.test(hay)) tags.push("slow-cooker");
+    if (/sheet pan|one pan|one-pan|skillet/.test(hay)) tags.push("one-pan");
+    if (/grill/.test(hay)) tags.push("grill");
+    if (/soup|chili|stew/.test(hay)) tags.push("soup");
+    if (/pasta|spaghetti|penne|noodle|lasagna/.test(hay)) tags.push("pasta");
+    if (/vegetarian|meatless|vegan/.test(hay)) tags.push("vegetarian");
+    if (r.time && /min/.test(r.time) && !/hr/.test(r.time) && mins && mins <= 25) tags.push("quick");
+    if (r.time && !/hr/.test(r.time) && mins && mins <= 45) tags.push("weeknight");
+    return tags.filter(function (t, i, a) { return TAG_VOCAB.indexOf(t) >= 0 && a.indexOf(t) === i; }).slice(0, 5);
   }
 
   function normalizeParsed(data, url) {
@@ -8192,6 +8820,334 @@ const House = (function () {
 })();
 
 
+/* ==== js/45-chores.js ========================================================= */
+/* ============================================================
+   Chores — the kids' chart, carried over from the wall.
+
+   Addison (4) and Sophie (2) each have a few chores with a big picture.
+   Tapping one marks it done and drops a star in that kid's jar, with the
+   streak bonus the wall already gave. Tapping again takes it back. Daily
+   chores clear each morning; weekly ones clear each Monday.
+
+   Lives in one document, chores/board:
+     { list: [{ id, name, who, cadence:"daily"|"weekly", pic, stars }],
+       done: { "<periodKey>": { "<choreId>": true } } }
+   where periodKey is the day for daily chores and the ISO week for weekly
+   ones, so "done" prunes itself as time moves on.
+
+   Used by the Stars tab (phone) and by the wall, where it is the one panel
+   the kids are meant to touch.
+   ============================================================ */
+
+const SEED_CHORES = {
+  list: [
+    { id: "windows", name: "Wash windows", who: "Addison", cadence: "weekly", pic: "\u{1F9FD}", stars: 1 },
+    { id: "shoes", name: "Clean up shoes", who: "Sophie", cadence: "weekly", pic: "\u{1F45F}", stars: 1 },
+    { id: "toys-a", name: "Pick up toys", who: "Addison", cadence: "daily", pic: "\u{1F9F8}", stars: 1 },
+    { id: "toys-s", name: "Pick up toys", who: "Sophie", cadence: "daily", pic: "\u{1F9F8}", stars: 1 },
+    { id: "table", name: "Help set the table", who: "Addison", cadence: "daily", pic: "\u{1F37D}\u{FE0F}", stars: 1 },
+    { id: "books", name: "Put books away", who: "Sophie", cadence: "daily", pic: "\u{1F4DA}", stars: 1 },
+  ],
+  done: {},
+};
+
+/* Chores without a picture get one guessed from the name, like the wall. */
+const CHORE_PICS = [
+  [/window/i, "\u{1F9FD}"],
+  [/shoe/i, "\u{1F45F}"],
+  [/toy|lego|block/i, "\u{1F9F8}"],
+  [/book/i, "\u{1F4DA}"],
+  [/table|dish|plate/i, "\u{1F37D}\u{FE0F}"],
+  [/bed/i, "\u{1F6CF}\u{FE0F}"],
+  [/laundry|cloth|sock/i, "\u{1F9E6}"],
+  [/dog|cat|pet|feed/i, "\u{1F436}"],
+  [/plant|water|flower/i, "\u{1FAB4}"],
+  [/trash|garbage|recycl/i, "\u{1F5D1}\u{FE0F}"],
+  [/teeth|brush/i, "\u{1FAA5}"],
+  [/vacuum|sweep|floor/i, "\u{1F9F9}"],
+  [/wipe|clean/i, "\u{1F9FC}"],
+];
+
+const Chores = (function () {
+  function picFor(name) {
+    for (let i = 0; i < CHORE_PICS.length; i++) if (CHORE_PICS[i][0].test(name || "")) return CHORE_PICS[i][1];
+    return "\u{2B50}";
+  }
+
+  function board() {
+    const doc = Store.get("chores");
+    if (doc && Array.isArray(doc.list)) return doc;
+    return SEED_CHORES;
+  }
+
+  function list() {
+    return (board().list || []).filter(function (c) {
+      return c && c.id && c.name;
+    });
+  }
+
+  function forKid(kid) {
+    return list().filter(function (c) {
+      return c.who === kid;
+    });
+  }
+
+  function periodKey(chore, date) {
+    return chore.cadence === "weekly" ? Fmt.weekKey(date) : Fmt.dayKey(date);
+  }
+
+  function isDone(chore, date) {
+    const done = board().done || {};
+    const bucket = done[periodKey(chore, date || new Date())];
+    return !!(bucket && bucket[chore.id]);
+  }
+
+  function starsFor(chore) {
+    const n = Math.round(Number(chore.stars));
+    return n > 0 ? n : 1;
+  }
+
+  /* Tap = done + a star. Tap again = undone, star back. The kids see it
+     change on the wall within seconds of a phone tap, and the other way. */
+  function toggle(id, date) {
+    const now = date || new Date();
+    const chore = list().find(function (c) {
+      return c.id === id;
+    });
+    if (!chore) return;
+    const key = periodKey(chore, now);
+    const wasDone = isDone(chore, now);
+    const patch = { done: {} };
+    patch.done[key] = {};
+    patch.done[key][id] = !wasDone;
+    Store.mergeDoc("chores", patch);
+
+    if (chore.who && typeof Rewards !== "undefined") {
+      const n = starsFor(chore);
+      if (wasDone) Rewards.give(chore.who, -n, "Took back: " + chore.name);
+      else Rewards.give(chore.who, n, "Did a chore: " + chore.name);
+    }
+    return !wasDone;
+  }
+
+  function saveList(next) {
+    const cur = board();
+    /* Keep only the current day and week of ticks; older buckets are just
+       history nobody reads, and the store is happier small. */
+    const keep = {};
+    const dk = Fmt.dayKey();
+    const wk = Fmt.weekKey();
+    const done = cur.done || {};
+    if (done[dk]) keep[dk] = done[dk];
+    if (done[wk]) keep[wk] = done[wk];
+    Store.setDoc("chores", { list: next, done: keep });
+  }
+
+  /* ---------- the tiles ---------- */
+
+  function tile(chore, opts) {
+    const o = opts || {};
+    const done = isDone(chore, new Date());
+    const el = UI.h(
+      "button",
+      {
+        class: "chore-tile" + (o.big ? " chore-tile-big" : ""),
+        type: "button",
+        "aria-pressed": done ? "true" : "false",
+        "aria-label": chore.name + (done ? ", done" : ""),
+      },
+      UI.h("span", { class: "chore-pic", text: chore.pic || picFor(chore.name) }),
+      UI.h("span", { class: "chore-name", text: chore.name }),
+      UI.h(
+        "span",
+        { class: "chore-meta" },
+        chore.cadence === "weekly" ? UI.h("span", { class: "chore-cad", text: "this week" }) : null,
+        UI.h("span", { class: "chore-stars nums", text: starsFor(chore) + " \u{2B50}" })
+      ),
+      UI.h("span", { class: "chore-check" }, UI.icon("check"))
+    );
+    el.addEventListener("click", function () {
+      const nowDone = toggle(chore.id);
+      if (nowDone) {
+        el.classList.add("chore-pop");
+        if (o.onDone) o.onDone(chore);
+      }
+    });
+    return el;
+  }
+
+  /* One block per kid: emoji, name, tiles. Shared by the phone and the wall. */
+  function kidBlocks(opts) {
+    const o = opts || {};
+    const shop = typeof Rewards !== "undefined" ? Rewards.shop() || {} : {};
+    const kids = shop.kids || [];
+    const blocks = [];
+    kids.forEach(function (k) {
+      const mine = forKid(k.name);
+      if (!mine.length) return;
+      const doneN = mine.filter(function (c) {
+        return isDone(c, new Date());
+      }).length;
+      blocks.push(
+        UI.h(
+          "div",
+          { class: "chore-kid" },
+          UI.h(
+            "div",
+            { class: "chore-kid-head" },
+            UI.h("span", { class: "chore-kid-emoji", text: k.emoji || "\u{2B50}" }),
+            UI.h("span", { class: "chore-kid-name", text: k.name }),
+            UI.h("span", {
+              class: "chore-kid-count nums",
+              text: doneN === mine.length ? "All done!" : doneN + " of " + mine.length,
+            })
+          ),
+          UI.h(
+            "div",
+            { class: "chore-grid" },
+            mine.map(function (c) {
+              return tile(c, o);
+            })
+          )
+        )
+      );
+    });
+    return blocks;
+  }
+
+  /* ---------- editing ---------- */
+
+  function openEditor() {
+    const shop = typeof Rewards !== "undefined" ? Rewards.shop() || {} : {};
+    const kids = (shop.kids || []).map(function (k) {
+      return k.name;
+    });
+    let working = list().map(function (c) {
+      return Object.assign({}, c);
+    });
+
+    let sheet;
+    function row(c, idx) {
+      const name = UI.h("input", { class: "input", type: "text", value: c.name, placeholder: "Chore" });
+      const who = UI.h("select", { class: "select" });
+      kids.forEach(function (k) {
+        who.appendChild(UI.h("option", { value: k, text: k, selected: c.who === k ? true : null }));
+      });
+      const cad = UI.h(
+        "select",
+        { class: "select" },
+        UI.h("option", { value: "daily", text: "Every day", selected: c.cadence !== "weekly" ? true : null }),
+        UI.h("option", { value: "weekly", text: "Once a week", selected: c.cadence === "weekly" ? true : null })
+      );
+      const pic = UI.h("input", { class: "input chore-pic-input", type: "text", value: c.pic || "", placeholder: picFor(c.name) });
+      const stars = UI.h("input", { class: "input chore-stars-input", type: "number", min: "1", max: "5", value: starsFor(c) });
+      const del = UI.h("button", { class: "ibtn", type: "button", "aria-label": "Remove" }, UI.icon("trash"));
+      del.addEventListener("click", function () {
+        working.splice(idx, 1);
+        render();
+      });
+      function sync() {
+        c.name = name.value.trim();
+        c.who = who.value;
+        c.cadence = cad.value;
+        c.pic = pic.value.trim();
+        c.stars = Math.max(1, Math.round(Number(stars.value)) || 1);
+      }
+      [name, who, cad, pic, stars].forEach(function (i) {
+        i.addEventListener("input", sync);
+        i.addEventListener("change", sync);
+      });
+      return UI.h(
+        "div",
+        { class: "chore-edit-row" },
+        UI.h("div", { class: "chore-edit-line" }, pic, name, del),
+        UI.h("div", { class: "chore-edit-line" }, who, cad, stars)
+      );
+    }
+
+    function render() {
+      const rows = working.map(row);
+      const add = UI.h("button", { class: "btn btn-block", type: "button" }, UI.icon("plus"), "Add a chore");
+      add.addEventListener("click", function () {
+        working.push({ id: uid("chore"), name: "", who: kids[0] || "", cadence: "daily", pic: "", stars: 1 });
+        render();
+      });
+      const body = UI.h(
+        "div",
+        { class: "stack" },
+        UI.h("p", { class: "tiny muted", text: "Every day clears each morning. Once a week clears each Monday. Stars are what a tap is worth." }),
+        UI.h("div", { class: "stack" }, rows),
+        add
+      );
+      if (sheet) sheet.setBody(body);
+      return body;
+    }
+
+    sheet = UI.sheet({
+      title: "The chore chart",
+      body: render(),
+      actions: [
+        UI.h("button", { class: "btn", type: "button", on: { click: function () { sheet.close(); } } }, "Cancel"),
+        UI.h(
+          "button",
+          {
+            class: "btn btn-primary",
+            type: "button",
+            on: {
+              click: function () {
+                const cleaned = working
+                  .map(function (c) {
+                    return {
+                      id: c.id || uid("chore"),
+                      name: (c.name || "").trim(),
+                      who: c.who || "",
+                      cadence: c.cadence === "weekly" ? "weekly" : "daily",
+                      pic: (c.pic || "").trim() || picFor(c.name),
+                      stars: starsFor(c),
+                    };
+                  })
+                  .filter(function (c) {
+                    return c.name;
+                  });
+                saveList(cleaned);
+                sheet.close();
+                UI.toast("Chore chart saved");
+              },
+            },
+          },
+          "Save"
+        ),
+      ],
+    });
+  }
+
+  /* The section the Stars tab shows above the jars. */
+  function section() {
+    const blocks = kidBlocks({});
+    const editBtn = UI.h("button", { class: "btn btn-sm", type: "button" }, UI.icon("pencil"), "Edit");
+    editBtn.addEventListener("click", openEditor);
+    if (!blocks.length) {
+      return UI.section(
+        "Chores",
+        editBtn,
+        UI.h("div", { class: "card" }, UI.empty("star", "No chores on the chart yet. Add a few and the kids can start earning.", UI.h("button", { class: "btn btn-primary", type: "button", on: { click: openEditor } }, "Set up the chart")))
+      );
+    }
+    return UI.section("Chores", editBtn, UI.h("div", { class: "chore-kids" }, blocks));
+  }
+
+  return {
+    list: list,
+    forKid: forKid,
+    isDone: isDone,
+    toggle: toggle,
+    kidBlocks: kidBlocks,
+    section: section,
+    openEditor: openEditor,
+  };
+})();
+
+
 /* ==== js/50-rewards.js ========================================================= */
 /* ============================================================
    Stars — the kids' reward economy, carried over from the wall
@@ -8798,6 +9754,9 @@ const Rewards = (function () {
     if (list.length) root.appendChild(renderJars(sh));
     else root.appendChild(UI.empty("star", "Add kids in “Edit the rewards” to start giving stars."));
 
+    /* The chore chart: where most of the stars actually come from. */
+    if (typeof Chores !== "undefined" && list.length) root.appendChild(Chores.section());
+
     root.appendChild(renderShop(sh));
     root.appendChild(renderRecent(st));
 
@@ -9213,8 +10172,24 @@ const Display = (function () {
     );
   }
 
+  /* The one panel the kids touch: their chores, tappable on the wall. A tap
+     drops a star in the jar and holds the rotation so the panel does not
+     slide away mid-tap. */
+  function panelChores() {
+    if (typeof Chores === "undefined") return null;
+    const blocks = Chores.kidBlocks({ big: true });
+    if (!blocks.length) return null;
+    return UI.h(
+      "div",
+      { class: "wall-panel" },
+      eyebrow("Chores"),
+      UI.h("div", { class: "wall-chores" }, blocks)
+    );
+  }
+
   const PANELS = [
     panelCleaning,
+    panelChores,
     panelTonight,
     panelStars,
     panelAttention,
@@ -9271,7 +10246,15 @@ const Display = (function () {
     renderDots(panelIdx);
   }
 
+  /* A touch anywhere holds the current panel for a while — a kid working
+     through their chores must not have the screen change under them. */
+  let holdUntil = 0;
+  function hold() {
+    holdUntil = Date.now() + 45000;
+  }
+
   function rotate() {
+    if (Date.now() < holdUntil) return;
     showPanel((panelIdx + 1) % PANELS.length, true);
   }
 
@@ -9311,6 +10294,7 @@ const Display = (function () {
     Router.go("display");
     setInterval(tickClock, 1000);
     setInterval(rotate, ROTATE_MS);
+    document.addEventListener("pointerdown", hold, { passive: true });
   }
 
   Router.on("display", renderDisplay);

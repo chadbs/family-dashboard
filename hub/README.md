@@ -1,7 +1,11 @@
 # The Solanyk House — the family app
 
 One web app for the whole household. On a phone it has tabs: **Today, Meals,
-Recipes, House, Stars**. On the wall Surface in the kitchen it opens at
+Recipes, House, Stars**. Stars holds the kids' chore chart (tap a chore, earn
+a star, streak bonus every third day) and the reward shop, carried over from
+the wall. Recipes imports straight from a link. The grocery list prices every
+item at Meijer and ALDI, files it under the cheaper store, and can order the
+carts filled. On the wall Surface in the kitchen it opens at
 `/display` and becomes the always-on display — clock, backyard weather, and a
 slow rotation through the day's cleaning, tonight's dinner, the star jars,
 what needs doing, the week ahead. Kenzie's morning note pops on whichever

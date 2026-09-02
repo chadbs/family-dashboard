@@ -77,7 +77,26 @@ editing the app and shipping it are the same act.
 | `GET /api/hub/version` | change token, so phones poll cheaply |
 | `GET /api/hub/weather` | backyard sensor (if fresh) + Open-Meteo forecast (cached 10 min) |
 | `POST /api/sensor` | the Surface's AcuRite reading |
+| `GET /api/prices` | Meijer vs ALDI prices from `public/prices.json` (the nightly sweep; every push carries the latest) |
+| `POST /api/import` | `{url}` → the recipe on that page (schema.org Recipe block: name, photo, ingredients, steps, time, servings, author). Follows a Pinterest pin to its blog when it can. |
 | `GET /manifest.webmanifest` | so phones install it as an app |
+
+## Getting Kenzie's Pinterest recipes in
+
+Recipes → **Add a recipe** → **From a link**. Paste the blog link a pin points
+to (or the pin's own link; the server follows it to the blog when Pinterest
+lets it). The recipe comes back clean — photo, ingredients, steps, time — into
+a review form, and one tap saves it. No ads, no scrolling, and the original is
+always one tap away from the recipe. A whole board is just that, one pin at a
+time, at her pace.
+
+## The cart order
+
+Grocery list → **Build my carts**. That writes `docs.cart` with the items
+routed to the cheaper store. A Claude session on Chad's PC (see
+`CART-WATCHER.md`) picks it up at 7:12am and 5:12pm, fills the Meijer and ALDI
+carts with Claude-in-Chrome, and writes the cart links back — they show up on
+the grocery tab as two buttons. Never checks out.
 
 Storage is **Deno KV**: one key per document and per item, strongly
 consistent, so an edit on one phone is visible to the other on its next poll
