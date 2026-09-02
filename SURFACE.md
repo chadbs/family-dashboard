@@ -7,9 +7,11 @@ here to set that up or repair it. Follow this file exactly.
 ## Hard rules (these outrank anything else you're asked to do here)
 
 1. **State is sacred.** `data/state.json`, `data/state.json.bak`,
+   `data/hub.json`, `data/hub.json.bak`,
    `data/backups/`, `data/photos/`, `data/secrets.json`, `data/weather.json`
    hold the family's live data and are untracked/gitignored. NEVER delete,
-   overwrite, truncate, or `git clean` them. There is no valid reason to run
+   overwrite, truncate, or `git clean` them. (`state.json` is the wall's;
+   `hub.json` is the phone hub's. Both matter.) There is no valid reason to run
    `git clean` on this machine, ever.
 2. **This machine never edits code.** All code changes happen on the main PC
    and arrive via GitHub. Don't commit, don't push, don't fix bugs here — if
@@ -68,6 +70,26 @@ So: front-end changes appear ≤ ~2 min after a push; server-side changes
 apply ≤ ~3 min (pull + watchdog restart); reboots self-recover ≤ ~1 min after
 logon. The only thing that still needs a human once ever: automatic Windows
 sign-in (netplwiz), so power outages boot straight to the wall.
+
+## Putting the hub on the internet (one time, ever)
+
+The family's phone hub is this same server at `/hub`. To make it reachable
+from outside the house, run this once, as the wall user:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\setup-tunnel.ps1
+```
+
+It installs Tailscale, signs this machine in (a browser opens once), and turns
+on Tailscale Funnel for port 8080. It then prints the permanent https address.
+The first run usually prints a link to enable Funnel for the tailnet — open it,
+approve, and run the script again.
+
+That address is **public and unauthenticated**, on purpose. Anyone with the
+link can open the hub and the wall. Do not put anything private on it.
+
+Verify with `& "C:\Program Files\Tailscale\tailscale.exe" funnel status`, and
+by opening the printed `/hub` address from a phone on cellular data.
 
 ## Handoff (when something is beyond this file)
 

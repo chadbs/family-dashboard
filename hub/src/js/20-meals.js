@@ -74,6 +74,19 @@
 
   /* ---------- Plan ---------- */
 
+  /* Every field spelled out, even when empty. The store merges recursively,
+     so a partial slot would leave the previous dinner's recipeId sitting
+     underneath a slot that is now "eating out". */
+  function fullSlot(slot) {
+    if (slot === null || slot === undefined) return null;
+    return {
+      kind: slot.kind || "text",
+      recipeId: slot.recipeId || "",
+      title: slot.title || "",
+      note: slot.note || "",
+    };
+  }
+
   function describeSlot(slot) {
     if (!slot) return { emoji: "", name: "", sub: "" };
     if (slot.kind === "recipe") {
@@ -111,15 +124,7 @@
       date = date || new Date();
       const wk = Fmt.weekKey(date);
       const dayKey = DAY_KEYS[Fmt.dayIdx(date)];
-      const full =
-        slot === null || slot === undefined
-          ? null
-          : {
-              kind: slot.kind || "text",
-              recipeId: slot.recipeId || "",
-              title: slot.title || "",
-              note: slot.note || "",
-            };
+      const full = fullSlot(slot);
       const patch = {};
       patch[wk] = {};
       patch[wk][dayKey] = full;
@@ -285,7 +290,7 @@
         if (pizza && used[pizza.id]) pizza = null;
         const pick = pizza || firstUnused(dateForIdx(5));
         if (pick) {
-          patch[SAT] = { kind: "recipe", recipeId: pick.id };
+          patch[SAT] = fullSlot({ kind: "recipe", recipeId: pick.id });
           used[pick.id] = true;
         }
       }
@@ -297,7 +302,7 @@
         if (week[key]) return;
         const pick = firstUnused(dateForIdx(i));
         if (!pick) return;
-        patch[key] = { kind: "recipe", recipeId: pick.id };
+        patch[key] = fullSlot({ kind: "recipe", recipeId: pick.id });
         used[pick.id] = true;
       });
 

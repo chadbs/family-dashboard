@@ -5,34 +5,66 @@ household running on a phone, from anywhere, for Kenzie and Chad.
 
 | | The wall (`../public/`) | The hub (`hub/`) |
 |---|---|---|
-| Where it runs | Surface, kiosk, LAN only | claude.ai artifact, any phone or browser |
+| Where it runs | Surface, kiosk, LAN only | the same server, at `/hub`, reachable from anywhere |
 | Who it is for | the whole family, all day | Kenzie and Chad |
-| What it holds | weather, calendar, kid chores, stars, grocery carts | meals, recipes, cleaning routine, jobs, projects |
-| Where state lives | `../data/state.json` on the Surface | the artifact's own shared database |
+| What it holds | calendar, kid chores, grocery carts | weather, meals, recipes, cleaning routine, jobs, projects, stars |
+| Where state lives | `../data/state.json` | `../data/hub.json` |
 
-They are separate on purpose. The hub never reads or writes
-`../data/state.json` — the prime directive in the root README still stands.
+Two different files on purpose: the wall and the hub must never be able to
+corrupt each other. The hub never reads or writes `../data/state.json` — the
+prime directive in the root README still stands.
 
-## Build and publish
+## How it is served (the important part)
+
+**The hub is served by `server.js` at `/hub`.** That is what makes it work:
+
+- it can reach the **backyard AcuRite sensor**, because it is same-origin with
+  the server that owns `data/weather.json`;
+- **nobody signs in to anything** — it is a plain web page on a plain URL;
+- one copy of the data for the whole family, in `data/hub.json`.
+
+`scripts/setup-tunnel.ps1`, run once on the Surface, puts that server on the
+internet through Tailscale Funnel, which gives it a permanent https address
+that survives reboots and IP changes. Kenzie opens the link and adds it to her
+home screen. **That address is public and has no password** — a deliberate
+choice, made because the alternative was a sign-in Kenzie would fight with.
 
 ```bash
-node hub/build.js
+node hub/build.js        # src -> dist/hub.html; the server serves that file
 ```
 
-That concatenates `hub/src/` into `hub/dist/hub.html`. Publish it with the
-Artifact tool:
+The Surface picks the new build up on its next mirror-pull, and the watchdog
+restarts the server when `server.js` itself changes.
 
-```
-capabilities: { db: {}, sample: {} }
-```
+## The artifact copy (secondary)
 
-`db` gives every device the same data, live. `sample` is what turns a pasted
-block of recipe text into a real recipe. Both degrade: with no `db` the app
-runs on that device's own storage, and with no `sample` the paste-import door
-simply is not shown.
+The same `dist/hub.html` is also published as a claude.ai artifact with
+`capabilities: { db: {}, sample: {} }`. The store abstraction means one
+codebase serves both. Note what differs:
 
-Redeploying to the same artifact URL keeps the data — the store belongs to the
-artifact, not to a version of the page.
+- the artifact **cannot make network calls at all**, so it never shows the
+  backyard sensor — only whatever was last written to its `weather/current`
+  document;
+- it requires a claude.ai sign-in;
+- **its data is a separate copy** that will drift from `data/hub.json`.
+
+So the served `/hub` address is the real one. The artifact is a spare.
+`sample` is what turns pasted recipe text into a real recipe; where it is
+unavailable, that door is simply not shown.
+
+## Server API the hub uses
+
+| Endpoint | What |
+|---|---|
+| `GET /hub` | the page |
+| `GET /api/hub` | the whole state blob |
+| `POST /api/hub` | `{ops:[…]}` applied onto what is on disk right now |
+| `GET /api/hub/version` | mtime token, so phones poll cheaply |
+| `GET /api/hub/weather` | the AcuRite sensor plus the Open-Meteo forecast |
+
+Writes are **ops, not whole-blob saves**, so two phones editing different
+things never clobber each other. `data/hub.json` gets the same protection as
+`state.json`: hourly rotating backups, a one-deep `.bak`, atomic writes.
 
 ## Source layout
 
