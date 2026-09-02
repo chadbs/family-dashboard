@@ -62,6 +62,96 @@ function backupState() {
   } catch { /* a failed backup must never block a save */ }
 }
 
+// ---- The hub's state (data/hub.json) ------------------------------------
+// The Solanyk House hub keeps meals, recipes, the cleaning routine, jobs,
+// projects and the kids' stars here. It is a DIFFERENT file from state.json
+// on purpose: the wall and the hub must never be able to corrupt each other.
+// Same protections as state.json — hourly rotating backups, a one-deep .bak,
+// and an atomic temp-then-rename write.
+const HUB      = path.join(DATA_DIR, "hub.json");
+const HUB_PAGE = path.join(ROOT, "hub", "dist", "hub.html");
+const HUB_DOCS  = ["config", "routine", "checks", "plan", "daily", "weather", "rewards", "rewardShop"];
+const HUB_COLLS = ["recipes", "jobs", "projects", "grocery"];
+
+function emptyHub() {
+  const hub = { docs: {}, colls: {} };
+  HUB_DOCS.forEach((k) => (hub.docs[k] = {}));
+  HUB_COLLS.forEach((k) => (hub.colls[k] = {}));
+  return hub;
+}
+
+function readHub() {
+  try {
+    const parsed = JSON.parse(fs.readFileSync(HUB, "utf8"));
+    const hub = emptyHub();
+    if (parsed && typeof parsed === "object") {
+      HUB_DOCS.forEach((k) => {
+        if (parsed.docs && parsed.docs[k] && typeof parsed.docs[k] === "object") hub.docs[k] = parsed.docs[k];
+      });
+      HUB_COLLS.forEach((k) => {
+        if (parsed.colls && parsed.colls[k] && typeof parsed.colls[k] === "object") hub.colls[k] = parsed.colls[k];
+      });
+    }
+    return hub;
+  } catch {
+    return emptyHub();
+  }
+}
+
+let lastHubBackupHour = null;
+function backupHub() {
+  try {
+    if (!fs.existsSync(HUB)) return;
+    const now = new Date();
+    const hourKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}-${String(now.getHours()).padStart(2, "0")}`;
+    if (lastHubBackupHour === hourKey) return;
+    if (!fs.existsSync(BACKUPS)) fs.mkdirSync(BACKUPS, { recursive: true });
+    const dest = path.join(BACKUPS, `hub-${hourKey}.json`);
+    if (!fs.existsSync(dest)) fs.copyFileSync(HUB, dest);
+    lastHubBackupHour = hourKey;
+    const files = fs.readdirSync(BACKUPS).filter((f) => /^hub-.*\.json$/.test(f)).sort();
+    while (files.length > 30) fs.unlinkSync(path.join(BACKUPS, files.shift()));
+  } catch { /* a failed backup must never block a save */ }
+}
+
+function writeHub(hub) {
+  backupHub();
+  if (fs.existsSync(HUB)) fs.copyFileSync(HUB, HUB + ".bak");
+  const tmp = HUB + ".tmp";
+  fs.writeFileSync(tmp, JSON.stringify(hub, null, 2));
+  fs.renameSync(tmp, HUB);
+}
+
+// Recursive merge, matching what the hub's own client-side store does so the
+// two copies of the data can never drift apart. Arrays replace wholesale.
+function hubMerge(target, patch) {
+  const isObj = (v) => v !== null && typeof v === "object" && !Array.isArray(v);
+  const out = isObj(target) ? Object.assign({}, target) : {};
+  Object.keys(patch || {}).forEach((k) => {
+    out[k] = isObj(patch[k]) ? hubMerge(out[k], patch[k]) : patch[k];
+  });
+  return out;
+}
+
+// One write from a phone. Anything unrecognised is ignored rather than
+// throwing, so a newer client can never wedge an older server.
+function applyHubOp(hub, op) {
+  if (!op || typeof op !== "object") return;
+  if (op.type === "doc") {
+    if (HUB_DOCS.indexOf(op.key) < 0) return;
+    const body = op.body && typeof op.body === "object" && !Array.isArray(op.body) ? op.body : {};
+    hub.docs[op.key] = op.mode === "merge" ? hubMerge(hub.docs[op.key], body) : body;
+    return;
+  }
+  if (op.type === "item") {
+    if (HUB_COLLS.indexOf(op.coll) < 0) return;
+    if (!op.id || typeof op.id !== "string") return;
+    if (op.mode === "delete") { delete hub.colls[op.coll][op.id]; return; }
+    const body = op.body && typeof op.body === "object" && !Array.isArray(op.body) ? op.body : {};
+    hub.colls[op.coll][op.id] = op.mode === "patch" ? hubMerge(hub.colls[op.coll][op.id], body) : body;
+  }
+}
+
 const MIME = {
   ".html": "text/html; charset=utf-8",
   ".css":  "text/css; charset=utf-8",
@@ -747,6 +837,86 @@ Reply with ONLY a JSON array, no other text:
       res.writeHead(200, { "Content-Type": MIME[ext] || "application/octet-stream", "Cache-Control": "no-store" });
       res.end(content);
     });
+  }
+
+  // ======================================================================
+  // The Solanyk House hub (hub/) — served from here so it can reach the
+  // backyard sensor and so nobody has to sign in to anything.
+  //
+  // Its state is data/hub.json: gitignored, atomically written, backed up
+  // hourly, exactly like state.json. It is SEPARATE from state.json — the
+  // wall's chores, stars and grocery list are untouched by all of this.
+  // ======================================================================
+
+  // The page itself.
+  if (pathname === "/hub" || pathname === "/hub/" || pathname === "/hub/index.html") {
+    return fs.readFile(HUB_PAGE, (err, html) => {
+      if (err) { res.writeHead(404); return res.end("Hub not built yet - run: node hub/build.js"); }
+      res.writeHead(200, { "Content-Type": MIME[".html"], "Cache-Control": "no-store" });
+      res.end(html);
+    });
+  }
+
+  // Cheap change token, so phones can poll without pulling the whole blob.
+  if (pathname === "/api/hub/version") {
+    let v = 0;
+    try { v = fs.statSync(HUB).mtimeMs; } catch {}
+    return sendJSON(res, 200, { version: String(Math.floor(v)) });
+  }
+
+  // Weather for the hub: the real backyard sensor first, plus the forecast.
+  // Shaped for the hub so the wall's own /api/weather stays exactly as it is.
+  if (pathname === "/api/hub/weather") {
+    let sensor = null;
+    try { sensor = JSON.parse(fs.readFileSync(WEATHER, "utf8")); } catch {}
+    const hlat = parseFloat(url.searchParams.get("lat")) || 42.8717;
+    const hlon = parseFloat(url.searchParams.get("lon")) || -85.8639;
+    let live = null;
+    try {
+      live = JSON.parse(await fetchText(
+        "https://api.open-meteo.com/v1/forecast?latitude=" + hlat + "&longitude=" + hlon +
+        "&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,is_day" +
+        "&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max" +
+        "&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=auto&forecast_days=7"));
+    } catch {}
+    return sendJSON(res, 200, {
+      sensor: sensor && !sensor.demo ? sensor : null,
+      current: live && live.current ? live.current : null,
+      daily: live && live.daily ? live.daily : null,
+      fetchedAt: new Date().toISOString(),
+    });
+  }
+
+  // The hub's whole state, and the op-based writer.
+  if (pathname === "/api/hub") {
+    if (req.method === "GET") {
+      const hub = readHub();
+      let v = 0;
+      try { v = fs.statSync(HUB).mtimeMs; } catch {}
+      hub.version = String(Math.floor(v));
+      return sendJSON(res, 200, hub);
+    }
+    if (req.method === "POST") {
+      const body = await readBody(req);
+      let ops;
+      try { ops = JSON.parse(body).ops; } catch { return sendJSON(res, 400, { ok: false, error: "invalid json" }); }
+      if (!Array.isArray(ops) || !ops.length) return sendJSON(res, 400, { ok: false, error: "ops must be a non-empty array" });
+      if (ops.length > 500) return sendJSON(res, 400, { ok: false, error: "too many ops" });
+      try {
+        // Ops apply onto whatever is on disk right now, so two phones editing
+        // different things never clobber each other - the same
+        // last-writer-wins-per-field rule the app already assumes.
+        const hub = readHub();
+        for (const op of ops) applyHubOp(hub, op);
+        writeHub(hub);
+        let v = 0;
+        try { v = fs.statSync(HUB).mtimeMs; } catch {}
+        return sendJSON(res, 200, { ok: true, version: String(Math.floor(v)) });
+      } catch (e) {
+        return sendJSON(res, 400, { ok: false, error: String((e && e.message) || e) });
+      }
+    }
+    res.writeHead(405); return res.end();
   }
 
   // ---- Static files ------------------------------------------------------

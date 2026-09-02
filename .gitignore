@@ -1,5 +1,8 @@
 # ── The whole point: never sync live state, so code updates can't wipe it ──
 data/state.json
+data/hub.json
+data/hub.json.bak
+data/hub.json.tmp
 data/weather.json
 data/recipe-picks.json
 data/prices.json

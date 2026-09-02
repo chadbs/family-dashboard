@@ -12,6 +12,9 @@ const DOC_PATHS = {
   checks: "checks/recent",
   plan: "plan/current",
   daily: "daily/notes",
+  weather: "weather/current",
+  rewards: "rewards/state",
+  rewardShop: "rewards/shop",
 };
 
 const COLL_NAMES = ["recipes", "jobs", "projects", "grocery"];
@@ -156,7 +159,16 @@ const Fmt = {
 const Store = (function () {
   let db = null;
   let mode = "local";
-  const docs = { config: {}, routine: {}, checks: {}, plan: {}, daily: {} };
+  const docs = {
+    config: {},
+    routine: {},
+    checks: {},
+    plan: {},
+    daily: {},
+    weather: {},
+    rewards: {},
+    rewardShop: {},
+  };
   const docExists = {};
   const docQueue = {};
   const colls = { recipes: {}, jobs: {}, projects: {}, grocery: {} };
@@ -207,6 +219,10 @@ const Store = (function () {
   function applySeeds() {
     if (!Object.keys(docs.routine || {}).length) docs.routine = clone(SEED_ROUTINE);
     if (!Object.keys(docs.config || {}).length) docs.config = clone(SEED_CONFIG);
+    if (typeof SEED_REWARD_SHOP !== "undefined" && !Object.keys(docs.rewardShop || {}).length)
+      docs.rewardShop = clone(SEED_REWARD_SHOP);
+    if (typeof SEED_REWARD_STATE !== "undefined" && !Object.keys(docs.rewards || {}).length)
+      docs.rewards = clone(SEED_REWARD_STATE);
     if (!Object.keys(colls.recipes).length) {
       SEED_RECIPES.forEach(function (r) {
         colls.recipes[r.id] = clone(r);
@@ -270,6 +286,141 @@ const Store = (function () {
     });
   }
 
+  /* --- server mode ---------------------------------------------------
+     When the page is served by the family's own dashboard server (the wall
+     Surface, reachable from anywhere through its tunnel), the store talks to
+     /api/hub instead of the artifact database. Same data shape, no sign-in,
+     and the page can reach the backyard sensor because it is same-origin
+     with the server that owns it.
+
+     Writes go out as small ops applied onto whatever is on disk right now, so
+     two phones editing different things never overwrite each other. */
+
+  let pendingOps = [];
+  let flushTimer = null;
+  let inFlight = 0;
+  let seenVersion = null;
+
+  function pushOp(op) {
+    pendingOps.push(op);
+    saveLocal();
+    if (flushTimer) return Promise.resolve();
+    flushTimer = setTimeout(flushOps, 120);
+    return Promise.resolve();
+  }
+
+  async function flushOps() {
+    flushTimer = null;
+    if (!pendingOps.length) return;
+    const ops = pendingOps;
+    pendingOps = [];
+    inFlight++;
+    try {
+      const res = await fetch("/api/hub", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ops: ops }),
+      });
+      const out = await res.json();
+      if (!out || out.ok !== true) throw new Error((out && out.error) || "save failed");
+      seenVersion = out.version;
+    } catch (e) {
+      /* Put them back at the front and try again shortly — a phone that walks
+         out of wifi mid-tap must not silently lose the tap. */
+      pendingOps = ops.concat(pendingOps);
+      UI.toast("Saving when the connection is back...");
+      setTimeout(function () {
+        if (!flushTimer) flushTimer = setTimeout(flushOps, 10);
+      }, 4000);
+    } finally {
+      inFlight--;
+    }
+  }
+
+  function applyServerBlob(blob) {
+    Object.keys(docs).forEach(function (k) {
+      if (blob.docs && isPlainObject(blob.docs[k])) docs[k] = blob.docs[k];
+    });
+    COLL_NAMES.forEach(function (k) {
+      if (blob.colls && isPlainObject(blob.colls[k])) colls[k] = blob.colls[k];
+    });
+    seenVersion = blob.version;
+    saveLocal();
+    emit();
+  }
+
+  async function serverSeedIfEmpty() {
+    if (Object.keys(docs.routine || {}).length) return false;
+    const ops = [
+      { type: "doc", key: "routine", mode: "set", body: clone(SEED_ROUTINE) },
+      { type: "doc", key: "config", mode: "set", body: clone(SEED_CONFIG) },
+    ];
+    /* The stars carry over from the wall dashboard, balances and streak and
+       all. Defined in 50-rewards.js, which has evaluated by the time this
+       runs, but guarded so the store never depends on load order. */
+    if (typeof SEED_REWARD_SHOP !== "undefined")
+      ops.push({ type: "doc", key: "rewardShop", mode: "set", body: clone(SEED_REWARD_SHOP) });
+    if (typeof SEED_REWARD_STATE !== "undefined")
+      ops.push({ type: "doc", key: "rewards", mode: "set", body: clone(SEED_REWARD_STATE) });
+    SEED_RECIPES.forEach(function (r) {
+      const b = clone(r);
+      delete b.id;
+      ops.push({ type: "item", coll: "recipes", id: r.id, mode: "set", body: b });
+    });
+    SEED_JOBS.forEach(function (j) {
+      const b = clone(j);
+      delete b.id;
+      ops.push({ type: "item", coll: "jobs", id: j.id, mode: "set", body: b });
+    });
+    SEED_PROJECTS.forEach(function (p) {
+      const b = clone(p);
+      delete b.id;
+      ops.push({ type: "item", coll: "projects", id: p.id, mode: "set", body: b });
+    });
+    await fetch("/api/hub", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ops: ops }),
+    });
+    return true;
+  }
+
+  /* Poll for other people's changes. Cheap: a version token, and the full
+     blob only when it actually moved. Skipped while our own writes are in
+     flight so a slow round trip cannot flicker the screen back. */
+  function startPolling() {
+    setInterval(async function () {
+      if (document.hidden || inFlight || pendingOps.length) return;
+      try {
+        const res = await fetch("/api/hub/version", { cache: "no-store" });
+        const out = await res.json();
+        if (!out || out.version === seenVersion) return;
+        const blob = await (await fetch("/api/hub", { cache: "no-store" })).json();
+        applyServerBlob(blob);
+      } catch (e) {
+        /* offline for a moment; the next tick tries again */
+      }
+    }, 5000);
+  }
+
+  async function tryServer() {
+    try {
+      const ctl = new AbortController();
+      const t = setTimeout(function () {
+        ctl.abort();
+      }, 2500);
+      const res = await fetch("/api/hub", { cache: "no-store", signal: ctl.signal });
+      clearTimeout(t);
+      if (!res.ok) return false;
+      const blob = await res.json();
+      if (!blob || typeof blob !== "object" || !blob.docs) return false;
+      applyServerBlob(blob);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
   /* First device to open the artifact writes the starting content. The lease
      stops two phones opening it at once from both seeding.
 
@@ -315,6 +466,27 @@ const Store = (function () {
     loadLocal();
     applySeeds();
     emit();
+
+    /* Served by the family's own server? That is the best case: no sign-in,
+       and the page can reach the backyard sensor. Try it first. */
+    if (typeof fetch === "function" && location.protocol.indexOf("http") === 0) {
+      const onServer = await tryServer();
+      if (onServer) {
+        mode = "server";
+        try {
+          /* On a brand-new server the blob comes back empty, so seed it and
+             read it straight back — otherwise the very first open sits there
+             looking empty until the next poll. */
+          if (await serverSeedIfEmpty()) await tryServer();
+        } catch (e) {
+          console.warn("hub seeding skipped", e && e.message);
+        }
+        startPolling();
+        settle();
+        emit();
+        return;
+      }
+    }
 
     let handle = null;
     try {
@@ -382,6 +554,7 @@ const Store = (function () {
       saveLocal();
       emit();
       const full = clone(docs[key]);
+      if (mode === "server") return pushOp({ type: "doc", key: key, mode: "set", body: full });
       const prior = docQueue[key] || Promise.resolve();
       const next = prior.then(function () {
         if (mode !== "cloud" || !db) return;
@@ -410,6 +583,7 @@ const Store = (function () {
       emit();
       const full = clone(docs[key]);
       const body = clone(patch);
+      if (mode === "server") return pushOp({ type: "doc", key: key, mode: "merge", body: body });
       const prior = docQueue[key] || Promise.resolve();
       const next = prior.then(function () {
         if (mode !== "cloud" || !db) return;
@@ -444,6 +618,10 @@ const Store = (function () {
       colls[name][docId] = stored;
       saveLocal();
       emit();
+      if (mode === "server") {
+        pushOp({ type: "item", coll: name, id: docId, mode: "set", body: clone(stored) });
+        return docId;
+      }
       write(function () {
         return db.collection(name).doc(docId).set(clone(stored));
       }, "that");
@@ -458,6 +636,8 @@ const Store = (function () {
       colls[name][id] = merged;
       saveLocal();
       emit();
+      if (mode === "server")
+        return pushOp({ type: "item", coll: name, id: id, mode: "patch", body: clone(patch) });
       return write(function () {
         return db.collection(name).doc(id).set(clone(merged));
       }, "that");
@@ -467,6 +647,7 @@ const Store = (function () {
       delete colls[name][id];
       saveLocal();
       emit();
+      if (mode === "server") return pushOp({ type: "item", coll: name, id: id, mode: "delete" });
       return write(function () {
         return db.collection(name).doc(id).delete();
       }, "the delete");

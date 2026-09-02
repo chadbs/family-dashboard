@@ -8,6 +8,7 @@ const TABS = [
   { route: "meals", label: "Meals", icon: "pot" },
   { route: "recipes", label: "Recipes", icon: "book" },
   { route: "house", label: "House", icon: "home" },
+  { route: "rewards", label: "Stars", icon: "star" },
 ];
 
 function buildTabBar() {
@@ -103,6 +104,16 @@ async function boot() {
   await Store.ready;
   prune();
   Router.refresh();
+
+  /* The backyard sensor, once we know whether this copy of the page can
+     reach it. Refreshed while the app is open, paused when it is not. */
+  if (await Weather.refresh()) Router.refresh();
+  setInterval(function () {
+    if (document.hidden) return;
+    Weather.refresh().then(function (ok) {
+      if (ok && Router.current() === "today") Router.refresh();
+    });
+  }, 5 * 60 * 1000);
 }
 
 boot();

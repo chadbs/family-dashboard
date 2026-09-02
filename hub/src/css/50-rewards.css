@@ -1,0 +1,64 @@
+/* ============================================================
+   Stars — jars, the shop, and the reason / redeem / edit sheets.
+   ============================================================ */
+
+.jars { display: flex; flex-direction: column; gap: 14px; }
+@media (min-width: 520px) {
+  .jars { flex-direction: row; }
+  .jars > .jar { flex: 1; min-width: 0; }
+}
+
+.jar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 22px 18px;
+  text-align: center;
+}
+.jar .jar-emoji { font-size: 44px; line-height: 1; }
+.jar .jar-name { font-family: var(--serif); font-size: 1.15rem; font-weight: 400; }
+.jar .jar-balance {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 7px;
+  font-size: 2.5rem;
+  font-weight: 650;
+  line-height: 1;
+}
+.jar .jar-balance .unit { font-size: 1.4rem; }
+.jar .jar-actions { display: flex; flex-direction: column; gap: 8px; width: 100%; margin-top: 4px; }
+
+/* ---------- "give a star" reasons ---------- */
+
+.reason-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.reason-btn {
+  min-height: 46px;
+  padding: 10px 12px;
+  border-radius: var(--r);
+  border: 1px solid var(--line);
+  background: var(--surface-2);
+  color: var(--ink);
+  font-size: 0.88rem;
+  font-weight: 550;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.14s ease;
+}
+.reason-btn:hover { border-color: var(--delft); background: var(--delft-soft); }
+
+/* ---------- the shop ---------- */
+
+/* A reward nobody can afford yet stays fully legible in structure — only
+   its opacity drops, never its color. */
+.rcard[data-afford="false"] { opacity: 0.48; }
+
+.redeem-emoji, .log-emoji { font-size: 24px; line-height: 1; flex-shrink: 0; }
+
+/* ---------- edit the rewards ---------- */
+
+.reward-edit-row { gap: 8px; }
+.reward-edit-row .rwd-emoji { width: 54px; flex-shrink: 0; text-align: center; padding-left: 6px; padding-right: 6px; }
+.reward-edit-row .rwd-name { flex: 1; min-width: 0; }
+.reward-edit-row .rwd-cost { width: 74px; flex-shrink: 0; }

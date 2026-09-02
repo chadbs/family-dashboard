@@ -1,0 +1,82 @@
+/* Weather card — the backyard number is the loudest thing on the screen,
+   because it is the one everybody actually opens the app to check. */
+
+.wx-card { padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+
+.wx-head { display: flex; align-items: center; gap: 14px; }
+.wx-emoji { font-size: 40px; line-height: 1; flex-shrink: 0; }
+.wx-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.wx-temp {
+  font-family: var(--serif);
+  font-size: 3rem;
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  display: flex;
+  align-items: flex-start;
+}
+.wx-deg { font-size: 1.6rem; line-height: 1.1; color: var(--ink-2); }
+.wx-cond { font-size: 0.95rem; font-weight: 550; }
+.wx-where {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-3);
+  margin-top: 2px;
+}
+.wx-hilo {
+  flex-shrink: 0;
+  text-align: right;
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+.wx-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  padding: 11px 0;
+}
+.wx-stat {
+  flex: 1 1 0;
+  min-width: 68px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  padding: 0 6px;
+}
+.wx-stat + .wx-stat { border-left: 1px solid var(--line); }
+.wx-stat-val { font-size: 0.98rem; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.wx-stat-key { font-size: 0.67rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--ink-3); }
+
+.wx-week {
+  display: flex;
+  gap: 4px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.wx-week::-webkit-scrollbar { display: none; }
+.wx-day {
+  flex: 1 1 0;
+  min-width: 52px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 8px 2px;
+  border-radius: var(--r-sm);
+  background: var(--surface-2);
+}
+.wx-day-name { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-3); }
+.wx-day-icon { font-size: 17px; line-height: 1.2; }
+.wx-day-temps { display: flex; gap: 5px; font-size: 0.8rem; font-variant-numeric: tabular-nums; }
+.wx-hi { font-weight: 650; }
+.wx-lo { color: var(--ink-3); }
+.wx-day-rain { font-size: 0.66rem; color: var(--delft); font-variant-numeric: tabular-nums; }
+
+.wx-stale { padding-top: 2px; }
+.banner-slot { padding: 12px; }

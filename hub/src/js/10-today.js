@@ -508,6 +508,10 @@
 
     root.appendChild(renderHeader(now));
 
+    /* The backyard temperature, when this copy of the page can reach it. */
+    const wx = Weather.card();
+    if (wx) root.appendChild(wx);
+
     const strip = renderSunStrip(now);
     if (strip) root.appendChild(strip);
 

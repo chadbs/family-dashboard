@@ -1153,6 +1153,158 @@ main {
 /* The status shortcut on a project card is a nudge, not the card's main
    action — size it to its label instead of letting the column stretch it. */
 .pcard .btn-sm { align-self: flex-start; }
+
+
+/* ==== css/05-weather.css ==== */
+/* Weather card — the backyard number is the loudest thing on the screen,
+   because it is the one everybody actually opens the app to check. */
+
+.wx-card { padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+
+.wx-head { display: flex; align-items: center; gap: 14px; }
+.wx-emoji { font-size: 40px; line-height: 1; flex-shrink: 0; }
+.wx-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.wx-temp {
+  font-family: var(--serif);
+  font-size: 3rem;
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  display: flex;
+  align-items: flex-start;
+}
+.wx-deg { font-size: 1.6rem; line-height: 1.1; color: var(--ink-2); }
+.wx-cond { font-size: 0.95rem; font-weight: 550; }
+.wx-where {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-3);
+  margin-top: 2px;
+}
+.wx-hilo {
+  flex-shrink: 0;
+  text-align: right;
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+.wx-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  padding: 11px 0;
+}
+.wx-stat {
+  flex: 1 1 0;
+  min-width: 68px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  padding: 0 6px;
+}
+.wx-stat + .wx-stat { border-left: 1px solid var(--line); }
+.wx-stat-val { font-size: 0.98rem; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.wx-stat-key { font-size: 0.67rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--ink-3); }
+
+.wx-week {
+  display: flex;
+  gap: 4px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.wx-week::-webkit-scrollbar { display: none; }
+.wx-day {
+  flex: 1 1 0;
+  min-width: 52px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 8px 2px;
+  border-radius: var(--r-sm);
+  background: var(--surface-2);
+}
+.wx-day-name { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-3); }
+.wx-day-icon { font-size: 17px; line-height: 1.2; }
+.wx-day-temps { display: flex; gap: 5px; font-size: 0.8rem; font-variant-numeric: tabular-nums; }
+.wx-hi { font-weight: 650; }
+.wx-lo { color: var(--ink-3); }
+.wx-day-rain { font-size: 0.66rem; color: var(--delft); font-variant-numeric: tabular-nums; }
+
+.wx-stale { padding-top: 2px; }
+.banner-slot { padding: 12px; }
+
+
+/* ==== css/50-rewards.css ==== */
+/* ============================================================
+   Stars — jars, the shop, and the reason / redeem / edit sheets.
+   ============================================================ */
+
+.jars { display: flex; flex-direction: column; gap: 14px; }
+@media (min-width: 520px) {
+  .jars { flex-direction: row; }
+  .jars > .jar { flex: 1; min-width: 0; }
+}
+
+.jar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 22px 18px;
+  text-align: center;
+}
+.jar .jar-emoji { font-size: 44px; line-height: 1; }
+.jar .jar-name { font-family: var(--serif); font-size: 1.15rem; font-weight: 400; }
+.jar .jar-balance {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 7px;
+  font-size: 2.5rem;
+  font-weight: 650;
+  line-height: 1;
+}
+.jar .jar-balance .unit { font-size: 1.4rem; }
+.jar .jar-actions { display: flex; flex-direction: column; gap: 8px; width: 100%; margin-top: 4px; }
+
+/* ---------- "give a star" reasons ---------- */
+
+.reason-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.reason-btn {
+  min-height: 46px;
+  padding: 10px 12px;
+  border-radius: var(--r);
+  border: 1px solid var(--line);
+  background: var(--surface-2);
+  color: var(--ink);
+  font-size: 0.88rem;
+  font-weight: 550;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.14s ease;
+}
+.reason-btn:hover { border-color: var(--delft); background: var(--delft-soft); }
+
+/* ---------- the shop ---------- */
+
+/* A reward nobody can afford yet stays fully legible in structure — only
+   its opacity drops, never its color. */
+.rcard[data-afford="false"] { opacity: 0.48; }
+
+.redeem-emoji, .log-emoji { font-size: 24px; line-height: 1; flex-shrink: 0; }
+
+/* ---------- edit the rewards ---------- */
+
+.reward-edit-row { gap: 8px; }
+.reward-edit-row .rwd-emoji { width: 54px; flex-shrink: 0; text-align: center; padding-left: 6px; padding-right: 6px; }
+.reward-edit-row .rwd-name { flex: 1; min-width: 0; }
+.reward-edit-row .rwd-cost { width: 74px; flex-shrink: 0; }
 </style>
 
 <div class="app">
@@ -2963,6 +3115,9 @@ const DOC_PATHS = {
   checks: "checks/recent",
   plan: "plan/current",
   daily: "daily/notes",
+  weather: "weather/current",
+  rewards: "rewards/state",
+  rewardShop: "rewards/shop",
 };
 
 const COLL_NAMES = ["recipes", "jobs", "projects", "grocery"];
@@ -3107,7 +3262,16 @@ const Fmt = {
 const Store = (function () {
   let db = null;
   let mode = "local";
-  const docs = { config: {}, routine: {}, checks: {}, plan: {}, daily: {} };
+  const docs = {
+    config: {},
+    routine: {},
+    checks: {},
+    plan: {},
+    daily: {},
+    weather: {},
+    rewards: {},
+    rewardShop: {},
+  };
   const docExists = {};
   const docQueue = {};
   const colls = { recipes: {}, jobs: {}, projects: {}, grocery: {} };
@@ -3158,6 +3322,10 @@ const Store = (function () {
   function applySeeds() {
     if (!Object.keys(docs.routine || {}).length) docs.routine = clone(SEED_ROUTINE);
     if (!Object.keys(docs.config || {}).length) docs.config = clone(SEED_CONFIG);
+    if (typeof SEED_REWARD_SHOP !== "undefined" && !Object.keys(docs.rewardShop || {}).length)
+      docs.rewardShop = clone(SEED_REWARD_SHOP);
+    if (typeof SEED_REWARD_STATE !== "undefined" && !Object.keys(docs.rewards || {}).length)
+      docs.rewards = clone(SEED_REWARD_STATE);
     if (!Object.keys(colls.recipes).length) {
       SEED_RECIPES.forEach(function (r) {
         colls.recipes[r.id] = clone(r);
@@ -3221,6 +3389,141 @@ const Store = (function () {
     });
   }
 
+  /* --- server mode ---------------------------------------------------
+     When the page is served by the family's own dashboard server (the wall
+     Surface, reachable from anywhere through its tunnel), the store talks to
+     /api/hub instead of the artifact database. Same data shape, no sign-in,
+     and the page can reach the backyard sensor because it is same-origin
+     with the server that owns it.
+
+     Writes go out as small ops applied onto whatever is on disk right now, so
+     two phones editing different things never overwrite each other. */
+
+  let pendingOps = [];
+  let flushTimer = null;
+  let inFlight = 0;
+  let seenVersion = null;
+
+  function pushOp(op) {
+    pendingOps.push(op);
+    saveLocal();
+    if (flushTimer) return Promise.resolve();
+    flushTimer = setTimeout(flushOps, 120);
+    return Promise.resolve();
+  }
+
+  async function flushOps() {
+    flushTimer = null;
+    if (!pendingOps.length) return;
+    const ops = pendingOps;
+    pendingOps = [];
+    inFlight++;
+    try {
+      const res = await fetch("/api/hub", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ops: ops }),
+      });
+      const out = await res.json();
+      if (!out || out.ok !== true) throw new Error((out && out.error) || "save failed");
+      seenVersion = out.version;
+    } catch (e) {
+      /* Put them back at the front and try again shortly — a phone that walks
+         out of wifi mid-tap must not silently lose the tap. */
+      pendingOps = ops.concat(pendingOps);
+      UI.toast("Saving when the connection is back...");
+      setTimeout(function () {
+        if (!flushTimer) flushTimer = setTimeout(flushOps, 10);
+      }, 4000);
+    } finally {
+      inFlight--;
+    }
+  }
+
+  function applyServerBlob(blob) {
+    Object.keys(docs).forEach(function (k) {
+      if (blob.docs && isPlainObject(blob.docs[k])) docs[k] = blob.docs[k];
+    });
+    COLL_NAMES.forEach(function (k) {
+      if (blob.colls && isPlainObject(blob.colls[k])) colls[k] = blob.colls[k];
+    });
+    seenVersion = blob.version;
+    saveLocal();
+    emit();
+  }
+
+  async function serverSeedIfEmpty() {
+    if (Object.keys(docs.routine || {}).length) return false;
+    const ops = [
+      { type: "doc", key: "routine", mode: "set", body: clone(SEED_ROUTINE) },
+      { type: "doc", key: "config", mode: "set", body: clone(SEED_CONFIG) },
+    ];
+    /* The stars carry over from the wall dashboard, balances and streak and
+       all. Defined in 50-rewards.js, which has evaluated by the time this
+       runs, but guarded so the store never depends on load order. */
+    if (typeof SEED_REWARD_SHOP !== "undefined")
+      ops.push({ type: "doc", key: "rewardShop", mode: "set", body: clone(SEED_REWARD_SHOP) });
+    if (typeof SEED_REWARD_STATE !== "undefined")
+      ops.push({ type: "doc", key: "rewards", mode: "set", body: clone(SEED_REWARD_STATE) });
+    SEED_RECIPES.forEach(function (r) {
+      const b = clone(r);
+      delete b.id;
+      ops.push({ type: "item", coll: "recipes", id: r.id, mode: "set", body: b });
+    });
+    SEED_JOBS.forEach(function (j) {
+      const b = clone(j);
+      delete b.id;
+      ops.push({ type: "item", coll: "jobs", id: j.id, mode: "set", body: b });
+    });
+    SEED_PROJECTS.forEach(function (p) {
+      const b = clone(p);
+      delete b.id;
+      ops.push({ type: "item", coll: "projects", id: p.id, mode: "set", body: b });
+    });
+    await fetch("/api/hub", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ops: ops }),
+    });
+    return true;
+  }
+
+  /* Poll for other people's changes. Cheap: a version token, and the full
+     blob only when it actually moved. Skipped while our own writes are in
+     flight so a slow round trip cannot flicker the screen back. */
+  function startPolling() {
+    setInterval(async function () {
+      if (document.hidden || inFlight || pendingOps.length) return;
+      try {
+        const res = await fetch("/api/hub/version", { cache: "no-store" });
+        const out = await res.json();
+        if (!out || out.version === seenVersion) return;
+        const blob = await (await fetch("/api/hub", { cache: "no-store" })).json();
+        applyServerBlob(blob);
+      } catch (e) {
+        /* offline for a moment; the next tick tries again */
+      }
+    }, 5000);
+  }
+
+  async function tryServer() {
+    try {
+      const ctl = new AbortController();
+      const t = setTimeout(function () {
+        ctl.abort();
+      }, 2500);
+      const res = await fetch("/api/hub", { cache: "no-store", signal: ctl.signal });
+      clearTimeout(t);
+      if (!res.ok) return false;
+      const blob = await res.json();
+      if (!blob || typeof blob !== "object" || !blob.docs) return false;
+      applyServerBlob(blob);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
   /* First device to open the artifact writes the starting content. The lease
      stops two phones opening it at once from both seeding.
 
@@ -3266,6 +3569,27 @@ const Store = (function () {
     loadLocal();
     applySeeds();
     emit();
+
+    /* Served by the family's own server? That is the best case: no sign-in,
+       and the page can reach the backyard sensor. Try it first. */
+    if (typeof fetch === "function" && location.protocol.indexOf("http") === 0) {
+      const onServer = await tryServer();
+      if (onServer) {
+        mode = "server";
+        try {
+          /* On a brand-new server the blob comes back empty, so seed it and
+             read it straight back — otherwise the very first open sits there
+             looking empty until the next poll. */
+          if (await serverSeedIfEmpty()) await tryServer();
+        } catch (e) {
+          console.warn("hub seeding skipped", e && e.message);
+        }
+        startPolling();
+        settle();
+        emit();
+        return;
+      }
+    }
 
     let handle = null;
     try {
@@ -3333,6 +3657,7 @@ const Store = (function () {
       saveLocal();
       emit();
       const full = clone(docs[key]);
+      if (mode === "server") return pushOp({ type: "doc", key: key, mode: "set", body: full });
       const prior = docQueue[key] || Promise.resolve();
       const next = prior.then(function () {
         if (mode !== "cloud" || !db) return;
@@ -3361,6 +3686,7 @@ const Store = (function () {
       emit();
       const full = clone(docs[key]);
       const body = clone(patch);
+      if (mode === "server") return pushOp({ type: "doc", key: key, mode: "merge", body: body });
       const prior = docQueue[key] || Promise.resolve();
       const next = prior.then(function () {
         if (mode !== "cloud" || !db) return;
@@ -3395,6 +3721,10 @@ const Store = (function () {
       colls[name][docId] = stored;
       saveLocal();
       emit();
+      if (mode === "server") {
+        pushOp({ type: "item", coll: name, id: docId, mode: "set", body: clone(stored) });
+        return docId;
+      }
       write(function () {
         return db.collection(name).doc(docId).set(clone(stored));
       }, "that");
@@ -3409,6 +3739,8 @@ const Store = (function () {
       colls[name][id] = merged;
       saveLocal();
       emit();
+      if (mode === "server")
+        return pushOp({ type: "item", coll: name, id: id, mode: "patch", body: clone(patch) });
       return write(function () {
         return db.collection(name).doc(id).set(clone(merged));
       }, "that");
@@ -3418,6 +3750,7 @@ const Store = (function () {
       delete colls[name][id];
       saveLocal();
       emit();
+      if (mode === "server") return pushOp({ type: "item", coll: name, id: id, mode: "delete" });
       return write(function () {
         return db.collection(name).doc(id).delete();
       }, "the delete");
@@ -3869,6 +4202,254 @@ const Router = (function () {
       return current;
     },
     refresh: schedule,
+  };
+})();
+
+
+/* ==== js/05-weather.js ========================================================= */
+/* ============================================================
+   Weather — the backyard sensor first, the forecast behind it.
+
+   Two ways the numbers arrive:
+
+   * Served from the family's own dashboard server (the normal case), the
+     page asks /api/hub/weather, which reads the AcuRite sensor's own
+     data/weather.json and adds the Open-Meteo forecast. That is the real
+     backyard temperature, the same number the wall shows.
+
+   * Published as a Claude artifact, the page cannot make network calls at
+     all, so it falls back to whatever was last written into the store's
+     weather document, and says how old that is.
+
+   Either way the card renders or quietly disappears — it never blocks the
+   rest of the screen.
+   ============================================================ */
+
+const Weather = (function () {
+  let live = null;
+  let tried = false;
+
+  /* WMO weather codes, as Open-Meteo reports them. */
+  const CODES = {
+    0: ["Clear", "☀️"],
+    1: ["Mostly clear", "🌤️"],
+    2: ["Partly cloudy", "⛅"],
+    3: ["Overcast", "☁️"],
+    45: ["Fog", "🌫️"],
+    48: ["Freezing fog", "🌫️"],
+    51: ["Light drizzle", "🌦️"],
+    53: ["Drizzle", "🌦️"],
+    55: ["Heavy drizzle", "🌧️"],
+    56: ["Freezing drizzle", "🌧️"],
+    57: ["Freezing drizzle", "🌧️"],
+    61: ["Light rain", "🌦️"],
+    63: ["Rain", "🌧️"],
+    65: ["Heavy rain", "🌧️"],
+    66: ["Freezing rain", "🌧️"],
+    67: ["Freezing rain", "🌧️"],
+    71: ["Light snow", "🌨️"],
+    73: ["Snow", "🌨️"],
+    75: ["Heavy snow", "❄️"],
+    77: ["Snow grains", "🌨️"],
+    80: ["Showers", "🌦️"],
+    81: ["Showers", "🌧️"],
+    82: ["Heavy showers", "⛈️"],
+    85: ["Snow showers", "🌨️"],
+    86: ["Snow showers", "❄️"],
+    95: ["Thunderstorm", "⛈️"],
+    96: ["Thunderstorm", "⛈️"],
+    99: ["Thunderstorm", "⛈️"],
+  };
+
+  function describe(code) {
+    const hit = CODES[code];
+    return { text: hit ? hit[0] : "", emoji: hit ? hit[1] : "🌡️" };
+  }
+
+  function round(n) {
+    return n === null || n === undefined || isNaN(n) ? null : Math.round(Number(n));
+  }
+
+  /* The best reading we have, normalised so the card never has to care
+     which of the two paths it came from. */
+  function reading() {
+    const src = live || Store.get("weather");
+    if (!src || (!src.sensor && !src.current)) return null;
+
+    const sensor = src.sensor || null;
+    const current = src.current || null;
+    const daily = src.daily || null;
+
+    /* The backyard sensor wins for temperature — it is thirty feet away,
+       not at the airport. Everything else fills in around it. */
+    const sensorTemp = sensor ? round(sensor.temperature_F) : null;
+    const apiTemp = current ? round(current.temperature_2m) : null;
+    const code = current ? current.weather_code : null;
+    const desc = describe(code);
+
+    const days = [];
+    if (daily && Array.isArray(daily.time)) {
+      for (let i = 0; i < daily.time.length && i < 7; i++) {
+        days.push({
+          date: daily.time[i],
+          hi: round(daily.temperature_2m_max && daily.temperature_2m_max[i]),
+          lo: round(daily.temperature_2m_min && daily.temperature_2m_min[i]),
+          rain: round(daily.precipitation_probability_max && daily.precipitation_probability_max[i]),
+          code: daily.weather_code ? daily.weather_code[i] : null,
+        });
+      }
+    }
+
+    return {
+      temp: sensorTemp !== null ? sensorTemp : apiTemp,
+      fromSensor: sensorTemp !== null,
+      feels: current ? round(current.apparent_temperature) : null,
+      humidity: sensor && sensor.humidity != null ? round(sensor.humidity)
+        : current ? round(current.relative_humidity_2m) : null,
+      wind: current ? round(current.wind_speed_10m) : null,
+      indoor: sensor ? round(sensor.indoor_F) : null,
+      rainToday: sensor && sensor.rain_in != null ? Number(sensor.rain_in) : null,
+      condition: desc.text || (sensor && sensor.condition) || "",
+      emoji: desc.emoji,
+      hi: days.length ? days[0].hi : null,
+      lo: days.length ? days[0].lo : null,
+      days: days,
+      fetchedAt: src.fetchedAt || null,
+      stale: isStale(src.fetchedAt),
+    };
+  }
+
+  function isStale(iso) {
+    if (!iso) return true;
+    const age = Date.now() - new Date(iso).getTime();
+    return !(age >= 0) || age > 3 * 3600 * 1000;
+  }
+
+  async function refresh() {
+    if (Store.mode !== "server") return false;
+    try {
+      const res = await fetch("/api/hub/weather", { cache: "no-store" });
+      if (!res.ok) return false;
+      const data = await res.json();
+      if (!data || (!data.sensor && !data.current)) return false;
+      live = data;
+      return true;
+    } catch (e) {
+      return false;
+    } finally {
+      tried = true;
+    }
+  }
+
+  /* --- the card ------------------------------------------------------ */
+
+  function stat(value, label) {
+    return UI.h(
+      "div",
+      { class: "wx-stat" },
+      UI.h("div", { class: "wx-stat-val", text: value }),
+      UI.h("div", { class: "wx-stat-key", text: label })
+    );
+  }
+
+  function dayCell(d, i) {
+    const date = Fmt.fromDayKey(d.date);
+    const desc = describe(d.code);
+    return UI.h(
+      "div",
+      { class: "wx-day" },
+      UI.h("div", { class: "wx-day-name", text: i === 0 ? "Today" : Fmt.dayAbbr(Fmt.dayIdx(date)) }),
+      UI.h("div", { class: "wx-day-icon", text: desc.emoji }),
+      UI.h(
+        "div",
+        { class: "wx-day-temps" },
+        UI.h("span", { class: "wx-hi", text: d.hi === null ? "--" : d.hi + "°" }),
+        UI.h("span", { class: "wx-lo", text: d.lo === null ? "--" : d.lo + "°" })
+      ),
+      d.rain !== null && d.rain >= 30
+        ? UI.h("div", { class: "wx-day-rain", text: d.rain + "%" })
+        : null
+    );
+  }
+
+  function card() {
+    const w = reading();
+
+    if (!w) {
+      /* Only worth saying anything when there is a reason it is missing. */
+      if (Store.mode === "server" && !tried) return null;
+      if (Store.mode !== "server") {
+        return UI.h(
+          "div",
+          { class: "card card-pad banner-slot" },
+          UI.h(
+            "div",
+            { class: "banner" },
+            UI.icon("info"),
+            UI.h("span", {
+              text:
+                "No weather here yet. Open the hub from the house dashboard link " +
+                "and it shows the backyard sensor.",
+            })
+          )
+        );
+      }
+      return null;
+    }
+
+    const bits = [];
+    if (w.feels !== null && w.feels !== w.temp) bits.push(stat(w.feels + "°", "Feels like"));
+    if (w.humidity !== null) bits.push(stat(w.humidity + "%", "Humidity"));
+    if (w.wind !== null) bits.push(stat(w.wind + " mph", "Wind"));
+    if (w.indoor !== null) bits.push(stat(w.indoor + "°", "Inside"));
+    if (w.rainToday !== null && w.rainToday > 0) bits.push(stat(w.rainToday + '"', "Rain today"));
+
+    const head = UI.h(
+      "div",
+      { class: "wx-head" },
+      UI.h("div", { class: "wx-emoji", text: w.emoji }),
+      UI.h(
+        "div",
+        { class: "wx-main" },
+        UI.h(
+          "div",
+          { class: "wx-temp nums" },
+          w.temp === null ? "--" : String(w.temp),
+          UI.h("span", { class: "wx-deg", text: "°" })
+        ),
+        UI.h("div", { class: "wx-cond", text: w.condition }),
+        UI.h("div", {
+          class: "wx-where",
+          text: w.fromSensor ? "Backyard sensor" : "Hudsonville",
+        })
+      ),
+      w.hi !== null
+        ? UI.h(
+            "div",
+            { class: "wx-hilo nums" },
+            UI.h("div", { text: "H " + w.hi + "°" }),
+            UI.h("div", { class: "muted", text: "L " + (w.lo === null ? "--" : w.lo) + "°" })
+          )
+        : null
+    );
+
+    const kids = [head];
+    if (bits.length) kids.push(UI.h("div", { class: "wx-stats" }, bits));
+    if (w.days.length > 1)
+      kids.push(UI.h("div", { class: "wx-week" }, w.days.slice(0, 7).map(dayCell)));
+    if (w.stale && w.fetchedAt)
+      kids.push(
+        UI.h("div", { class: "wx-stale tiny muted", text: "Last updated " + Fmt.relDay(Fmt.dayKey(new Date(w.fetchedAt))) })
+      );
+
+    return UI.h("div", { class: "card wx-card" }, kids);
+  }
+
+  return {
+    describe: describe,
+    reading: reading,
+    refresh: refresh,
+    card: card,
   };
 })();
 
@@ -4383,6 +4964,10 @@ const Router = (function () {
     const now = new Date();
 
     root.appendChild(renderHeader(now));
+
+    /* The backyard temperature, when this copy of the page can reach it. */
+    const wx = Weather.card();
+    if (wx) root.appendChild(wx);
 
     const strip = renderSunStrip(now);
     if (strip) root.appendChild(strip);
@@ -7084,6 +7669,636 @@ const House = (function () {
 })();
 
 
+/* ==== js/50-rewards.js ========================================================= */
+/* ============================================================
+   Stars — the kids' reward economy, carried over from the wall
+   dashboard so it works on a phone too.
+
+   Public surface (see CONTRACT.md): Router.on("rewards", …) and
+   `const Rewards`. Everything else here is private to this file.
+   ============================================================ */
+
+const SEED_REWARD_SHOP = {
+  kids: [
+    { name: "Addison", emoji: "🐰" },
+    { name: "Sophie", emoji: "🐢" },
+  ],
+  starEmoji: "⭐",
+  streakBonusEvery: 3,
+  streakBonus: 1,
+  rewards: [
+    { id: "candy", name: "Candy", emoji: "🍬", cost: 3 },
+    { id: "stayup", name: "Stay up late", emoji: "🌙", cost: 4 },
+    { id: "playdad", name: "Play with Dad", emoji: "🎲", cost: 4 },
+    { id: "tv", name: "Watch TV 30 min", emoji: "📺", cost: 5 },
+    { id: "icecream", name: "Ice cream", emoji: "🍦", cost: 5 },
+    { id: "park", name: "Park trip", emoji: "🌳", cost: 5 },
+  ],
+};
+
+const SEED_REWARD_STATE = {
+  stars: { Addison: 0, Sophie: 0 },
+  streak: { Addison: { count: 1, last: "2026-07-22" } },
+  log: [],
+};
+
+const Rewards = (function () {
+  const REASONS = [
+    "Did a chore",
+    "Was kind",
+    "Helped without asking",
+    "Listened the first time",
+  ];
+
+  /* ---------- data ---------- */
+
+  function shop() {
+    const doc = Store.get("rewardShop");
+    return isPlainObject(doc) && Object.keys(doc).length ? doc : SEED_REWARD_SHOP;
+  }
+
+  function state() {
+    const doc = Store.get("rewards");
+    const base = isPlainObject(doc) && Object.keys(doc).length ? doc : SEED_REWARD_STATE;
+    return {
+      stars: isPlainObject(base.stars) ? base.stars : {},
+      streak: isPlainObject(base.streak) ? base.streak : {},
+      log: Array.isArray(base.log) ? base.log : [],
+    };
+  }
+
+  function kids() {
+    const list = shop().kids;
+    return Array.isArray(list) ? list.filter(Boolean) : [];
+  }
+
+  function kidByName(name) {
+    return kids().filter(function (k) { return k && k.name === name; })[0] || null;
+  }
+
+  function balance(kid) {
+    const st = state();
+    const n = Number(st.stars && st.stars[kid]);
+    if (!isFinite(n)) return 0;
+    return Math.max(0, Math.round(n));
+  }
+
+  function rewardById(id) {
+    const list = shop().rewards;
+    const arr = Array.isArray(list) ? list : [];
+    return arr.filter(function (r) { return r && r.id === id; })[0] || null;
+  }
+
+  /* Add (or, with a negative n, take back) stars for a kid and log it.
+     Also advances that kid's streak — but only on a positive award, and
+     only the first time today, so a correction never touches it and a
+     second star the same day doesn't double-count the day. */
+  function give(kid, n, why) {
+    kid = String(kid || "").trim();
+    const amt = Math.round(Number(n)) || 0;
+    if (!kid || !amt) return;
+
+    const st = state();
+    const before = balance(kid);
+    const after = Math.max(0, before + amt);
+    if (after === before) return; // e.g. "take back" with nothing left to take
+
+    const patch = { stars: {} };
+    patch.stars[kid] = after;
+
+    const log = st.log.slice();
+    log.unshift({
+      at: new Date().toISOString(),
+      kid: kid,
+      delta: after - before,
+      why: String(why || "").trim(),
+    });
+
+    let bonusAmt = 0;
+    let bonusCount = 0;
+    if (amt > 0) {
+      const todayKey = Fmt.dayKey();
+      const cur = st.streak[kid] || {};
+      if (cur.last !== todayKey) {
+        const yestKey = Fmt.dayKey(new Date(Date.now() - 86400000));
+        const count = cur.last === yestKey ? (Number(cur.count) || 0) + 1 : 1;
+        const sh = shop();
+        const every = Math.max(1, Math.round(Number(sh.streakBonusEvery)) || 3);
+        const bonusEach = Math.max(0, Math.round(Number(sh.streakBonus)) || 0);
+
+        patch.streak = {};
+        patch.streak[kid] = { count: count, last: todayKey };
+
+        if (bonusEach > 0 && count % every === 0) {
+          bonusAmt = bonusEach;
+          bonusCount = count;
+          patch.stars[kid] = after + bonusAmt;
+          log.unshift({
+            at: new Date().toISOString(),
+            kid: kid,
+            delta: bonusAmt,
+            why: bonusCount + "-day streak bonus",
+          });
+        }
+      }
+    }
+
+    patch.log = log.slice(0, 80);
+    Store.mergeDoc("rewards", patch);
+
+    if (bonusAmt > 0) {
+      UI.toast(
+        kid + " hit a " + bonusCount + "-day streak — " + bonusAmt + " bonus " +
+          (shop().starEmoji || "⭐") + "!"
+      );
+    }
+  }
+
+  function redeem(kid, rewardId) {
+    kid = String(kid || "").trim();
+    const reward = rewardById(rewardId);
+    if (!kid || !reward) return false;
+
+    const star = shop().starEmoji || "⭐";
+    const bal = balance(kid);
+    const cost = Math.max(0, Math.round(Number(reward.cost)) || 0);
+    if (bal < cost) {
+      UI.toast(kid + " needs " + (cost - bal) + " more " + star + " for " + reward.name + ".");
+      return false;
+    }
+
+    const st = state();
+    const after = bal - cost;
+    const patch = { stars: {} };
+    patch.stars[kid] = after;
+    const log = st.log.slice();
+    log.unshift({ at: new Date().toISOString(), kid: kid, delta: -cost, why: reward.name });
+    patch.log = log.slice(0, 80);
+    Store.mergeDoc("rewards", patch);
+
+    UI.toast(kid + " cashed in for " + (reward.emoji ? reward.emoji + " " : "") + reward.name + "!");
+    return true;
+  }
+
+  /* ---------- shared little helpers ---------- */
+
+  function field(label, control) {
+    return UI.h("div", { class: "field" }, UI.h("label", { text: label }), control);
+  }
+
+  function isStreakLive(entry) {
+    if (!entry || !entry.last) return false;
+    const todayKey = Fmt.dayKey();
+    const yestKey = Fmt.dayKey(new Date(Date.now() - 86400000));
+    return entry.last === todayKey || entry.last === yestKey;
+  }
+
+  /* "just now" precision isn't needed here — today shows a time, yesterday
+     says so, anything older gets a short date. Fmt.relDay reads "3 days
+     late" for anything further back, which is the wrong voice for a log
+     of stars already given. */
+  function whenLabel(iso) {
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return "";
+    const dayKey = Fmt.dayKey(d);
+    if (dayKey === Fmt.dayKey()) return Fmt.time(d);
+    if (dayKey === Fmt.dayKey(new Date(Date.now() - 86400000))) return "yesterday";
+    return Fmt.shortDate(d);
+  }
+
+  /* ---------- the jars ---------- */
+
+  function openGiveSheet(kid) {
+    const star = shop().starEmoji || "⭐";
+    const input = UI.h("input", {
+      class: "input",
+      type: "text",
+      placeholder: "What was it for?",
+      data: { keep: "give-reason-" + kid },
+    });
+
+    function award(reason) {
+      give(kid, 1, reason);
+      s.close();
+    }
+
+    const grid = UI.h("div", { class: "reason-grid" });
+    REASONS.forEach(function (r) {
+      grid.appendChild(
+        UI.h(
+          "button",
+          { class: "reason-btn", type: "button", on: { click: function () { award(r); } } },
+          r
+        )
+      );
+    });
+
+    const s = UI.sheet({
+      title: "Give " + kid + " a star " + star,
+      body: UI.h("div", { class: "stack" }, grid, field("Or write your own", input)),
+      actions: [
+        UI.h(
+          "button",
+          { class: "btn", type: "button", on: { click: function () { s.close(); } } },
+          "Cancel"
+        ),
+        UI.h(
+          "button",
+          {
+            class: "btn btn-primary",
+            type: "button",
+            on: {
+              click: function () {
+                const text = input.value.trim();
+                if (!text) {
+                  UI.toast("Say what it was for first.");
+                  return;
+                }
+                award(text);
+              },
+            },
+          },
+          "Give the star"
+        ),
+      ],
+    });
+  }
+
+  function takeOneBack(kid) {
+    if (balance(kid) <= 0) {
+      UI.toast(kid + " doesn't have any stars to take back yet.");
+      return;
+    }
+    give(kid, -1, "Correction");
+    UI.toast("Took back a star from " + kid + ".");
+  }
+
+  function buildJar(sh, kidInfo) {
+    const name = kidInfo.name;
+    const bal = balance(name);
+    const streakEntry = state().streak[name];
+    const live = isStreakLive(streakEntry);
+
+    const jar = UI.h("div", { class: "card jar" });
+    jar.appendChild(UI.h("div", { class: "jar-emoji", text: kidInfo.emoji || "⭐" }));
+    jar.appendChild(UI.h("div", { class: "jar-name", text: name }));
+    jar.appendChild(
+      UI.h(
+        "div",
+        { class: "jar-balance" },
+        UI.h("span", { class: "nums", text: String(bal) }),
+        UI.h("span", { class: "unit", text: sh.starEmoji || "⭐" })
+      )
+    );
+    if (live) {
+      jar.appendChild(UI.chip("🔥 " + (streakEntry.count || 1) + " day streak", "amber"));
+    }
+
+    const actions = UI.h("div", { class: "jar-actions" });
+    actions.appendChild(
+      UI.h(
+        "button",
+        {
+          class: "btn btn-primary btn-block",
+          type: "button",
+          on: { click: function () { openGiveSheet(name); } },
+        },
+        "Give a star"
+      )
+    );
+    actions.appendChild(
+      UI.h(
+        "button",
+        {
+          class: "btn btn-sm btn-block",
+          type: "button",
+          on: { click: function () { takeOneBack(name); } },
+        },
+        "Take one back"
+      )
+    );
+    jar.appendChild(actions);
+    return jar;
+  }
+
+  function renderJars(sh) {
+    const wrap = UI.h("div", { class: "jars" });
+    kids().forEach(function (k) {
+      wrap.appendChild(buildJar(sh, k));
+    });
+    return wrap;
+  }
+
+  /* ---------- the shop ---------- */
+
+  function openRedeemSheet(reward) {
+    const sh = shop();
+    const star = sh.starEmoji || "⭐";
+    const list = kids();
+    const affordable = list.filter(function (k) { return balance(k.name) >= reward.cost; });
+
+    let body;
+    if (affordable.length) {
+      const rows = UI.h("div", { class: "rows" });
+      affordable.forEach(function (k) {
+        const bal = balance(k.name);
+        const left = bal - reward.cost;
+        rows.appendChild(
+          UI.h(
+            "button",
+            {
+              class: "row",
+              type: "button",
+              on: {
+                click: function () {
+                  if (redeem(k.name, reward.id)) s.close();
+                },
+              },
+            },
+            UI.h("span", { class: "redeem-emoji", text: k.emoji || "⭐" }),
+            UI.h(
+              "div",
+              { class: "row-main" },
+              UI.h("div", { class: "row-title", text: k.name }),
+              UI.h("div", {
+                class: "row-sub",
+                text: bal + " " + star + " now · " + left + " " + star + " left",
+              })
+            )
+          )
+        );
+      });
+      body = UI.h(
+        "div",
+        { class: "stack" },
+        UI.h("p", { class: "tiny muted", text: "Who's cashing in?" }),
+        UI.h("div", { class: "card" }, rows)
+      );
+    } else {
+      let closest = null;
+      list.forEach(function (k) {
+        const need = reward.cost - balance(k.name);
+        if (!closest || need < closest.need) closest = { name: k.name, need: need };
+      });
+      const msg = closest
+        ? closest.name + " needs " + closest.need + " more " + star + " for " + reward.name + "."
+        : "No kids are set up in the shop yet.";
+      body = UI.empty("star", msg);
+    }
+
+    const s = UI.sheet({
+      title: (reward.emoji ? reward.emoji + " " : "") + reward.name,
+      body: body,
+      actions: [
+        UI.h(
+          "button",
+          { class: "btn btn-block", type: "button", on: { click: function () { s.close(); } } },
+          "Close"
+        ),
+      ],
+    });
+  }
+
+  function buildRewardCard(reward) {
+    const star = shop().starEmoji || "⭐";
+    const affordable = kids().some(function (k) { return balance(k.name) >= reward.cost; });
+    const card = UI.h(
+      "button",
+      { class: "rcard", type: "button", data: { afford: affordable ? "true" : "false" } },
+      UI.h("div", { class: "r-top" }, UI.h("span", { class: "r-emoji", text: reward.emoji || "🎁" })),
+      UI.h("div", { class: "r-name", text: reward.name || "Reward" }),
+      UI.h(
+        "div",
+        { class: "r-meta" },
+        UI.h("span", { class: "nums", text: (Math.round(Number(reward.cost)) || 0) + " " + star })
+      )
+    );
+    card.addEventListener("click", function () { openRedeemSheet(reward); });
+    return card;
+  }
+
+  function renderShop(sh) {
+    const wrap = UI.h("div", { class: "stack" });
+    wrap.appendChild(UI.h("div", { class: "eyebrow", text: "What stars can buy" }));
+
+    const rewards = (Array.isArray(sh.rewards) ? sh.rewards.filter(Boolean).slice() : []).sort(
+      function (a, b) { return (Number(a.cost) || 0) - (Number(b.cost) || 0); }
+    );
+
+    if (!rewards.length) {
+      wrap.appendChild(UI.empty("gift", "Nothing in the shop yet — add something below."));
+    } else {
+      const grid = UI.h("div", { class: "recipe-grid" });
+      rewards.forEach(function (r) { grid.appendChild(buildRewardCard(r)); });
+      wrap.appendChild(grid);
+    }
+    return wrap;
+  }
+
+  /* ---------- recent stars ---------- */
+
+  function renderRecent(st) {
+    const star = shop().starEmoji || "⭐";
+    const entries = st.log.slice(0, 12);
+
+    let body;
+    if (!entries.length) {
+      body = UI.empty("star", "No stars given yet — tap “Give a star” above to start.");
+    } else {
+      const rows = UI.h("div", { class: "rows" });
+      entries.forEach(function (e) {
+        const kidInfo = kidByName(e.kid);
+        const delta = Number(e.delta) || 0;
+        rows.appendChild(
+          UI.h(
+            "div",
+            { class: "row row-static" },
+            UI.h("span", { class: "log-emoji", text: (kidInfo && kidInfo.emoji) || star }),
+            UI.h(
+              "div",
+              { class: "row-main" },
+              UI.h("div", { class: "row-title", text: e.why || (e.kid + " star") }),
+              UI.h("div", { class: "row-sub", text: e.kid + " · " + whenLabel(e.at) })
+            ),
+            UI.h(
+              "div",
+              { class: "row-end" },
+              UI.chip((delta > 0 ? "+" : "") + delta + " " + star, delta > 0 ? "leaf" : "tulip")
+            )
+          )
+        );
+      });
+      body = UI.h("div", { class: "card" }, rows);
+    }
+
+    return UI.section("Recent stars", null, body);
+  }
+
+  /* ---------- edit the shop ---------- */
+
+  function saveShopRewards(sh, nextRewards) {
+    const next = Object.assign({}, sh, { rewards: nextRewards });
+    Store.setDoc("rewardShop", next);
+  }
+
+  function buildRewardEditRow(draft, idx, rerender) {
+    const r = draft[idx];
+    const emojiInput = UI.h("input", {
+      class: "input rwd-emoji",
+      type: "text",
+      value: r.emoji || "",
+      placeholder: "🎁",
+    });
+    const nameInput = UI.h("input", {
+      class: "input rwd-name",
+      type: "text",
+      value: r.name || "",
+      placeholder: "Reward name",
+    });
+    const costInput = UI.h("input", {
+      class: "input rwd-cost",
+      type: "number",
+      min: "1",
+      value: String(r.cost || 1),
+    });
+    emojiInput.addEventListener("input", function () { r.emoji = emojiInput.value; });
+    nameInput.addEventListener("input", function () { r.name = nameInput.value; });
+    costInput.addEventListener("input", function () { r.cost = costInput.value; });
+
+    const del = UI.h(
+      "button",
+      {
+        class: "ibtn",
+        type: "button",
+        "aria-label": "Delete " + (r.name || "reward"),
+        on: {
+          click: function () {
+            draft.splice(idx, 1);
+            rerender();
+          },
+        },
+      },
+      UI.icon("trash")
+    );
+
+    return UI.h("div", { class: "edit-row reward-edit-row" }, emojiInput, nameInput, costInput, del);
+  }
+
+  function openEditShopSheet() {
+    const sh = shop();
+    const draft = (Array.isArray(sh.rewards) ? sh.rewards.filter(Boolean) : []).map(function (r) {
+      return Object.assign({}, r);
+    });
+
+    function buildBody() {
+      const wrap = UI.h("div", { class: "stack" });
+      draft.forEach(function (r, idx) {
+        wrap.appendChild(buildRewardEditRow(draft, idx, function () { s.setBody(buildBody()); }));
+      });
+      wrap.appendChild(
+        UI.h(
+          "button",
+          {
+            class: "btn btn-block",
+            type: "button",
+            on: {
+              click: function () {
+                draft.push({ id: uid("rwd"), name: "", emoji: "🎁", cost: 3 });
+                s.setBody(buildBody());
+              },
+            },
+          },
+          "Add a reward"
+        )
+      );
+      return wrap;
+    }
+
+    const s = UI.sheet({
+      title: "Edit the rewards",
+      body: buildBody(),
+      actions: [
+        UI.h(
+          "button",
+          { class: "btn", type: "button", on: { click: function () { s.close(); } } },
+          "Cancel"
+        ),
+        UI.h(
+          "button",
+          {
+            class: "btn btn-primary",
+            type: "button",
+            on: {
+              click: function () {
+                const cleaned = draft
+                  .map(function (r) {
+                    return {
+                      id: r.id || uid("rwd"),
+                      name: String(r.name || "").trim(),
+                      emoji: String(r.emoji || "").trim() || "🎁",
+                      cost: Math.max(1, Math.round(Number(r.cost) || 1)),
+                    };
+                  })
+                  .filter(function (r) { return r.name; });
+                saveShopRewards(sh, cleaned);
+                s.close();
+              },
+            },
+          },
+          "Save"
+        ),
+      ],
+    });
+  }
+
+  /* ---------- screen shell ---------- */
+
+  function renderRewards(root) {
+    const sh = shop();
+    const st = state();
+    const star = sh.starEmoji || "⭐";
+    const list = kids();
+
+    const sub = list
+      .map(function (k) { return k.name + " has " + balance(k.name) + " " + star; })
+      .join(" · ");
+
+    root.appendChild(
+      UI.h(
+        "div",
+        { class: "page-head" },
+        UI.h("h1", { class: "title", text: "Stars" }),
+        UI.h("p", { class: "sub", text: sub || "No kids set up in the shop yet." })
+      )
+    );
+
+    if (list.length) root.appendChild(renderJars(sh));
+    else root.appendChild(UI.empty("star", "Add kids in “Edit the rewards” to start giving stars."));
+
+    root.appendChild(renderShop(sh));
+    root.appendChild(renderRecent(st));
+
+    root.appendChild(
+      UI.h(
+        "button",
+        { class: "btn btn-sm", type: "button", on: { click: openEditShopSheet } },
+        "Edit the rewards"
+      )
+    );
+  }
+
+  Router.on("rewards", renderRewards);
+
+  return {
+    shop: shop,
+    state: state,
+    balance: balance,
+    give: give,
+    redeem: redeem,
+  };
+})();
+
+
 /* ==== js/99-boot.js ========================================================= */
 /* ============================================================
    Boot — tab bar, housekeeping, start.
@@ -7095,6 +8310,7 @@ const TABS = [
   { route: "meals", label: "Meals", icon: "pot" },
   { route: "recipes", label: "Recipes", icon: "book" },
   { route: "house", label: "House", icon: "home" },
+  { route: "rewards", label: "Stars", icon: "star" },
 ];
 
 function buildTabBar() {
@@ -7190,6 +8406,16 @@ async function boot() {
   await Store.ready;
   prune();
   Router.refresh();
+
+  /* The backyard sensor, once we know whether this copy of the page can
+     reach it. Refreshed while the app is open, paused when it is not. */
+  if (await Weather.refresh()) Router.refresh();
+  setInterval(function () {
+    if (document.hidden) return;
+    Weather.refresh().then(function (ok) {
+      if (ok && Router.current() === "today") Router.refresh();
+    });
+  }, 5 * 60 * 1000);
 }
 
 boot();
