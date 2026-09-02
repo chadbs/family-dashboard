@@ -98,6 +98,7 @@ async function boot() {
   const wall = typeof Display !== "undefined" && Display.active();
   if (wall) {
     document.body.classList.add("display-mode");
+    document.documentElement.classList.add("display-root");
     Display.start();
   } else {
     Router.go("today");

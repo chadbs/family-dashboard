@@ -114,7 +114,22 @@ fs.mkdirSync(DIST, { recursive: true });
 const out = path.join(DIST, "hub.html");
 fs.writeFileSync(out, html, "utf8");
 
+/* dist/hub.html is a complete document, because the server hands it straight
+   to a browser — without a doctype and a viewport meta a phone renders it at
+   ~980px and shrinks everything, which is exactly what it used to do.
+   The Artifact tool wraps its own skeleton around the file it publishes, so
+   that copy gets the same content with the document tags stripped. */
+const fragment = html
+  .replace(/^<!doctype html>\s*/i, "")
+  .replace(/^<html[^>]*>\s*/im, "")
+  .replace(/<\/html>\s*$/i, "")
+  .replace(/^<head>\s*/im, "")
+  .replace(/^<\/head>\s*/im, "")
+  .replace(/^<body[^>]*>\s*/im, "")
+  .replace(/^<\/body>\s*/im, "");
+fs.writeFileSync(path.join(DIST, "artifact.html"), fragment, "utf8");
+
 const kb = (Buffer.byteLength(html, "utf8") / 1024).toFixed(1);
-console.log("built dist/hub.html  " + kb + " KB");
+console.log("built dist/hub.html  " + kb + " KB  (+ dist/artifact.html)");
 console.log("  data: " + dataFiles.map((f) => path.basename(f.name)).join(", ") + "  (love: " + loveCount + " notes)");
 console.log("  app:  " + appFiles.map((f) => path.basename(f.name)).join(", "));

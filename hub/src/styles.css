@@ -1150,49 +1150,95 @@ main {
 .pcard .btn-sm { align-self: flex-start; }
 
 /* ============================================================
-   Phones — the app is mostly opened on one, usually one-handed.
+   Type scale by screen.
+
+   Everything sizes in rem, so one root font-size moves the whole app.
+   Phones stay at the browser default; desktops get a step up, because
+   the app is read further from the screen there and Chad found the old
+   size mean. The wall adds another step of its own in 60-display.css.
+   ============================================================ */
+
+html { font-size: 100%; }                              /* 16px, phones */
+@media (min-width: 900px)  { html { font-size: 112.5%; } }   /* 18px */
+@media (min-width: 1400px) { html { font-size: 118.75%; } }  /* 19px */
+
+body { font-size: 1rem; }
+
+/* ============================================================
+   Phones — where this app actually lives.
    ============================================================ */
 
 html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
-button, .row, .check, .dayrow, .rcard, .door, .chore-tile { touch-action: manipulation; }
+button, a, .row, .check, .dayrow, .rcard, .door, .chore-tile, .fchip, .g-row .box, .g-have {
+  touch-action: manipulation;
+}
 body { overscroll-behavior-y: none; }
 
-/* Installed to the home screen, the page runs under the notch. */
+/* Installed to the home screen, the page runs under the notch and over
+   the home indicator. */
 .view { padding-top: calc(20px + env(safe-area-inset-top, 0px)); }
 
-@media (max-width: 480px) {
-  :root { --gutter: 16px; }
+@media (max-width: 899px) {
+  :root { --gutter: 16px; --tabbar: 64px; }
+
   .view { gap: 20px; }
-  .page-head .title { font-size: 1.95rem; }
+
+  /* The serif title was set for a desktop column; on a phone it wants to
+     be a touch smaller so a long screen name still fits one line. */
+  .page-head .title { font-size: 1.9rem; }
+  .page-head .sub { font-size: 0.9rem; }
+
   .card { border-radius: 18px; }
-  .section-head h2 { font-size: 0.92rem; }
-  .sunstrip { padding: 10px 0; }
-  .sunstrip .val { font-size: 0.9rem; }
-  .sunstrip .key { font-size: 0.62rem; }
-  .wx-temp { font-size: 2.7rem; }
-  .wx-stat { min-width: 60px; padding: 0 4px; }
-  .wx-stat-val { font-size: 0.9rem; }
-  .btn-row > .btn { min-width: 0; }
+
+  /* Comfortable thumb targets everywhere that gets tapped a lot. */
+  .row, .check, .dayrow, .g-row { min-height: 56px; }
+  .btn { min-height: 48px; }
+  .btn-row > .btn { min-width: 0; flex: 1 1 46%; }
+
+  .sunstrip { padding: 11px 0; }
+  .sunstrip .val { font-size: 0.92rem; }
+  .sunstrip .key { font-size: 0.63rem; letter-spacing: 0.05em; }
+
+  .wx-temp { font-size: 2.8rem; }
+  .wx-stat { min-width: 62px; padding: 0 4px; }
+  .wx-stat-val { font-size: 0.92rem; }
+  .wx-stat-key { font-size: 0.62rem; letter-spacing: 0.05em; }
+  .wx-day { min-width: 48px; padding: 7px 2px; }
+
   .recipe-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
-  .rcard { padding: 12px; min-height: 120px; }
+  .rcard { padding: 12px; min-height: 118px; }
   .rcard .r-name { font-size: 1rem; }
+  .rcard .r-meta { font-size: 0.74rem; }
   .r-photo { margin: -12px -12px 6px; }
-  .jars { grid-template-columns: 1fr 1fr; gap: 10px; }
-  .sheet-head { padding: 14px 14px 10px; }
-  .sheet-body { padding: 14px; gap: 14px; }
-  .sheet-head h2 { font-size: 1.22rem; }
-  .deal-links a { min-height: 34px; padding: 0 10px; font-size: 0.78rem; }
+
+  .chore-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+  /* Sheets are the main way anything gets edited on a phone: give them
+     the full width and a thumb-reachable footer. */
+  .sheet-head { padding: 15px 15px 11px; }
+  .sheet-head h2 { font-size: 1.25rem; }
+  .sheet-body { padding: 15px; gap: 15px; }
+  .sheet-foot { padding: 11px 15px calc(11px + env(safe-area-inset-bottom, 0px)); }
+
+  .deal-links a { min-height: 36px; padding: 0 11px; font-size: 0.78rem; }
+  .g-sub { font-size: 0.76rem; }
 }
 
-/* Very narrow phones (SE-sized): keep five tabs legible. */
-@media (max-width: 360px) {
-  .tabbar button { font-size: 0.62rem; }
+/* Small phones (SE and the like): keep five tabs and the grids legible. */
+@media (max-width: 380px) {
+  :root { --gutter: 14px; }
+  .page-head .title { font-size: 1.72rem; }
+  .tabbar button { font-size: 0.6rem; }
   .tabbar button svg { width: 20px; height: 20px; }
+  .wx-stats { gap: 0; }
+  .wx-stat { min-width: 54px; }
+  .chip { font-size: 0.72rem; }
 }
 
-/* Landscape phone: the bottom bar would eat half the screen. */
+/* Landscape phone: a 68px bar would eat a third of the screen. */
 @media (max-width: 899px) and (max-height: 460px) {
-  :root { --tabbar: 52px; }
-  .tabbar button { flex-direction: row; gap: 6px; }
+  :root { --tabbar: 50px; }
+  .tabbar button { flex-direction: row; gap: 6px; font-size: 0.72rem; }
   .tabbar button svg { width: 18px; height: 18px; }
+  .view { padding-top: 14px; }
 }
