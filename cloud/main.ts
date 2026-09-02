@@ -309,19 +309,26 @@ function authorName(v: unknown): string {
   return "";
 }
 
+/* Turn one lump of instruction text into steps. Paragraphs, list items and
+   line breaks are the obvious boundaries. Some sites ship the whole method as
+   a single run of prose with the numbers glued to the previous sentence —
+   "…until smooth.2. In a large bowl…" — so also break before a number that
+   starts a new sentence. Then the "1." prefixes come off.
+
+   Every path into stepsFrom funnels through here, including the one where a
+   site wraps that whole blob in a single HowToStep object. */
+function pushSteps(text: string, out: string[]) {
+  stripTags(String(text).replace(/<\/?(?:li|p|br|div|h\d)[^>]*>/gi, "\n"))
+    .split(/\n+|(?<=[.!?])\s*(?=\d{1,2}\.\s*[A-Z])/)
+    .map((s) => s.replace(/^\s*(?:step\s*)?\d+[.):]\s*/i, "").trim())
+    .filter((s) => s.length > 3)
+    .forEach((s) => out.push(s));
+}
+
 function stepsFrom(v: unknown, out: string[] = []): string[] {
   if (!v) return out;
   if (typeof v === "string") {
-    /* One big string: paragraphs, list items and line breaks are the step
-       boundaries. Some sites (Half Baked Harvest among them) ship the whole
-       method as one run of prose with the numbers glued to the previous
-       sentence — "…until smooth.2. In a large bowl…" — so also break before
-       a number that starts a new sentence. Then the "1." prefixes come off. */
-    stripTags(v.replace(/<\/?(?:li|p|br|div|h\d)[^>]*>/gi, "\n"))
-      .split(/\n+|(?<=[.!?])\s*(?=\d{1,2}\.\s*[A-Z])/)
-      .map((s) => s.replace(/^\s*(?:step\s*)?\d+[.):]\s*/i, "").trim())
-      .filter((s) => s.length > 3)
-      .forEach((s) => out.push(s));
+    pushSteps(v, out);
     return out;
   }
   if (Array.isArray(v)) {
@@ -331,7 +338,7 @@ function stepsFrom(v: unknown, out: string[] = []): string[] {
   if (isObj(v)) {
     if (v["itemListElement"]) return stepsFrom(v["itemListElement"], out);
     const text = firstString(v["text"]) || firstString(v["name"]);
-    if (text) out.push(stripTags(text));
+    if (text) pushSteps(text, out);
   }
   return out;
 }
