@@ -92,9 +92,21 @@ async function boot() {
   buildTabBar();
   Router.mount(document.getElementById("main"));
   Store.on(Router.refresh);
-  Router.go("today");
+
+  /* The wall opens /display and gets the always-on view; everything else
+     gets the phone app. Same page, same data. */
+  const wall = typeof Display !== "undefined" && Display.active();
+  if (wall) {
+    document.body.classList.add("display-mode");
+    Display.start();
+  } else {
+    Router.go("today");
+  }
 
   watchMidnight();
+
+  /* Kenzie's morning note, on whichever screen she is looking at. */
+  if (typeof Love !== "undefined") Love.watch();
 
   Ask.init().then(function () {
     Router.refresh();

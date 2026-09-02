@@ -388,19 +388,28 @@ const Store = (function () {
   /* Poll for other people's changes. Cheap: a version token, and the full
      blob only when it actually moved. Skipped while our own writes are in
      flight so a slow round trip cannot flicker the screen back. */
+  async function pollOnce() {
+    if (mode !== "server" || inFlight || pendingOps.length) return;
+    try {
+      const res = await fetch("/api/hub/version", { cache: "no-store" });
+      const out = await res.json();
+      if (!out || out.version === seenVersion) return;
+      const blob = await (await fetch("/api/hub", { cache: "no-store" })).json();
+      applyServerBlob(blob);
+    } catch (e) {
+      /* offline for a moment; the next tick tries again */
+    }
+  }
+
   function startPolling() {
-    setInterval(async function () {
-      if (document.hidden || inFlight || pendingOps.length) return;
-      try {
-        const res = await fetch("/api/hub/version", { cache: "no-store" });
-        const out = await res.json();
-        if (!out || out.version === seenVersion) return;
-        const blob = await (await fetch("/api/hub", { cache: "no-store" })).json();
-        applyServerBlob(blob);
-      } catch (e) {
-        /* offline for a moment; the next tick tries again */
-      }
+    setInterval(function () {
+      if (!document.hidden) pollOnce();
     }, 5000);
+    /* A phone coming back from a pocket should show the other phone's edits
+       right away, not five seconds later. */
+    document.addEventListener("visibilitychange", function () {
+      if (!document.hidden) pollOnce();
+    });
   }
 
   async function tryServer() {
@@ -544,6 +553,9 @@ const Store = (function () {
     },
     ready: ready,
     connect: connect,
+    sync: function () {
+      return pollOnce();
+    },
 
     get: function (key) {
       return docs[key] || {};

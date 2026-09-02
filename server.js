@@ -73,6 +73,18 @@ const HUB_PAGE = path.join(ROOT, "hub", "dist", "hub.html");
 const HUB_DOCS  = ["config", "routine", "checks", "plan", "daily", "weather", "rewards", "rewardShop"];
 const HUB_COLLS = ["recipes", "jobs", "projects", "grocery"];
 
+// Where the hosted family app lives, if it has been deployed. Read fresh each
+// time so filling in cloud/endpoint.json takes effect without a restart.
+function hubCloudUrl() {
+  try {
+    const cfg = JSON.parse(fs.readFileSync(path.join(ROOT, "cloud", "endpoint.json"), "utf8"));
+    const u = cfg && typeof cfg.url === "string" ? cfg.url.trim().replace(/\/+$/, "") : "";
+    return /^https?:\/\//.test(u) ? u : "";
+  } catch {
+    return "";
+  }
+}
+
 function emptyHub() {
   const hub = { docs: {}, colls: {} };
   HUB_DOCS.forEach((k) => (hub.docs[k] = {}));
@@ -848,8 +860,14 @@ Reply with ONLY a JSON array, no other text:
   // wall's chores, stars and grocery list are untouched by all of this.
   // ======================================================================
 
-  // The page itself.
+  // The page itself. Once the family app is hosted (cloud/endpoint.json has
+  // its address), this just points there: one copy of the data, not two.
   if (pathname === "/hub" || pathname === "/hub/" || pathname === "/hub/index.html") {
+    const cloud = hubCloudUrl();
+    if (cloud) {
+      res.writeHead(302, { Location: cloud + "/", "Cache-Control": "no-store" });
+      return res.end();
+    }
     return fs.readFile(HUB_PAGE, (err, html) => {
       if (err) { res.writeHead(404); return res.end("Hub not built yet - run: node hub/build.js"); }
       res.writeHead(200, { "Content-Type": MIME[".html"], "Cache-Control": "no-store" });

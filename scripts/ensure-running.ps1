@@ -71,6 +71,14 @@ if (-not $bridgeUp) {
 
 # --- 5) The kiosk browser: if it died (or after a reboot), bring it back ----
 $browserRunning = @(Get-Process -Name "chrome", "msedge" -ErrorAction SilentlyContinue).Count -gt 0
+# What the wall shows. Once the family app is hosted (cloud\endpoint.json has
+# its address) the wall is that app's always-on display view; until then it
+# is the local dashboard as before.
+$kioskUrl = "http://localhost:8080"
+try {
+  $ep = Get-Content (Join-Path $root "cloud\endpoint.json") -Raw | ConvertFrom-Json
+  if ($ep.url -and ([string]$ep.url).StartsWith("http")) { $kioskUrl = ([string]$ep.url).TrimEnd("/") + "/display" }
+} catch {}
 if (-not $browserRunning) {
   $chrome = @(
     "$env:ProgramFiles\Google\Chrome\Application\chrome.exe",
@@ -78,14 +86,14 @@ if (-not $browserRunning) {
     "$env:LocalAppData\Google\Chrome\Application\chrome.exe"
   ) | Where-Object { Test-Path $_ } | Select-Object -First 1
   if ($chrome) {
-    Start-Process -FilePath $chrome -ArgumentList "--kiosk", "http://localhost:8080", "--no-first-run", "--disable-pinch", "--overscroll-history-navigation=0"
+    Start-Process -FilePath $chrome -ArgumentList "--kiosk", $kioskUrl, "--no-first-run", "--disable-pinch", "--overscroll-history-navigation=0"
   } else {
     $edge = @(
       "${env:ProgramFiles(x86)}\Microsoft\Edge\Application\msedge.exe",
       "$env:ProgramFiles\Microsoft\Edge\Application\msedge.exe"
     ) | Where-Object { Test-Path $_ } | Select-Object -First 1
     if ($edge) {
-      Start-Process -FilePath $edge -ArgumentList "--kiosk", "http://localhost:8080", "--edge-kiosk-type=fullscreen", "--no-first-run"
+      Start-Process -FilePath $edge -ArgumentList "--kiosk", $kioskUrl, "--edge-kiosk-type=fullscreen", "--no-first-run"
     }
   }
 }

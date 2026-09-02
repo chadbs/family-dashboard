@@ -1,0 +1,257 @@
+/* ============================================================
+   Display — the always-on wall.
+   Scaled for a kitchen, read from across the room. Big, quiet, slow.
+   ============================================================ */
+
+body.display-mode { overflow: hidden; }
+body.display-mode .tabbar { display: none; }
+body.display-mode .app { flex-direction: column; }
+body.display-mode main { min-height: 100dvh; }
+body.display-mode .toasts { display: none; }
+
+body.display-mode .view.wall {
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  gap: 0;
+  height: 100dvh;
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  background:
+    radial-gradient(120% 90% at 0% 0%, color-mix(in srgb, var(--delft-soft) 55%, transparent), transparent 60%),
+    var(--ground);
+}
+
+/* ---------- the fixed side ---------- */
+
+.wall-side {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: clamp(28px, 4.5vw, 64px);
+  border-right: 1px solid var(--line);
+  min-width: 0;
+}
+
+.wall-clock { display: flex; flex-direction: column; gap: 6px; }
+.wall-time {
+  display: flex;
+  align-items: baseline;
+  gap: 0.18em;
+  font-family: var(--serif);
+  font-weight: 300;
+  font-size: clamp(4.4rem, 10.5vw, 11rem);
+  line-height: 0.95;
+  letter-spacing: -0.03em;
+  color: var(--ink);
+}
+.wall-ampm {
+  font-family: var(--sans);
+  font-size: clamp(0.9rem, 1.6vw, 1.4rem);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--ink-3);
+}
+.wall-date {
+  font-size: clamp(1rem, 1.7vw, 1.5rem);
+  font-weight: 500;
+  color: var(--ink-2);
+  padding-left: 0.1em;
+}
+
+.wall-wx { display: flex; flex-direction: column; gap: 4px; }
+.wall-wx-top { display: flex; align-items: center; gap: clamp(8px, 1.4vw, 20px); }
+.wall-wx-emoji { font-size: clamp(2.2rem, 4.5vw, 4.6rem); line-height: 1; }
+.wall-temp {
+  display: flex;
+  align-items: flex-start;
+  font-family: var(--serif);
+  font-weight: 300;
+  font-size: clamp(4rem, 9vw, 9.5rem);
+  line-height: 0.9;
+  letter-spacing: -0.03em;
+}
+.wall-deg { font-size: 0.42em; line-height: 1.25; color: var(--ink-3); }
+.wall-wx-cond { font-size: clamp(1.1rem, 2vw, 1.8rem); font-weight: 550; margin-top: 8px; }
+.wall-wx-line { display: flex; gap: 18px; align-items: baseline; flex-wrap: wrap; }
+.wall-wx-where {
+  font-size: clamp(0.72rem, 1vw, 0.95rem);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--ink-3);
+  font-weight: 600;
+}
+.wall-wx-hilo { font-size: clamp(0.95rem, 1.5vw, 1.35rem); color: var(--ink-2); font-weight: 500; }
+.wall-wx-sub { font-size: clamp(0.9rem, 1.3vw, 1.2rem); color: var(--ink-2); }
+.wall-wx-empty .wall-wx-cond { margin-top: 0; }
+
+.wall-sun {
+  display: flex;
+  gap: 22px;
+  font-size: clamp(0.9rem, 1.3vw, 1.2rem);
+  color: var(--ink-2);
+}
+.wall-sun span { display: inline-flex; align-items: center; gap: 7px; }
+.wall-sun svg { width: 1.1em; height: 1.1em; color: var(--ink-3); }
+
+/* ---------- the rotating side ---------- */
+
+.wall-main {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: clamp(28px, 4.5vw, 64px);
+}
+.wall-stage { position: relative; flex: 1; min-height: 0; }
+/* Every panel sits in the vertical middle of the stage, so the right half
+   reads as balanced against the clock-over-weather on the left instead of
+   hugging the top with a hole beneath it. */
+.wall-panel {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: clamp(14px, 2vw, 26px);
+  min-width: 0;
+  overflow: hidden;
+}
+.wall-panel.wall-in { animation: wall-fade-in 0.65s ease both; }
+.wall-panel.wall-out { animation: wall-fade-out 0.65s ease both; pointer-events: none; }
+@keyframes wall-fade-in { from { opacity: 0; transform: translateY(8px); } }
+@keyframes wall-fade-out { to { opacity: 0; transform: translateY(-6px); } }
+@media (prefers-reduced-motion: reduce) {
+  .wall-panel.wall-in, .wall-panel.wall-out { animation: none; }
+  .wall-panel.wall-out { display: none; }
+}
+
+.wall-center { justify-content: center; align-items: center; text-align: center; }
+
+.wall-eyebrow {
+  font-size: clamp(0.78rem, 1.15vw, 1.05rem);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--delft);
+}
+
+.wall-title {
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: clamp(2rem, 4.6vw, 4.6rem);
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+  max-width: 18ch;
+}
+.wall-sub { font-size: clamp(1rem, 1.7vw, 1.5rem); color: var(--ink-2); }
+.wall-big-emoji { font-size: clamp(4rem, 9vw, 9rem); line-height: 1; }
+
+.wall-list { display: flex; flex-direction: column; gap: clamp(8px, 1.1vw, 14px); min-width: 0; }
+
+.wall-task { display: flex; align-items: center; gap: clamp(12px, 1.6vw, 22px); min-width: 0; }
+.wall-task-box {
+  flex-shrink: 0;
+  width: clamp(28px, 2.6vw, 40px);
+  height: clamp(28px, 2.6vw, 40px);
+  border-radius: 30%;
+  border: 2px solid var(--line-2);
+  display: grid;
+  place-items: center;
+  color: transparent;
+}
+.wall-task-box svg { width: 60%; height: 60%; }
+.wall-task[data-done="true"] .wall-task-box { background: var(--leaf); border-color: var(--leaf); color: var(--surface); }
+.wall-task-text { font-size: clamp(1.15rem, 2vw, 1.9rem); line-height: 1.25; font-weight: 500; overflow-wrap: anywhere; }
+.wall-task[data-done="true"] .wall-task-text { color: var(--ink-3); text-decoration: line-through; text-decoration-thickness: 2px; }
+.wall-foot { font-size: clamp(0.95rem, 1.4vw, 1.3rem); color: var(--ink-2); margin-top: 4px; }
+
+.wall-row { display: flex; align-items: center; gap: clamp(12px, 1.5vw, 20px); min-width: 0; }
+.wall-row .pri-stripe { width: 4px; min-height: 2.2em; }
+.wall-row-emoji { font-size: clamp(1.6rem, 2.6vw, 2.6rem); line-height: 1; flex-shrink: 0; }
+.wall-row-main { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.wall-row-title { font-size: clamp(1.15rem, 2vw, 1.9rem); font-weight: 550; line-height: 1.2; overflow-wrap: anywhere; }
+.wall-row-sub { font-size: clamp(0.9rem, 1.3vw, 1.2rem); color: var(--ink-2); line-height: 1.35; overflow-wrap: anywhere; }
+
+.wall-week { display: flex; flex-direction: column; gap: clamp(6px, 0.9vw, 11px); }
+.wall-week-row {
+  display: grid;
+  grid-template-columns: 3.2em 1.6em minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  font-size: clamp(1.05rem, 1.75vw, 1.65rem);
+  padding: 0.15em 0;
+}
+.wall-week-day { font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; font-size: 0.7em; color: var(--ink-3); }
+.wall-week-row[data-today="true"] .wall-week-day { color: var(--delft); }
+.wall-week-row[data-today="true"] .wall-week-name { font-weight: 650; }
+.wall-week-emoji { line-height: 1; }
+.wall-week-name { font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.wall-week-empty { color: var(--ink-3); font-style: italic; font-weight: 400; }
+
+.wall-jars { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(16px, 3vw, 40px); flex: 1; align-content: center; }
+.wall-jar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: clamp(18px, 2.5vw, 36px) 12px;
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  border: 1px solid var(--line);
+}
+.wall-jar-emoji { font-size: clamp(3rem, 6vw, 6rem); line-height: 1; }
+.wall-jar-name { font-family: var(--serif); font-size: clamp(1.4rem, 2.4vw, 2.4rem); }
+.wall-jar-count {
+  font-family: var(--serif);
+  font-weight: 300;
+  font-size: clamp(3rem, 6.5vw, 6.5rem);
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+.wall-jar-star { font-size: 0.55em; }
+.wall-jar-streak { font-size: clamp(0.85rem, 1.2vw, 1.1rem); color: var(--amber); font-weight: 600; margin-top: 6px; }
+
+.wall-fc { display: grid; grid-template-columns: repeat(5, 1fr); gap: clamp(8px, 1.2vw, 16px); flex: 1; align-content: center; }
+.wall-fc-day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: clamp(14px, 2vw, 26px) 8px;
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  border: 1px solid var(--line);
+}
+.wall-fc-name { font-size: clamp(0.75rem, 1.1vw, 1rem); font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-3); }
+.wall-fc-emoji { font-size: clamp(1.8rem, 3.2vw, 3.2rem); line-height: 1.1; }
+.wall-fc-hi { font-size: clamp(1.3rem, 2.2vw, 2.2rem); font-weight: 600; }
+.wall-fc-lo { font-size: clamp(1rem, 1.5vw, 1.4rem); color: var(--ink-3); }
+.wall-fc-rain { font-size: clamp(0.8rem, 1.1vw, 1rem); color: var(--delft); font-weight: 600; }
+
+.wall-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(12px, 2vw, 24px); }
+.wall-cell { padding: clamp(14px, 2vw, 24px); border-radius: var(--r-lg); background: var(--surface); border: 1px solid var(--line); }
+.wall-cell-val { font-size: clamp(1.4rem, 2.6vw, 2.6rem); font-weight: 550; }
+.wall-cell-key { font-size: clamp(0.75rem, 1.05vw, 0.95rem); text-transform: uppercase; letter-spacing: 0.09em; color: var(--ink-3); font-weight: 600; margin-top: 2px; }
+.wall-note { font-size: clamp(1.1rem, 1.8vw, 1.7rem); font-weight: 550; color: var(--amber); }
+
+.wall-tip {
+  font-family: var(--serif);
+  font-size: clamp(1.5rem, 3vw, 3rem);
+  line-height: 1.3;
+  max-width: 24ch;
+  text-wrap: balance;
+}
+
+.wall-dots { display: flex; gap: 8px; justify-content: flex-end; padding-top: 14px; }
+.wall-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--line-2); transition: background 0.3s ease; }
+.wall-dot[data-on="true"] { background: var(--delft); }
+
+/* Portrait or a phone held up: stack the two halves. */
+@media (max-aspect-ratio: 1/1), (max-width: 760px) {
+  body.display-mode .view.wall { grid-template-columns: 1fr; grid-template-rows: auto minmax(0, 1fr); height: auto; min-height: 100dvh; }
+  .wall-side { border-right: 0; border-bottom: 1px solid var(--line); gap: 18px; }
+  .wall-sun { display: none; }
+  .wall-stage { min-height: 46dvh; }
+}
