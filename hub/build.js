@@ -1,0 +1,82 @@
+#!/usr/bin/env node
+/* Concatenate hub/src into one publishable file: hub/dist/hub.html.
+   Zero dependencies, same as the rest of this repo. */
+
+const fs = require("fs");
+const path = require("path");
+
+const SRC = path.join(__dirname, "src");
+const DIST = path.join(__dirname, "dist");
+
+function readDir(rel) {
+  const dir = path.join(SRC, rel);
+  return fs
+    .readdirSync(dir)
+    .filter((f) => f.endsWith(".js"))
+    .sort()
+    .map((f) => ({
+      name: rel + "/" + f,
+      code: fs.readFileSync(path.join(dir, f), "utf8"),
+    }));
+}
+
+function banner(name) {
+  return "\n/* ==== " + name + " ".padEnd(58, "=") + " */\n";
+}
+
+function join(files) {
+  return files.map((f) => banner(f.name) + f.code).join("\n");
+}
+
+const dataFiles = readDir("data");
+const appFiles = readDir("js");
+
+const missing = ["data/almanac.js", "data/recipes.js", "data/seed.js"].filter(
+  (n) => !dataFiles.some((f) => f.name === n)
+);
+if (missing.length) {
+  console.error("Missing required source files: " + missing.join(", "));
+  process.exit(1);
+}
+
+/* A stray "</script>" inside a string literal would end the block early. */
+function guard(code, label) {
+  if (/<\/script/i.test(code)) {
+    console.error("Found a literal </script> in " + label + " — escape it as <\\/script>.");
+    process.exit(1);
+  }
+  return code;
+}
+
+/* styles.css is the design system; src/css/*.css holds the small
+   module-local additions, appended in name order so a view module can add
+   what it needs without four agents editing one file. */
+function readCss() {
+  const base = fs.readFileSync(path.join(SRC, "styles.css"), "utf8");
+  const dir = path.join(SRC, "css");
+  if (!fs.existsSync(dir)) return base;
+  const extra = fs
+    .readdirSync(dir)
+    .filter((f) => f.endsWith(".css"))
+    .sort()
+    .map((f) => "\n/* ==== css/" + f + " ==== */\n" + fs.readFileSync(path.join(dir, f), "utf8"))
+    .join("\n");
+  return base + "\n" + extra;
+}
+
+const styles = readCss();
+const shell = fs.readFileSync(path.join(SRC, "index.html"), "utf8");
+
+const html = shell
+  .replace("{{STYLES}}", () => styles.trim())
+  .replace("{{DATA}}", () => guard(join(dataFiles), "data"))
+  .replace("{{APP}}", () => guard(join(appFiles), "app"));
+
+fs.mkdirSync(DIST, { recursive: true });
+const out = path.join(DIST, "hub.html");
+fs.writeFileSync(out, html, "utf8");
+
+const kb = (Buffer.byteLength(html, "utf8") / 1024).toFixed(1);
+console.log("built dist/hub.html  " + kb + " KB");
+console.log("  data: " + dataFiles.map((f) => path.basename(f.name)).join(", "));
+console.log("  app:  " + appFiles.map((f) => path.basename(f.name)).join(", "));
