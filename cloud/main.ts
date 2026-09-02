@@ -313,10 +313,13 @@ function stepsFrom(v: unknown, out: string[] = []): string[] {
   if (!v) return out;
   if (typeof v === "string") {
     /* One big string: paragraphs, list items and line breaks are the step
-       boundaries, then numbered "1." prefixes come off. */
-    v.replace(/<\/?(?:li|p|br|div|h\d)[^>]*>/gi, "\n")
-      .split(/\n+/)
-      .map((s) => stripTags(s).replace(/^\s*(?:step\s*)?\d+[.):]\s*/i, "").trim())
+       boundaries. Some sites (Half Baked Harvest among them) ship the whole
+       method as one run of prose with the numbers glued to the previous
+       sentence — "…until smooth.2. In a large bowl…" — so also break before
+       a number that starts a new sentence. Then the "1." prefixes come off. */
+    stripTags(v.replace(/<\/?(?:li|p|br|div|h\d)[^>]*>/gi, "\n"))
+      .split(/\n+|(?<=[.!?])\s*(?=\d{1,2}\.\s*[A-Z])/)
+      .map((s) => s.replace(/^\s*(?:step\s*)?\d+[.):]\s*/i, "").trim())
       .filter((s) => s.length > 3)
       .forEach((s) => out.push(s));
     return out;
