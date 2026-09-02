@@ -35,6 +35,9 @@ function applyTheme() {
     mode = dark ? "dark" : "light";
   }
   document.documentElement.setAttribute("data-theme", mode);
+  // Seasonal ambient (e.g. autumn leaves over the hero) — re-evaluated here so
+  // it stays correct across a date rollover. Purely decorative (see styles.css).
+  document.documentElement.setAttribute("data-season", currentSeason());
 }
 
 /* ---------------------------------------------------------------- clock */

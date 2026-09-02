@@ -213,8 +213,33 @@ html[data-sky="cold"] .sky-fx span {
 @keyframes sky-fall-snow { to { transform: translateY(160px) translateX(10px); opacity: .2; } }
 @keyframes sky-drift-frost { to { transform: translateY(150px) translateX(-8px); opacity: .15; } }
 @keyframes sky-shimmer { 0% { transform: translateY(0) scale(.6); opacity: 0; } 30% { opacity: .8; } to { transform: translateY(-120px) scale(1.3); opacity: 0; } }
+
+/* A gentle drift of autumn leaves over the hero through the fall months — a
+   seasonal cousin of the weather-reactive rain/snow above. data-season is set
+   in app.js from currentSeason(); leaves stay paused/hidden the rest of the
+   year, and step aside for live rain/snow so the sky never looks busy. */
+.season-fx { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 0; opacity: 0; transition: opacity .8s; }
+.season-fx span { position: absolute; top: -18%; line-height: 1; opacity: .82;
+  animation: leaf-fall 10s linear infinite; animation-play-state: paused; }
+html[data-season="fall"] .season-fx { opacity: 1; }
+html[data-season="fall"] .season-fx span { animation-play-state: running; }
+html[data-season="fall"][data-sky="rainy"] .season-fx,
+html[data-season="fall"][data-sky="snow"]  .season-fx { opacity: 0; }
+.season-fx span:nth-child(1) { left: 8%;  font-size: 15px; animation-delay: 0s;   animation-duration: 8.5s; }
+.season-fx span:nth-child(2) { left: 24%; font-size: 21px; animation-delay: 2.4s; animation-duration: 11s;  }
+.season-fx span:nth-child(3) { left: 41%; font-size: 16px; animation-delay: 1.1s; animation-duration: 9.5s; }
+.season-fx span:nth-child(4) { left: 58%; font-size: 23px; animation-delay: 3.7s; animation-duration: 12s;  }
+.season-fx span:nth-child(5) { left: 73%; font-size: 17px; animation-delay: .7s;  animation-duration: 10s;  }
+.season-fx span:nth-child(6) { left: 89%; font-size: 19px; animation-delay: 4.3s; animation-duration: 8.5s; }
+@keyframes leaf-fall {
+  0%   { transform: translateY(0) translateX(0) rotate(0deg); opacity: 0; }
+  12%  { opacity: .82; }
+  90%  { opacity: .82; }
+  100% { transform: translateY(150px) translateX(-26px) rotate(320deg); opacity: 0; }
+}
 @media (prefers-reduced-motion: reduce) {
   .sky-fx span { animation: none; display: none; }
+  .season-fx { display: none; }
 }
 /* Rain trend tucked beside the big temperature */
 .hero-rain { flex: 1; min-width: 0; max-width: clamp(160px, 22vw, 300px); display: flex; flex-direction: column;
