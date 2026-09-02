@@ -1,70 +1,85 @@
-# The Solanyk House — the hub you can open anywhere
+# The Solanyk House — the family app
 
-The wall dashboard lives on the Surface upstairs. This is the other half: the
-household running on a phone, from anywhere, for Kenzie and Chad.
+One web app for the whole household. On a phone it has tabs: **Today, Meals,
+Recipes, House, Stars**. On the wall Surface in the kitchen it opens at
+`/display` and becomes the always-on display — clock, backyard weather, and a
+slow rotation through the day's cleaning, tonight's dinner, the star jars,
+what needs doing, the week ahead. Kenzie's morning note pops on whichever
+screen she is looking at.
 
-| | The wall (`../public/`) | The hub (`hub/`) |
+**It is hosted.** The data and the page live on Deno Deploy (see
+[`../cloud/README.md`](../cloud/README.md)), so nothing depends on the Surface
+being on. Phones on cellular, the wall, and Chad's PC all read and write the
+same copy. There is no sign-in, on purpose.
+
+## The three ways this one page can run
+
+`src/js/00-core.js`'s `Store` picks the first that works:
+
+| Mode | When | Data lives in |
 |---|---|---|
-| Where it runs | Surface, kiosk, LAN only | the same server, at `/hub`, reachable from anywhere |
-| Who it is for | the whole family, all day | Kenzie and Chad |
-| What it holds | calendar, kid chores, grocery carts | weather, meals, recipes, cleaning routine, jobs, projects, stars |
-| Where state lives | `../data/state.json` | `../data/hub.json` |
+| `server` | the page was served by something answering `/api/hub` — **the hosted app** (normal), or `server.js` on the Surface at `/hub` (LAN fallback, redirects to the hosted app once `cloud/endpoint.json` is filled in) | Deno KV, or `data/hub.json` |
+| `cloud` | the page is the claude.ai artifact | the artifact's own database |
+| `local` | anything else (a file on disk) | that device only |
 
-Two different files on purpose: the wall and the hub must never be able to
-corrupt each other. The hub never reads or writes `../data/state.json` — the
-prime directive in the root README still stands.
+Same code, same screens. Only the hosted app can show the backyard sensor,
+because only it receives the Surface's pushes.
 
-## How it is served (the important part)
-
-**The hub is served by `server.js` at `/hub`.** That is what makes it work:
-
-- it can reach the **backyard AcuRite sensor**, because it is same-origin with
-  the server that owns `data/weather.json`;
-- **nobody signs in to anything** — it is a plain web page on a plain URL;
-- one copy of the data for the whole family, in `data/hub.json`.
-
-`scripts/setup-tunnel.ps1`, run once on the Surface, puts that server on the
-internet through Tailscale Funnel, which gives it a permanent https address
-that survives reboots and IP changes. Kenzie opens the link and adds it to her
-home screen. **That address is public and has no password** — a deliberate
-choice, made because the alternative was a sign-in Kenzie would fight with.
+## Build
 
 ```bash
-node hub/build.js        # src -> dist/hub.html; the server serves that file
+node hub/build.js        # src -> dist/hub.html, checked in on purpose
 ```
 
-The Surface picks the new build up on its next mirror-pull, and the watchdog
-restarts the server when `server.js` itself changes.
+`dist/hub.html` is committed because the hosted app serves it straight from
+the repo with no build step, and the Surface's server does the same. The
+auto-push task ships it; Deno Deploy redeploys on every push.
 
-## The artifact copy (secondary)
+## Source layout
 
-The same `dist/hub.html` is also published as a claude.ai artifact with
-`capabilities: { db: {}, sample: {} }`. The store abstraction means one
-codebase serves both. Note what differs:
+```
+hub/
+  SPEC.md        what it is and what each screen does
+  CONTRACT.md    the globals the view modules share
+  build.js       src -> dist/hub.html
+  src/
+    index.html   the shell, with {{STYLES}} {{DATA}} {{APP}} markers
+    styles.css   the whole design system
+    css/*.css    module-local additions, appended in name order
+    data/        almanac, love (generated from public/config.js), recipes, seed
+    js/          00-core, 05-weather, 10-today, 20-meals, 30-recipes,
+                 40-house, 50-rewards, 60-display, 70-love, 99-boot
+```
 
-- the artifact **cannot make network calls at all**, so it never shows the
-  backyard sensor — only whatever was last written to its `weather/current`
-  document;
-- it requires a claude.ai sign-in;
-- **its data is a separate copy** that will drift from `data/hub.json`.
+Files are concatenated in name order into one script scope. **No modules, no
+npm, no bundler.** The number prefixes are the load order.
 
-So the served `/hub` address is the real one. The artifact is a spare.
-`sample` is what turns pasted recipe text into a real recipe; where it is
-unavailable, that door is simply not shown.
+`data/love.js` is **generated** from `public/config.js` (`loveMessages`,
+`loveNow`, `loveTo`, `loveHour`) so the words stay Chad's, byte for byte. Edit
+them in `config.js`, then regenerate with the one-liner in the file header.
 
-## Server API the hub uses
+## The artifact copy (a spare)
+
+`dist/hub.html` is also published as a claude.ai artifact with
+`capabilities: { db: {}, sample: {} }`. It works, but it cannot make network
+calls (so no sensor), it needs a claude.ai sign-in, and its data is a separate
+copy. The hosted app is the real one. `sample` is what turns pasted recipe text
+into a recipe; where unavailable that door is not shown.
+
+## Server API (identical on Deno and on `server.js`)
 
 | Endpoint | What |
 |---|---|
-| `GET /hub` | the page |
+| `GET /` (Deno) · `GET /hub` (Surface) | the page |
+| `GET /display` | the page, wall mode |
 | `GET /api/hub` | the whole state blob |
-| `POST /api/hub` | `{ops:[…]}` applied onto what is on disk right now |
-| `GET /api/hub/version` | mtime token, so phones poll cheaply |
-| `GET /api/hub/weather` | the AcuRite sensor plus the Open-Meteo forecast |
+| `POST /api/hub` | `{ops:[…]}` applied onto current state, per field |
+| `GET /api/hub/version` | change token, so phones poll cheaply |
+| `GET /api/hub/weather` | the AcuRite sensor (if fresh) plus the forecast |
+| `POST /api/sensor` (Deno) | the Surface's reading |
 
 Writes are **ops, not whole-blob saves**, so two phones editing different
-things never clobber each other. `data/hub.json` gets the same protection as
-`state.json`: hourly rotating backups, a one-deep `.bak`, atomic writes.
+things never clobber each other.
 
 ## Source layout
 

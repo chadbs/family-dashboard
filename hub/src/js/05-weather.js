@@ -189,7 +189,10 @@ const Weather = (function () {
     }
 
     const bits = [];
-    if (w.feels !== null && w.feels !== w.temp) bits.push(stat(w.feels + "°", "Feels like"));
+    /* "Feels like" comes from the forecast service, so it only belongs next
+       to that service's own temperature. Beside the backyard sensor it would
+       be a different place's number wearing our label. */
+    if (!w.fromSensor && w.feels !== null && w.feels !== w.temp) bits.push(stat(w.feels + "°", "Feels like"));
     if (w.humidity !== null) bits.push(stat(w.humidity + "%", "Humidity"));
     if (w.wind !== null) bits.push(stat(w.wind + " mph", "Wind"));
     if (w.indoor !== null) bits.push(stat(w.indoor + "°", "Inside"));

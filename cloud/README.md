@@ -102,8 +102,10 @@ anywhere. To restore, POST it back as ops (a small script; ask Claude).
 ## Running it locally (for development)
 
 ```
-deno run -A --unstable-kv cloud/main.ts      # http://localhost:8000
+HOUSE_KV_PATH=/tmp/house.kv deno run -A --unstable-kv cloud/main.ts   # http://localhost:8000
 ```
 
-Deno is installed on Chad's PC via winget. Note the server caches
-`hub/dist/hub.html` in memory — restart it after `node hub/build.js`.
+`HOUSE_KV_PATH` points the database at a throwaway file; without it Deno
+uses its own default local store. Deno is installed on Chad's PC via winget.
+The server caches `hub/dist/hub.html` in memory — restart it after
+`node hub/build.js`.

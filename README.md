@@ -23,14 +23,20 @@ dashboard by pushing to this repo — the wall updates itself.
 **The wall** (`public/`) is the Surface in the kitchen: weather, calendar, kid
 chores, stars, and the grocery-cart pipeline. LAN only.
 
-**The hub** (`hub/`) is the same server at **`/hub`**: weather from the
+**The family app** (`hub/` + `cloud/`) is the new whole: weather from the
 backyard sensor, meals and the recipe box, Kenzie's daily cleaning routine,
-Chad's job list, the big-project list, and the kids' stars. It is a plain web
-page with no sign-in, put on the internet by `scripts/setup-tunnel.ps1`
-(Tailscale Funnel) so it opens from anywhere. Its data is `data/hub.json`,
-never `data/state.json`. See [hub/README.md](hub/README.md).
+Chad's job list, the big-project list, the kids' stars, and Kenzie's morning
+note. It is **hosted on Deno Deploy** so it is always on — phones open it
+anywhere with no sign-in, and the Surface opens its `/display` view as the
+always-on kitchen wall. The Surface pushes the sensor reading up to it; the
+Surface is no longer the source of truth for anything the app holds. See
+[cloud/README.md](cloud/README.md) for the two-minute deploy and
+[hub/README.md](hub/README.md) for the code.
 
-They are deliberately separate files. The hub never touches the wall's state.
+The wall dashboard in `public/` still runs on the Surface for what has not
+moved yet (Google Calendar, the kids' chore chart, the grocery-cart pipeline,
+the photo reel). Its state stays in `data/state.json`; the app never touches
+it.
 
 ## The two machines
 
@@ -149,8 +155,10 @@ wall via the mirror) + on-demand lookups land in `data/prices.json` (local);
 | `scripts/ensure-running.ps1` / `auto-update.bat` / `*-hidden.vbs` | The Surface self-healing trio. |
 | `scripts/weather-bridge.js` | rtl_433 → `data/weather.json`. |
 | `scripts/keep_push.py` / `keep-client.js` | Google Keep integration. |
-| `hub/` | The phone hub served at `/hub`. Its own README, spec and build. |
-| `scripts/setup-tunnel.ps1` | Run once on the Surface: puts the server on the internet (Tailscale Funnel). |
+| `hub/` | The family app's source and build. Its own README, spec and contract. |
+| `cloud/` | The hosted copy: `main.ts` for Deno Deploy, `endpoint.json` = its address, README = deploy steps. |
+| `scripts/sensor-push.js` + `setup-sensor-push.ps1` | The Surface sends the AcuRite reading to the app every 5 min. |
+| `scripts/setup-tunnel.ps1` | Older option: expose the Surface itself (Tailscale Funnel). Superseded by hosting; kept for a LAN-only fallback. |
 | `data/` | **Untracked family state. Do not touch.** (`state.json` = wall, `hub.json` = hub) |
 
 ## Conventions (read before changing anything)

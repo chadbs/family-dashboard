@@ -24,7 +24,9 @@
  * write. Nothing secret goes in here.
  */
 
-const kv = await Deno.openKv();
+/* On Deno Deploy this opens the hosted database. Locally it opens a file:
+   set HOUSE_KV_PATH to point it somewhere disposable while developing. */
+const kv = await Deno.openKv(Deno.env.get("HOUSE_KV_PATH") || undefined);
 
 /* Mirrors the shape the app's own store uses. Anything not named here is
    rejected, so a bad client can never invent keys. */

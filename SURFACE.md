@@ -71,25 +71,27 @@ apply ≤ ~3 min (pull + watchdog restart); reboots self-recover ≤ ~1 min afte
 logon. The only thing that still needs a human once ever: automatic Windows
 sign-in (netplwiz), so power outages boot straight to the wall.
 
-## Putting the hub on the internet (one time, ever)
+## The family app (hosted) and this machine's two jobs for it
 
-The family's phone hub is this same server at `/hub`. To make it reachable
-from outside the house, run this once, as the wall user:
+The family app lives on Deno Deploy, not here. Its address is in
+`cloud\endpoint.json` (once Chad has deployed it and filled that in). This
+machine does two things for it, both set up once:
 
-```powershell
-powershell -ExecutionPolicy Bypass -File scripts\setup-tunnel.ps1
-```
+1. **Push the backyard sensor up.** As the wall user:
+   ```powershell
+   powershell -ExecutionPolicy Bypass -File scripts\setup-sensor-push.ps1
+   ```
+   Sends one reading as a test, then registers `FamilyDashboard-SensorPush`
+   to send one every 5 minutes. When this machine is asleep nothing is sent
+   and the app shows the forecast instead — that is by design.
+2. **Show the app's display view on the wall.** Nothing to run: once
+   `cloud\endpoint.json` has an address, the watchdog launches the kiosk
+   browser at `<address>/display` the next time it (re)starts the browser.
+   To switch right away, close the browser and let the watchdog relaunch it.
 
-It installs Tailscale, signs this machine in (a browser opens once), and turns
-on Tailscale Funnel for port 8080. It then prints the permanent https address.
-The first run usually prints a link to enable Funnel for the tailnet — open it,
-approve, and run the script again.
-
-That address is **public and unauthenticated**, on purpose. Anyone with the
-link can open the hub and the wall. Do not put anything private on it.
-
-Verify with `& "C:\Program Files\Tailscale\tailscale.exe" funnel status`, and
-by opening the printed `/hub` address from a phone on cellular data.
+`scripts\setup-tunnel.ps1` (Tailscale Funnel) is the older approach of
+exposing this machine itself. Not needed once the app is hosted; keep it only
+if you ever want the local `/hub` reachable from outside.
 
 ## Handoff (when something is beyond this file)
 
