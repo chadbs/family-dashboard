@@ -35,11 +35,42 @@ POST https://solanyk-house.chadbs.deno.net/api/hub
              "body": { "status": "building", "startedAt": "<now>" } } ] }
 ```
 
+## Precondition: the carts must be Kenzie's
+
+The whole point is that the finished carts are sitting in **her** Meijer and
+ALDI accounts, so she opens a link on her phone and checks out. That only
+happens if Chrome on the main PC is signed in as her.
+
+**Claude never types the password.** Kenzie (or Chad) signs in by hand, once,
+in that Chrome profile; the session persists and every later run rides on it.
+Nobody has to do it again unless the site logs her out.
+
+**Before adding a single item, verify it.** On meijer.com the header shows her
+name instead of "Sign in"; on new.aldi.us the header shows an account menu
+instead of "Sign In / Register". If either is signed out:
+
+- do **not** start filling that store's cart — a guest cart is worse than
+  nothing, because it looks like it worked and she cannot reach it;
+- merge `status: "error"` with a summary naming which store needs a sign-in,
+  e.g. `"Meijer is signed out - Kenzie needs to sign in once on the main PC"`;
+- stop.
+
+Also confirm Meijer is set to **Hudsonville pickup** and ALDI to the right
+store/pickup before adding, since ALDI defaults to a delivery ZIP.
+
 ## The prompt (paste into the session cron)
 
 > Check `https://solanyk-house.chadbs.deno.net/api/hub`. If `docs.cart.status`
 > is not `"pending"`, stop. Otherwise merge `status: "building"` into
-> `docs.cart`, then fill the carts with Claude-in-Chrome:
+> `docs.cart`.
+>
+> **First check both stores are signed in as Kenzie** (meijer.com shows her
+> name, not "Sign in"; new.aldi.us shows an account menu, not "Sign In /
+> Register"). If either is signed out, merge `status: "error"` naming that
+> store and stop — never build a guest cart. Never type a password; a human
+> signs in once and the session persists.
+>
+> Then fill the carts with Claude-in-Chrome:
 >
 > **Meijer** (meijer.com, Hudsonville pickup): for each item with
 > `store: "Meijer"`, search it, add the store-brand or the family's `pref`
