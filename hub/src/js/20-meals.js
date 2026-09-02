@@ -104,13 +104,25 @@
       return week[DAY_KEYS[Fmt.dayIdx(date)]] || null;
     },
 
+    /* Every field is written explicitly, even when empty. The store merges
+       recursively, so a partial slot would leave the previous dinner's
+       recipeId sitting underneath a slot that is now "eating out". */
     setSlot: function (date, slot) {
       date = date || new Date();
       const wk = Fmt.weekKey(date);
       const dayKey = DAY_KEYS[Fmt.dayIdx(date)];
+      const full =
+        slot === null || slot === undefined
+          ? null
+          : {
+              kind: slot.kind || "text",
+              recipeId: slot.recipeId || "",
+              title: slot.title || "",
+              note: slot.note || "",
+            };
       const patch = {};
       patch[wk] = {};
-      patch[wk][dayKey] = slot;
+      patch[wk][dayKey] = full;
       Store.mergeDoc("plan", patch);
     },
 
