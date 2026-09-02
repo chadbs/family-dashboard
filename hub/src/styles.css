@@ -1138,3 +1138,13 @@ main {
   display: flex;
   flex-direction: column;
 }
+
+/* Icons inside text buttons need an explicit size — an inline SVG with no
+   width/height collapses and the button renders as an empty slab. */
+.btn svg { width: 18px; height: 18px; flex-shrink: 0; }
+.btn-sm svg { width: 15px; height: 15px; }
+.door svg, .empty svg, .banner svg, .done-note svg, .sunstrip svg { flex-shrink: 0; }
+
+/* The status shortcut on a project card is a nudge, not the card's main
+   action — size it to its label instead of letting the column stretch it. */
+.pcard .btn-sm { align-self: flex-start; }

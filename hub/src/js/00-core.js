@@ -158,6 +158,7 @@ const Store = (function () {
   let mode = "local";
   const docs = { config: {}, routine: {}, checks: {}, plan: {}, daily: {} };
   const docExists = {};
+  const docQueue = {};
   const colls = { recipes: {}, jobs: {}, projects: {}, grocery: {} };
   const listeners = [];
   let readyResolve;
@@ -263,37 +264,51 @@ const Store = (function () {
     );
   }
 
+  function wait(ms) {
+    return new Promise(function (r) {
+      setTimeout(r, ms);
+    });
+  }
+
   /* First device to open the artifact writes the starting content. The lease
-     stops two phones opening it at once from both seeding. */
+     stops two phones opening it at once from both seeding.
+
+     routine/days is written LAST and is the "already seeded" marker, so a run
+     that dies halfway (a dropped connection, a rate limit) leaves the marker
+     unwritten and the next open picks up where it left off instead of
+     stranding the family with half a recipe box. */
   async function seedCloudIfEmpty() {
     const routineRef = db.doc(DOC_PATHS.routine);
-    const existing = await routineRef.get();
-    if (existing.exists) return;
+    if ((await routineRef.get()).exists) return;
 
-    const lease = await db.doc("config/seed").acquire({ holder: "seed", ttlMs: 60000 });
+    const lease = await db.doc("config/seed").acquire({ holder: "seed", ttlMs: 120000 });
     if (!lease.acquired) return;
+    if ((await routineRef.get()).exists) return;
 
-    const again = await routineRef.get();
-    if (again.exists) return;
+    let n = 0;
+    async function seedOne(coll, item) {
+      const body = clone(item);
+      delete body.id;
+      const ref = db.collection(coll).doc(item.id);
+      if ((await ref.get()).exists) return;
+      try {
+        await ref.set(body);
+      } catch (e) {
+        if ((e && e.code) !== "unavailable" && (e && e.code) !== "resource_exhausted") throw e;
+        await wait(700);
+        await ref.set(body);
+      }
+      /* The per-viewer call rate is a real budget; 54 writes back to back
+         will trip it. Breathe every so often. */
+      if (++n % 8 === 0) await wait(220);
+    }
 
-    await routineRef.set(clone(SEED_ROUTINE));
+    for (const r of SEED_RECIPES) await seedOne("recipes", r);
+    for (const j of SEED_JOBS) await seedOne("jobs", j);
+    for (const p of SEED_PROJECTS) await seedOne("projects", p);
+
     await db.doc(DOC_PATHS.config).set(clone(SEED_CONFIG));
-
-    for (const r of SEED_RECIPES) {
-      const body = clone(r);
-      delete body.id;
-      await db.collection("recipes").doc(r.id).set(body);
-    }
-    for (const j of SEED_JOBS) {
-      const body = clone(j);
-      delete body.id;
-      await db.collection("jobs").doc(j.id).set(body);
-    }
-    for (const p of SEED_PROJECTS) {
-      const body = clone(p);
-      delete body.id;
-      await db.collection("projects").doc(p.id).set(body);
-    }
+    await routineRef.set(clone(SEED_ROUTINE));
   }
 
   async function connect() {
@@ -364,24 +379,49 @@ const Store = (function () {
 
     setDoc: function (key, body) {
       docs[key] = clone(body) || {};
-      docExists[key] = true;
       saveLocal();
       emit();
+      const full = clone(docs[key]);
+      const prior = docQueue[key] || Promise.resolve();
+      const next = prior.then(function () {
+        if (mode !== "cloud" || !db) return;
+        return db
+          .doc(DOC_PATHS[key])
+          .set(full)
+          .then(function () {
+            docExists[key] = true;
+          });
+      });
+      docQueue[key] = next.catch(function () {});
       return write(function () {
-        return db.doc(DOC_PATHS[key]).set(clone(body));
+        return next;
       }, "changes");
     },
 
+    /* Merge a patch into one of the date-keyed documents. Two phones ticking
+       different boxes must both stick, which is what update()'s recursive
+       merge gives us — but update() rejects when the document does not exist
+       yet, and a first-tap-of-the-day burst can fire several merges before the
+       creating write lands. So writes for a key are chained: the first one
+       creates, the rest merge, in order. */
     mergeDoc: function (key, patch) {
       docs[key] = deepMerge(docs[key], patch);
       saveLocal();
       emit();
-      const existed = docExists[key];
       const full = clone(docs[key]);
-      docExists[key] = true;
-      return write(function () {
+      const body = clone(patch);
+      const prior = docQueue[key] || Promise.resolve();
+      const next = prior.then(function () {
+        if (mode !== "cloud" || !db) return;
         const ref = db.doc(DOC_PATHS[key]);
-        return existed ? ref.update(clone(patch)) : ref.set(full);
+        if (docExists[key]) return ref.update(body);
+        return ref.set(full).then(function () {
+          docExists[key] = true;
+        });
+      });
+      docQueue[key] = next.catch(function () {});
+      return write(function () {
+        return next;
       }, "changes");
     },
 

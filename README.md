@@ -18,6 +18,18 @@ dashboard by pushing to this repo — the wall updates itself.
 
 ---
 
+## Two front ends
+
+**The wall** (`public/`) is the Surface in the kitchen: weather, calendar, kid
+chores, stars, and the grocery-cart pipeline. LAN only.
+
+**The hub** (`hub/`) is a claude.ai Artifact the family opens on a phone from
+anywhere: meals and the recipe box, Kenzie's daily cleaning routine, Chad's job
+list, and the big-project list. Its data lives in the artifact's own shared
+database, not in `data/state.json`. See [hub/README.md](hub/README.md).
+
+They are deliberately separate. The hub never touches the wall's state.
+
 ## The two machines
 
 ```
@@ -135,6 +147,7 @@ wall via the mirror) + on-demand lookups land in `data/prices.json` (local);
 | `scripts/ensure-running.ps1` / `auto-update.bat` / `*-hidden.vbs` | The Surface self-healing trio. |
 | `scripts/weather-bridge.js` | rtl_433 → `data/weather.json`. |
 | `scripts/keep_push.py` / `keep-client.js` | Google Keep integration. |
+| `hub/` | The phone hub (Artifact + shared db). Its own README, spec and build. |
 | `data/` | **Untracked family state. Do not touch.** |
 
 ## Conventions (read before changing anything)
