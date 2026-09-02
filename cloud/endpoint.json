@@ -1,4 +1,4 @@
 {
-  "url": "",
+  "url": "https://solanyk-house.chadbs.deno.net",
   "_how": "After the first deploy on Deno Deploy, put the app's address here, e.g. https://solanyk-house.deno.dev — no trailing slash. The Surface reads this to know where to push the sensor and where to point the wall."
 }
