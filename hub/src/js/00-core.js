@@ -1093,10 +1093,20 @@ const Router = (function () {
     });
   }
 
+  /* A repaint rides requestAnimationFrame so several store writes in a row
+     cost one paint. But rAF never fires while the tab is hidden — a phone in
+     a pocket, the wall's browser in the background — and without the timer
+     below `pending` would stick on and the screen would quietly stop
+     updating for the rest of the session. Whichever fires first wins; the
+     other finds `pending` already cleared and does nothing. */
   function schedule() {
     if (pending) return;
     pending = true;
-    requestAnimationFrame(paint);
+    const run = function () {
+      if (pending) paint();
+    };
+    requestAnimationFrame(run);
+    setTimeout(run, 150);
   }
 
   return {

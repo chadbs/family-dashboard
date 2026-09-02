@@ -1379,7 +1379,12 @@ body { overscroll-behavior-y: none; }
 /* ==== css/30-recipes.css ==== */
 /* Recipe photos — the box gets a lot nicer once her pins come over. */
 
+/* Cards keep their natural height, so a card with a photo does not stretch
+   its neighbours into tall empty boxes. The photo stands in for the emoji. */
+.recipe-grid { align-items: start; }
 .rcard { overflow: hidden; }
+.r-photo + .r-top .r-emoji { display: none; }
+.r-photo + .r-top { min-height: 0; justify-content: flex-end; }
 .r-photo {
   margin: -14px -14px 6px;
   aspect-ratio: 4 / 3;
@@ -4933,10 +4938,20 @@ const Router = (function () {
     });
   }
 
+  /* A repaint rides requestAnimationFrame so several store writes in a row
+     cost one paint. But rAF never fires while the tab is hidden — a phone in
+     a pocket, the wall's browser in the background — and without the timer
+     below `pending` would stick on and the screen would quietly stop
+     updating for the rest of the session. Whichever fires first wins; the
+     other finds `pending` already cleared and does nothing. */
   function schedule() {
     if (pending) return;
     pending = true;
-    requestAnimationFrame(paint);
+    const run = function () {
+      if (pending) paint();
+    };
+    requestAnimationFrame(run);
+    setTimeout(run, 150);
   }
 
   return {
@@ -7590,7 +7605,7 @@ const Recipes = (function () {
         h(
           "div",
           { class: "stack" },
-          h("p", { class: "muted tiny", text: "Check everything below before saving — fix anything Claude got wrong." }),
+          h("p", { class: "muted tiny", text: "Check it over before saving — fix anything that came across wrong." }),
           form.el,
           saveBtn
         )
@@ -8874,10 +8889,15 @@ const Chores = (function () {
     return "\u{2B50}";
   }
 
+  /* The list and the ticks are read independently: the very first tap
+     creates the document with only a `done` map (a merge), and the chart
+     must still show the starting list — with that tick on it. */
   function board() {
-    const doc = Store.get("chores");
-    if (doc && Array.isArray(doc.list)) return doc;
-    return SEED_CHORES;
+    const doc = Store.get("chores") || {};
+    return {
+      list: Array.isArray(doc.list) ? doc.list : SEED_CHORES.list,
+      done: doc.done && typeof doc.done === "object" ? doc.done : {},
+    };
   }
 
   function list() {
