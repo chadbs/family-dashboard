@@ -1,8 +1,8 @@
 # ── The whole point: never sync live state, so code updates can't wipe it ──
-data/state.json
-data/hub.json
-data/hub.json.bak
-data/hub.json.tmp
+# Wildcards, not exact names: the auto-push task runs every 10 minutes and
+# will happily commit data/hub.json.anything if the rule is too narrow.
+data/state.json*
+data/hub.json*
 data/weather.json
 data/recipe-picks.json
 data/prices.json
