@@ -512,7 +512,7 @@ a { color: var(--delft); text-underline-offset: 2px; }
     top: 0;
     bottom: auto;
     height: 100dvh;
-    width: 218px;
+    width: 13rem;
     flex-direction: column;
     justify-content: flex-start;
     gap: 4px;
@@ -1241,4 +1241,13 @@ body { overscroll-behavior-y: none; }
   .tabbar button { flex-direction: row; gap: 6px; font-size: 0.72rem; }
   .tabbar button svg { width: 18px; height: 18px; }
   .view { padding-top: 14px; }
+}
+
+/* Four sun/moon cells will not fit across a phone in one row — "Last
+   quarter" ran off the edge. Two by two instead. */
+@media (max-width: 520px) {
+  .sunstrip { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 0; }
+  .sunstrip .cell + .cell { border-left: 1px solid var(--line); }
+  .sunstrip .cell:nth-child(odd) { border-left: 0; }
+  .sunstrip .val { font-size: 0.95rem; }
 }

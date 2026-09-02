@@ -32,12 +32,27 @@ because only it receives the Surface's pushes.
 ## Build
 
 ```bash
-node hub/build.js        # src -> dist/hub.html, checked in on purpose
+node hub/build.js        # src -> dist/hub.html + dist/artifact.html
 ```
 
-`dist/hub.html` is committed because the hosted app serves it straight from
-the repo with no build step, and the Surface's server does the same. The
-auto-push task ships it; Deno Deploy redeploys on every push.
+`dist/hub.html` is a **complete HTML document** — doctype, charset, and the
+viewport meta. That matters: the server hands the file straight to a browser,
+and without those a phone renders the page at ~980px and shrinks everything,
+which is exactly what it did until it was fixed. It is committed because the
+hosted app serves it from the repo with no build step, and the Surface's
+server does the same. The auto-push task ships it; Deno Deploy redeploys on
+every push.
+
+`dist/artifact.html` is the same content with the document tags stripped,
+because the Artifact tool wraps its own skeleton around whatever it
+publishes. Publish that one, never `hub.html`.
+
+## Sizes
+
+Everything is sized in `rem`, so one root font-size moves the whole app:
+16px on phones, 18px from 900px, 19px from 1400px, and 19-22px on the wall
+(`html.display-root`). Change those four numbers to rescale the app rather
+than touching component sizes.
 
 ## Source layout
 

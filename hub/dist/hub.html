@@ -528,7 +528,7 @@ a { color: var(--delft); text-underline-offset: 2px; }
     top: 0;
     bottom: auto;
     height: 100dvh;
-    width: 218px;
+    width: 13rem;
     flex-direction: column;
     justify-content: flex-start;
     gap: 4px;
@@ -1259,6 +1259,15 @@ body { overscroll-behavior-y: none; }
   .view { padding-top: 14px; }
 }
 
+/* Four sun/moon cells will not fit across a phone in one row — "Last
+   quarter" ran off the edge. Two by two instead. */
+@media (max-width: 520px) {
+  .sunstrip { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 0; }
+  .sunstrip .cell + .cell { border-left: 1px solid var(--line); }
+  .sunstrip .cell:nth-child(odd) { border-left: 0; }
+  .sunstrip .val { font-size: 0.95rem; }
+}
+
 
 /* ==== css/05-weather.css ==== */
 /* Weather card — the backyard number is the loudest thing on the screen,
@@ -1615,11 +1624,11 @@ body.display-mode .tabbar { display: none; }
 body.display-mode .toasts { bottom: 24px; }
 
 /* Bigger overall, because it is read standing up and further away. */
-html.display-root { font-size: 20px; }
+html.display-root { font-size: 22px; }
 
 body.display-mode .view {
-  max-width: 900px;
-  padding: calc(var(--wallbar-h) + 22px) 26px 30px;
+  max-width: 1180px;
+  padding: calc(var(--wallbar-h) + 22px) 30px 30px;
   gap: 22px;
 }
 
@@ -1685,10 +1694,14 @@ body.display-mode main > .view { animation: wall-in 0.5s ease both; }
   body.display-mode main > .view { animation: none; }
 }
 
-/* On the wall nothing is typed, so inputs and quick-adds are noise. */
+/* Nothing is typed on the wall, and nothing there should trigger a big
+   action — a sleeve brushing "Plan the week" would rewrite the dinners.
+   Ticking a cleaning task or a kid's chore still works, which is the point. */
 body.display-mode .quickadd,
 body.display-mode .segmented,
 body.display-mode input[type="search"],
+body.display-mode .btn-row,
+body.display-mode .btn-block,
 body.display-mode .btn-danger { display: none; }
 
 /* Give the checkable rows a bit more room for small fingers on a big screen. */
@@ -1696,11 +1709,12 @@ body.display-mode .check { min-height: 62px; }
 body.display-mode .chore-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
 body.display-mode .chore-pic { font-size: 3rem; }
 
-/* A short screen (an old 768-tall laptop panel) needs less chrome. */
+/* A short screen (an old 768-tall laptop panel) needs less chrome, but the
+   type still has to carry across a kitchen. */
 @media (max-height: 800px) {
-  html.display-root { font-size: 18px; }
-  :root { --wallbar-h: 52px; }
-  body.display-mode .view { padding-top: calc(var(--wallbar-h) + 16px); gap: 18px; }
+  html.display-root { font-size: 19px; }
+  :root { --wallbar-h: 50px; }
+  body.display-mode .view { padding-top: calc(var(--wallbar-h) + 14px); gap: 18px; }
 }
 
 
