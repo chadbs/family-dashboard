@@ -124,12 +124,15 @@ async function boot() {
   /* The backyard sensor, once we know whether this copy of the page can
      reach it. Refreshed while the app is open, paused when it is not. */
   if (await Weather.refresh()) Router.refresh();
+  /* The server caches the forecast for ten minutes anyway, and the backyard
+     sensor only reports every five, so asking more often than this just
+     spends requests. */
   setInterval(function () {
     if (document.hidden) return;
     Weather.refresh().then(function (ok) {
       if (ok && Router.current() === "today") Router.refresh();
     });
-  }, 5 * 60 * 1000);
+  }, 15 * 60 * 1000);
 }
 
 boot();

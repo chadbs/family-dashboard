@@ -4048,6 +4048,7 @@ const Store = (function () {
 
   function pushOp(op) {
     pendingOps.push(op);
+    nudge();
     saveLocal();
     if (flushTimer) return Promise.resolve();
     flushTimer = setTimeout(flushOps, 120);
@@ -4146,14 +4147,46 @@ const Store = (function () {
     }
   }
 
+  /* How often to ask the server whether anything changed.
+
+     Polling every five seconds around the clock is what a wall screen does
+     for 17,280 requests a day, which on its own ate half the hosting
+     allowance. So the app leans in when someone is actually using it and
+     backs off when nobody is: five seconds for two minutes after any touch
+     or write, twenty seconds otherwise, and nothing at all while the tab is
+     hidden. A phone in a pocket costs nothing; a phone in a hand feels
+     instant; the wall still picks up a change within twenty seconds. */
+  const BUSY_MS = 5000;
+  const IDLE_MS = 20000;
+  const STAY_BUSY_MS = 2 * 60 * 1000;
+  let lastTouch = Date.now();
+  let lastPoll = 0;
+
+  function nudge() {
+    lastTouch = Date.now();
+  }
+
   function startPolling() {
     setInterval(function () {
-      if (!document.hidden) pollOnce();
-    }, 5000);
-    /* A phone coming back from a pocket should show the other phone's edits
-       right away, not five seconds later. */
+      if (document.hidden) return;
+      const busy = Date.now() - lastTouch < STAY_BUSY_MS;
+      const every = busy ? BUSY_MS : IDLE_MS;
+      if (Date.now() - lastPoll < every) return;
+      lastPoll = Date.now();
+      pollOnce();
+    }, 2500);
+
+    /* Anything that suggests a person is here: a tap, a key, or the tab
+       coming back from a pocket — which also polls immediately, so their
+       first glance is current. */
+    ["pointerdown", "keydown"].forEach(function (evt) {
+      document.addEventListener(evt, nudge, { passive: true, capture: true });
+    });
     document.addEventListener("visibilitychange", function () {
-      if (!document.hidden) pollOnce();
+      if (document.hidden) return;
+      nudge();
+      lastPoll = Date.now();
+      pollOnce();
     });
   }
 
@@ -10133,12 +10166,15 @@ async function boot() {
   /* The backyard sensor, once we know whether this copy of the page can
      reach it. Refreshed while the app is open, paused when it is not. */
   if (await Weather.refresh()) Router.refresh();
+  /* The server caches the forecast for ten minutes anyway, and the backyard
+     sensor only reports every five, so asking more often than this just
+     spends requests. */
   setInterval(function () {
     if (document.hidden) return;
     Weather.refresh().then(function (ok) {
       if (ok && Router.current() === "today") Router.refresh();
     });
-  }, 5 * 60 * 1000);
+  }, 15 * 60 * 1000);
 }
 
 boot();
