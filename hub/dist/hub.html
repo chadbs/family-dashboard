@@ -10124,7 +10124,10 @@ async function boot() {
 
   await Store.connect();
   await Store.ready;
-  prune();
+  /* On the hosted app a nightly cron does the pruning, so a phone opening
+     the app never has to spend its first seconds on housekeeping. Offline
+     and artifact copies still tidy after themselves. */
+  if (Store.mode !== "server") prune();
   Router.refresh();
 
   /* The backyard sensor, once we know whether this copy of the page can

@@ -118,9 +118,17 @@ new.aldi.us works signed-out (reject cookies, confirm shop-method dialog).
 | Auto-push (commits edits) | Main PC | every 10 min | Task Scheduler `FamilyDashboard-AutoPush` |
 | Mirror-pull code | Surface | every 1 min | Task Scheduler `FamilyDashboard-AutoUpdate` |
 | Watchdog (server/bridge/kiosk alive, restart on code change) | Surface | every 2 min + at logon | Task Scheduler `FamilyDashboard-Watchdog` |
-| Daily caretaker (small verified improvements, pushes to main) | Cloud (claude.ai routine) | ~9:07 UTC daily | trigger `trig_01LqELcTrefe15UTNatyRuLx` |
 | Nightly price sweep (Meijer vs ALDI + deals → commits `public/prices.json`) | Cloud (claude.ai routine) | 09:23 UTC (≈5:23am ET) daily | trigger `trig_01APN8F5TfzCCSeHeUhvepp4` |
-| Cart-build watcher | Main PC Claude session | 7:12am & 5:12pm | **session-only cron** — must be re-created in each new Claude session (prompt lives in project memory + chat history ~2026-07-08) |
+| Nightly tidy (prunes old ticks, weeks, notes; trims the star log) | Cloud (Deno Deploy `Deno.cron`) | 08:20 UTC (≈4:20am ET) daily | `cloud/main.ts` |
+| Sensor push (backyard reading → the app) | Surface | every 5 min | Task Scheduler `FamilyDashboard-SensorPush` |
+| Cart-build watcher | Main PC Claude session | 7:12am & 5:12pm | **session-only cron** — must be re-created in each new Claude session. Needs a real browser signed in as Kenzie, so it cannot move to the cloud or a phone. Prompt: `cloud/CART-WATCHER.md` |
+
+Retired 2026-09-02: the **daily caretaker** routine (it only knew the old
+`public/` app and auto-committed to `main`, which now redeploys the live
+family app unsupervised — prompt kept at
+`~/.claude/scheduled-tasks/daily-chore-pictures/SKILL.md`) and
+`FamilyDashboard-DailyScreenshot` (it captured the *main PC's* screen, never
+the wall's).
 
 Prices flow: cloud sweep commits `public/prices.json` (tracked → reaches the
 wall via the mirror) + on-demand lookups land in `data/prices.json` (local);

@@ -547,4 +547,89 @@ async function handler(req: Request): Promise<Response> {
   return new Response("Not found", { status: 404 });
 }
 
+/* ---------- nightly tidy ---------- */
+
+/* The date-keyed documents (which chores got ticked, which weeks were
+   planned, the day's generated note) only ever grow. This used to be the
+   browser's job on every start, which meant it depended on someone opening
+   the app. It runs up here now, once, at 4:20am — nobody is looking, and it
+   happens whether or not a phone is awake.
+
+   Deno Deploy runs this on one instance globally, so there is no risk of
+   several copies pruning at once. */
+function pruneDated(doc: Obj, keepDays: number) {
+  /* Midnight, not "now" — otherwise the time of day leaks into the age and
+     a 60-day window quietly keeps 59. */
+  const n = new Date();
+  const today = new Date(n.getFullYear(), n.getMonth(), n.getDate());
+  const kept: Obj = {};
+  let dropped = 0;
+  for (const key of Object.keys(doc)) {
+    const p = key.split("-");
+    const d = new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2]));
+    const age = (today.getTime() - d.getTime()) / 86400000;
+    if (!isNaN(d.getTime()) && age <= keepDays) kept[key] = doc[key];
+    else dropped++;
+  }
+  return { kept, dropped };
+}
+
+async function nightlyTidy() {
+  const report: string[] = [];
+
+  const checks = await kv.get<Obj>(["hub", "docs", "checks"]);
+  if (checks.value) {
+    const { kept, dropped } = pruneDated(checks.value, 60);
+    if (dropped) {
+      await kv.set(["hub", "docs", "checks"], kept);
+      report.push(dropped + " days of chore ticks");
+    }
+  }
+
+  const daily = await kv.get<Obj>(["hub", "docs", "daily"]);
+  if (daily.value) {
+    const { kept, dropped } = pruneDated(daily.value, 14);
+    if (dropped) {
+      await kv.set(["hub", "docs", "daily"], kept);
+      report.push(dropped + " daily notes");
+    }
+  }
+
+  /* Weeks are "2026-W36", so sort and keep the last eight. */
+  const plan = await kv.get<Obj>(["hub", "docs", "plan"]);
+  if (plan.value) {
+    const weeks = Object.keys(plan.value).sort();
+    if (weeks.length > 8) {
+      const kept: Obj = {};
+      weeks.slice(-8).forEach((w) => (kept[w] = (plan.value as Obj)[w]));
+      await kv.set(["hub", "docs", "plan"], kept);
+      report.push(weeks.length - 8 + " old weeks of dinners");
+    }
+  }
+
+  /* The star log is capped by the client too, but a long-running family
+     deserves a backstop that does not depend on which phone wrote last. */
+  const rewards = await kv.get<Obj>(["hub", "docs", "rewards"]);
+  if (rewards.value && Array.isArray(rewards.value.log) && rewards.value.log.length > 80) {
+    const next = { ...rewards.value, log: (rewards.value.log as unknown[]).slice(0, 80) };
+    await kv.set(["hub", "docs", "rewards"], next);
+    report.push("trimmed the star log");
+  }
+
+  if (report.length) {
+    await bumpVersion();
+    console.log("nightly tidy: " + report.join(", "));
+  } else {
+    console.log("nightly tidy: nothing to do");
+  }
+}
+
+try {
+  Deno.cron("nightly tidy", "20 8 * * *", nightlyTidy);
+} catch (e) {
+  /* Cron is unavailable when running locally without the flag; the app
+     itself does not depend on it. */
+  console.warn("cron not registered:", (e as Error)?.message);
+}
+
 Deno.serve(handler);
