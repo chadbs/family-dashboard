@@ -123,12 +123,19 @@ new.aldi.us works signed-out (reject cookies, confirm shop-method dialog).
 | Sensor push (backyard reading → the app) | Surface | every 5 min | Task Scheduler `FamilyDashboard-SensorPush` |
 | Cart-build watcher | Main PC Claude session | 7:12am & 5:12pm | **session-only cron** — must be re-created in each new Claude session. Needs a real browser signed in as Kenzie, so it cannot move to the cloud or a phone. Prompt: `cloud/CART-WATCHER.md` |
 
-Retired 2026-09-02: the **daily caretaker** routine (it only knew the old
-`public/` app and auto-committed to `main`, which now redeploys the live
-family app unsupervised — prompt kept at
-`~/.claude/scheduled-tasks/daily-chore-pictures/SKILL.md`) and
+Retired: the **daily caretaker** cloud routine (`trig_01LqELcTrefe15UTNatyRuLx`,
+"daily update family dashboard") — it only knew the old `public/` app, edited
+it every morning on Opus, and pushed to throwaway `claude/wizardly-brown-*`
+branches (each one spawning a Deno preview deploy). **Disabled** 2026-09-03 via
+`RemoteTrigger` (`enabled:false`); the routine API can't delete, so to remove
+it entirely go to https://claude.ai/code/routines. Its 28 stale branches were
+deleted from the remote the same day. Also retired
 `FamilyDashboard-DailyScreenshot` (it captured the *main PC's* screen, never
 the wall's).
+
+Still active and wanted: the **nightly grocery price sweep** cloud routine
+(`trig_017D5ysUWeRnVMXWrkWwDLV6`), which is what keeps `public/prices.json`
+fresh for the grocery list's cheaper-store routing.
 
 Prices flow: cloud sweep commits `public/prices.json` (tracked → reaches the
 wall via the mirror) + on-demand lookups land in `data/prices.json` (local);
