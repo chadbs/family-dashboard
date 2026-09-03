@@ -94,3 +94,11 @@
 .pn-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
 .pn-name { font-weight: 600; line-height: 1.25; overflow-wrap: anywhere; }
 .pn-sub { font-size: 0.8rem; color: var(--ink-2); }
+
+/* Weekly staples: the always-buy list editor and its entry button. */
+.staples-bar { gap: 10px; }
+.staple-row { display: flex; flex-direction: column; gap: 6px; padding: 10px; border-radius: var(--r-sm); background: var(--surface-2); }
+.staple-line { display: flex; gap: 6px; align-items: center; }
+.staple-line .input, .staple-line .select { min-height: 42px; }
+.staple-qty { flex: 0 0 42%; }
+.staple-store { flex: 0 0 42%; }

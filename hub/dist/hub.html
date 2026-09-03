@@ -1452,6 +1452,14 @@ body { overscroll-behavior-y: none; }
 .pn-name { font-weight: 600; line-height: 1.25; overflow-wrap: anywhere; }
 .pn-sub { font-size: 0.8rem; color: var(--ink-2); }
 
+/* Weekly staples: the always-buy list editor and its entry button. */
+.staples-bar { gap: 10px; }
+.staple-row { display: flex; flex-direction: column; gap: 6px; padding: 10px; border-radius: var(--r-sm); background: var(--surface-2); }
+.staple-line { display: flex; gap: 6px; align-items: center; }
+.staple-line .input, .staple-line .select { min-height: 42px; }
+.staple-qty { flex: 0 0 42%; }
+.staple-store { flex: 0 0 42%; }
+
 
 /* ==== css/30-recipes.css ==== */
 /* Recipe photos — the box gets a lot nicer once her pins come over. */
@@ -5696,10 +5704,23 @@ const Weather = (function () {
 
   const CAT_ORDER = ["Produce", "Meat", "Dairy", "Bakery", "Frozen", "Pantry", "Other"];
 
-  const STAPLES = [
-    { item: "Whole milk", qty: "3 gallons", store: "Meijer", cat: "Dairy" },
-    { item: "Greek yogurt", qty: "5 tubs", store: "Meijer", cat: "Dairy" },
+  /* The things the family buys every week no matter what is for dinner.
+     These are the DEFAULT; once anyone edits them, the edited list lives in
+     the config doc and syncs to every device. */
+  const SEED_STAPLES = [
+    { item: "Whole milk", qty: "3 gallons", store: "Meijer" },
+    { item: "Greek yogurt", qty: "5 tubs", store: "Meijer" },
   ];
+
+  const Staples = {
+    list: function () {
+      const s = (Store.get("config") || {}).staples;
+      return Array.isArray(s) ? s : SEED_STAPLES.map(function (x) { return Object.assign({}, x); });
+    },
+    save: function (next) {
+      Store.mergeDoc("config", { staples: next });
+    },
+  };
 
   /* Keyword table, cheapest-and-most-specific-first so a jarred sauce
      doesn't get mistaken for the vegetable in its name ("canned diced
@@ -6226,8 +6247,9 @@ const Weather = (function () {
         });
       });
 
-      STAPLES.forEach(function (s) {
-        addWanted(s.item, s.qty, s.store, s.cat, "Weekly staples");
+      Staples.list().forEach(function (s) {
+        if (!s || !s.item) return;
+        addWanted(s.item, s.qty, s.store, s.cat || categorize(s.item), "Weekly staples");
       });
 
       const existing = Store.list("grocery");
@@ -6580,6 +6602,96 @@ const Weather = (function () {
     });
   }
 
+  /* The always-buy list. Edited here, stored in config, added to the
+     grocery list every time it's built. */
+  function openStaplesSheet() {
+    let working = Staples.list().map(function (s) {
+      return { item: s.item || "", qty: s.qty || "", store: normStore(s.store) || "Meijer" };
+    });
+    let sheet;
+
+    function row(s, idx) {
+      const item = UI.h("input", { class: "input", type: "text", value: s.item, placeholder: "Item" });
+      const qty = UI.h("input", { class: "input staple-qty", type: "text", value: s.qty, placeholder: "How much" });
+      const store = UI.h(
+        "select",
+        { class: "select staple-store" },
+        UI.h("option", { value: "Meijer", text: "Meijer", selected: s.store === "Meijer" ? true : null }),
+        UI.h("option", { value: "Aldi", text: "ALDI", selected: s.store === "Aldi" ? true : null })
+      );
+      function sync() {
+        s.item = item.value.trim();
+        s.qty = qty.value.trim();
+        s.store = store.value;
+      }
+      [item, qty, store].forEach(function (el) {
+        el.addEventListener("input", sync);
+        el.addEventListener("change", sync);
+      });
+      const del = UI.h(
+        "button",
+        { class: "ibtn", type: "button", "aria-label": "Remove " + (s.item || "staple") },
+        UI.icon("trash")
+      );
+      del.addEventListener("click", function () {
+        working.splice(idx, 1);
+        render();
+      });
+      return UI.h(
+        "div",
+        { class: "staple-row" },
+        UI.h("div", { class: "staple-line" }, item, del),
+        UI.h("div", { class: "staple-line" }, qty, store)
+      );
+    }
+
+    function render() {
+      const rows = working.map(row);
+      const add = UI.h("button", { class: "btn btn-block", type: "button" }, UI.icon("plus"), "Add a staple");
+      add.addEventListener("click", function () {
+        working.push({ item: "", qty: "", store: "Meijer" });
+        render();
+      });
+      const body = UI.h(
+        "div",
+        { class: "stack" },
+        UI.h("p", { class: "tiny muted", text: "The things you always need. These get added every time you build the grocery list." }),
+        rows.length ? UI.h("div", { class: "stack" }, rows) : UI.h("p", { class: "muted", text: "Nothing yet. Add what you always buy." }),
+        add
+      );
+      if (sheet) sheet.setBody(body);
+      return body;
+    }
+
+    sheet = UI.sheet({
+      title: "Weekly staples",
+      body: render(),
+      actions: [
+        UI.h("button", { class: "btn", type: "button", on: { click: function () { sheet.close(); } } }, "Cancel"),
+        UI.h(
+          "button",
+          {
+            class: "btn btn-primary",
+            type: "button",
+            on: {
+              click: function () {
+                const cleaned = working
+                  .map(function (s) {
+                    return { item: (s.item || "").trim(), qty: (s.qty || "").trim(), store: s.store || "Meijer" };
+                  })
+                  .filter(function (s) { return s.item; });
+                Staples.save(cleaned);
+                sheet.close();
+                UI.toast("Saved your weekly staples");
+              },
+            },
+          },
+          "Save"
+        ),
+      ],
+    });
+  }
+
   function renderGroceryTab() {
     const wrap = UI.h("div", { class: "stack" });
 
@@ -6604,6 +6716,22 @@ const Weather = (function () {
         { class: "quickadd" },
         addInput,
         UI.h("button", { class: "ibtn", type: "button", "aria-label": "Add item", on: { click: submitAdd } }, UI.icon("plus"))
+      )
+    );
+
+    /* Shown in both states, so the always-buy list is reachable whether the
+       grocery list is empty or full. */
+    wrap.appendChild(
+      UI.h(
+        "div",
+        { class: "inline staples-bar" },
+        UI.h(
+          "button",
+          { class: "btn btn-sm", type: "button", on: { click: openStaplesSheet } },
+          UI.icon("star"),
+          "Weekly staples"
+        ),
+        UI.h("span", { class: "tiny muted", text: "Things you always need" })
       )
     );
 
