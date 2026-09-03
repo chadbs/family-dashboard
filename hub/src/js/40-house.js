@@ -54,6 +54,30 @@ const House = (function () {
     return ZONES[bestIdx].name;
   }
 
+  /* ---------- cadence ----------
+     A task runs on its weekday every week by default. It can instead run
+     every other week or once a month. "This weekday, but only some weeks."
+       weekly   — every [weekday]           (default; absent means this)
+       biweekly — every other [weekday]
+       monthly  — the first [weekday] of the month
+     Biweekly parity is anchored to a fixed Monday so it is the same on every
+     device and never drifts. */
+  const CADENCE_EPOCH = Date.UTC(2026, 0, 5); // a Monday
+  const CADENCE_LABEL = { weekly: "", biweekly: "every 2 weeks", monthly: "monthly" };
+
+  function weeksSinceEpoch(date) {
+    const mon = Fmt.weekStart(date);
+    const midday = Date.UTC(mon.getFullYear(), mon.getMonth(), mon.getDate());
+    return Math.round((midday - CADENCE_EPOCH) / (7 * 86400000));
+  }
+
+  function taskDueOn(task, date) {
+    const cad = task && task.cadence;
+    if (cad === "biweekly") return weeksSinceEpoch(date) % 2 === 0;
+    if (cad === "monthly") return date.getDate() <= 7; // first occurrence of this weekday
+    return true; // weekly / unset
+  }
+
   /* ---------- Today-screen API ---------- */
 
   function todayTasks(date) {
@@ -65,9 +89,13 @@ const House = (function () {
     const dateKey = Fmt.dayKey(date);
     const checksDoc = Store.get("checks") || {};
     const dayChecks = checksDoc[dateKey] || {};
-    return tasks.map(function (t) {
-      return { id: t.id, text: t.text, min: t.min, done: !!dayChecks[t.id] };
-    });
+    return tasks
+      .filter(function (t) {
+        return taskDueOn(t, date);
+      })
+      .map(function (t) {
+        return { id: t.id, text: t.text, min: t.min, done: !!dayChecks[t.id] };
+      });
   }
 
   function toggleTask(date, taskId) {
@@ -196,12 +224,17 @@ const House = (function () {
     Store.setDoc("routine", nextRoutineWithDay(dayKey, nextList));
   }
 
-  function saveTaskEdit(dayKey, taskId, text, min) {
+  function saveTaskEdit(dayKey, taskId, text, min, cadence) {
     const routine = Store.get("routine") || {};
     const list = Array.isArray(routine[dayKey]) ? routine[dayKey] : [];
     const nextList = list.map(function (t) {
       if (t.id !== taskId) return t;
-      return Object.assign({}, t, { text: text, min: min });
+      const next = Object.assign({}, t, { text: text, min: min });
+      /* Weekly is the default, so store it as the absence of the field —
+         keeps the doc small and old tasks keep behaving as before. */
+      if (cadence && cadence !== "weekly") next.cadence = cadence;
+      else delete next.cadence;
+      return next;
     });
     Store.setDoc("routine", nextRoutineWithDay(dayKey, nextList));
   }
@@ -240,10 +273,25 @@ const House = (function () {
       min: "1",
       value: String(task.min || 10),
     });
+    const cad = task.cadence || "weekly";
+    const dayName = Fmt.dayName(DAY_KEYS.indexOf(dayKey));
+    const cadSelect = UI.h(
+      "select",
+      { class: "select" },
+      UI.h("option", { value: "weekly", text: "Every " + dayName, selected: cad === "weekly" ? true : null }),
+      UI.h("option", { value: "biweekly", text: "Every other " + dayName, selected: cad === "biweekly" ? true : null }),
+      UI.h("option", { value: "monthly", text: "First " + dayName + " of the month", selected: cad === "monthly" ? true : null })
+    );
 
     const s = UI.sheet({
       title: "Edit task",
-      body: UI.h("div", { class: "stack" }, field("Task", textInput), field("Minutes", minInput)),
+      body: UI.h(
+        "div",
+        { class: "stack" },
+        field("Task", textInput),
+        field("Minutes", minInput),
+        field("How often", cadSelect)
+      ),
       actions: [
         UI.h(
           "button",
@@ -263,7 +311,7 @@ const House = (function () {
                   return;
                 }
                 const newMin = Math.max(1, Number(minInput.value) || 10);
-                saveTaskEdit(dayKey, task.id, newText, newMin);
+                saveTaskEdit(dayKey, task.id, newText, newMin, cadSelect.value);
                 s.close();
               },
             },
@@ -276,7 +324,15 @@ const House = (function () {
 
   function buildEditRow(dayKey, tasks, task, idx) {
     const row = UI.h("div", { class: "edit-row" });
-    row.appendChild(UI.h("span", { class: "e-text", text: task.text }));
+    const label = CADENCE_LABEL[task.cadence || "weekly"];
+    row.appendChild(
+      UI.h(
+        "span",
+        { class: "e-text" },
+        task.text,
+        label ? UI.h("span", { class: "chip chip-amber e-cad", text: label }) : null
+      )
+    );
     row.appendChild(UI.h("span", { class: "e-min", text: Fmt.minutes(task.min) }));
     row.appendChild(
       UI.h(

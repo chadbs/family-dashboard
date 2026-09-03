@@ -1457,6 +1457,24 @@ body { overscroll-behavior-y: none; }
 .staple-qty { flex: 0 0 42%; }
 .staple-store { flex: 0 0 42%; }
 
+/* "Already have" pantry chips — tap the x to remove. */
+.pantry-chips { gap: 8px; }
+.pantry-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: var(--r-pill);
+  border: 1px solid var(--line);
+  background: var(--surface-2);
+  color: var(--ink);
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+.pantry-chip:hover { border-color: var(--tulip); color: var(--tulip); }
+.pantry-chip svg { width: 13px; height: 13px; color: var(--ink-3); }
+.pantry-chip:hover svg { color: var(--tulip); }
+
 
 /* ==== css/30-recipes.css ==== */
 /* Recipe photos — the box gets a lot nicer once her pins come over. */
@@ -1485,6 +1503,12 @@ body { overscroll-behavior-y: none; }
   border-bottom: 1px solid var(--line);
 }
 @media (min-width: 900px) { .r-hero { border-radius: 0; } }
+
+
+/* ==== css/40-house.css ==== */
+/* Cleaning-task cadence chip inside an edit row. */
+.edit-row .e-text { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.e-cad { flex-shrink: 0; }
 
 
 /* ==== css/45-chores.css ==== */
@@ -5717,6 +5741,45 @@ const Weather = (function () {
     },
   };
 
+  /* The stuff Kenzie keeps on hand — spices, oils, baking basics. Anything
+     on this list is assumed already in the cupboard and is kept OFF the
+     grocery list when it builds, so the list stays to fresh things to buy.
+     If she runs out of one she just adds it back by hand. */
+  const SEED_PANTRY = [
+    "Salt", "Black pepper", "Olive oil", "Vegetable oil", "Cooking oil",
+    "Flour", "Sugar", "Brown sugar", "Baking powder", "Baking soda",
+    "Vanilla", "Cornstarch", "Rice", "Paprika", "Smoked paprika", "Cumin",
+    "Chili powder", "Oregano", "Basil", "Thyme", "Rosemary", "Cinnamon",
+    "Garlic powder", "Onion powder", "Italian seasoning", "Red pepper flakes",
+    "Bay leaves", "Soy sauce", "Vinegar", "Honey", "Ketchup", "Mustard",
+    "Mayo", "Worcestershire sauce", "Hot sauce", "Cooking spray",
+  ];
+
+  const Pantry = {
+    list: function () {
+      const p = (Store.get("config") || {}).pantry;
+      return Array.isArray(p) ? p : SEED_PANTRY.slice();
+    },
+    save: function (next) {
+      Store.mergeDoc("config", { pantry: next });
+    },
+  };
+
+  /* True when an ingredient is something she already keeps. Matches a pantry
+     entry only when it appears as whole words INSIDE the item — so "paprika"
+     catches "smoked paprika", but "black pepper" never catches "bell pepper"
+     and "garlic powder" never catches fresh "garlic". */
+  function inPantry(name) {
+    const item = String(name || "").toLowerCase().trim();
+    if (!item) return false;
+    return Pantry.list().some(function (p) {
+      const term = String(p || "").toLowerCase().trim();
+      if (!term) return false;
+      const re = new RegExp("\\b" + term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "\\b");
+      return re.test(item);
+    });
+  }
+
   /* Keyword table, cheapest-and-most-specific-first so a jarred sauce
      doesn't get mistaken for the vegetable in its name ("canned diced
      tomatoes" should land in Pantry, not Produce). Doesn't have to be
@@ -6242,6 +6305,13 @@ const Weather = (function () {
         });
       });
 
+      /* Drop the things she keeps on hand (spices, oils, baking) before the
+         staples go on — a staple is something she always wants bought, so it
+         is never pantry-filtered. */
+      Object.keys(wanted).forEach(function (key) {
+        if (inPantry(wanted[key].name)) delete wanted[key];
+      });
+
       Staples.list().forEach(function (s) {
         if (!s || !s.item) return;
         addWanted(s.item, s.qty, s.store, s.cat || categorize(s.item), "Weekly staples");
@@ -6687,6 +6757,82 @@ const Weather = (function () {
     });
   }
 
+  /* The already-have list: spices and staples she keeps, kept off the
+     shopping list. Chips you can tap to remove, plus a box to add more. */
+  function openPantrySheet() {
+    let working = Pantry.list().slice();
+    let sheet;
+
+    function render() {
+      const chips = UI.h("div", { class: "chip-row pantry-chips" });
+      working.forEach(function (name, i) {
+        const chip = UI.h(
+          "button",
+          { class: "pantry-chip", type: "button", "aria-label": "Remove " + name },
+          UI.h("span", { text: name }),
+          UI.icon("x")
+        );
+        chip.addEventListener("click", function () {
+          working.splice(i, 1);
+          render();
+        });
+        chips.appendChild(chip);
+      });
+
+      const addInput = UI.h("input", {
+        class: "input",
+        type: "text",
+        placeholder: "Add something you keep on hand",
+        data: { keep: "pantry-add" },
+      });
+      function add() {
+        const v = addInput.value.trim();
+        if (!v) return;
+        if (!working.some(function (x) { return x.toLowerCase() === v.toLowerCase(); })) working.push(v);
+        addInput.value = "";
+        render();
+        const el = sheet.el.querySelector('[data-keep="pantry-add"]');
+        if (el) el.focus();
+      }
+      addInput.addEventListener("keydown", function (e) {
+        if (e.key === "Enter") { e.preventDefault(); add(); }
+      });
+
+      const body = UI.h(
+        "div",
+        { class: "stack" },
+        UI.h("p", { class: "tiny muted", text: "Spices and staples you already keep. These stay OFF the grocery list. Run out of one? Just add it to the list by hand that week." }),
+        working.length ? chips : UI.h("p", { class: "muted", text: "Nothing yet." }),
+        UI.h("div", { class: "quickadd" }, addInput, UI.h("button", { class: "ibtn", type: "button", "aria-label": "Add", on: { click: add } }, UI.icon("plus")))
+      );
+      if (sheet) sheet.setBody(body);
+      return body;
+    }
+
+    sheet = UI.sheet({
+      title: "Already have",
+      body: render(),
+      actions: [
+        UI.h("button", { class: "btn", type: "button", on: { click: function () { sheet.close(); } } }, "Cancel"),
+        UI.h(
+          "button",
+          {
+            class: "btn btn-primary",
+            type: "button",
+            on: {
+              click: function () {
+                Pantry.save(working.map(function (s) { return s.trim(); }).filter(Boolean));
+                sheet.close();
+                UI.toast("Saved what you keep on hand");
+              },
+            },
+          },
+          "Save"
+        ),
+      ],
+    });
+  }
+
   function renderGroceryTab() {
     const wrap = UI.h("div", { class: "stack" });
 
@@ -6726,7 +6872,12 @@ const Weather = (function () {
           UI.icon("star"),
           "Weekly staples"
         ),
-        UI.h("span", { class: "tiny muted", text: "Things you always need" })
+        UI.h(
+          "button",
+          { class: "btn btn-sm", type: "button", on: { click: openPantrySheet } },
+          UI.icon("check"),
+          "Already have"
+        )
       )
     );
 
@@ -7879,6 +8030,30 @@ const House = (function () {
     return ZONES[bestIdx].name;
   }
 
+  /* ---------- cadence ----------
+     A task runs on its weekday every week by default. It can instead run
+     every other week or once a month. "This weekday, but only some weeks."
+       weekly   — every [weekday]           (default; absent means this)
+       biweekly — every other [weekday]
+       monthly  — the first [weekday] of the month
+     Biweekly parity is anchored to a fixed Monday so it is the same on every
+     device and never drifts. */
+  const CADENCE_EPOCH = Date.UTC(2026, 0, 5); // a Monday
+  const CADENCE_LABEL = { weekly: "", biweekly: "every 2 weeks", monthly: "monthly" };
+
+  function weeksSinceEpoch(date) {
+    const mon = Fmt.weekStart(date);
+    const midday = Date.UTC(mon.getFullYear(), mon.getMonth(), mon.getDate());
+    return Math.round((midday - CADENCE_EPOCH) / (7 * 86400000));
+  }
+
+  function taskDueOn(task, date) {
+    const cad = task && task.cadence;
+    if (cad === "biweekly") return weeksSinceEpoch(date) % 2 === 0;
+    if (cad === "monthly") return date.getDate() <= 7; // first occurrence of this weekday
+    return true; // weekly / unset
+  }
+
   /* ---------- Today-screen API ---------- */
 
   function todayTasks(date) {
@@ -7890,9 +8065,13 @@ const House = (function () {
     const dateKey = Fmt.dayKey(date);
     const checksDoc = Store.get("checks") || {};
     const dayChecks = checksDoc[dateKey] || {};
-    return tasks.map(function (t) {
-      return { id: t.id, text: t.text, min: t.min, done: !!dayChecks[t.id] };
-    });
+    return tasks
+      .filter(function (t) {
+        return taskDueOn(t, date);
+      })
+      .map(function (t) {
+        return { id: t.id, text: t.text, min: t.min, done: !!dayChecks[t.id] };
+      });
   }
 
   function toggleTask(date, taskId) {
@@ -8021,12 +8200,17 @@ const House = (function () {
     Store.setDoc("routine", nextRoutineWithDay(dayKey, nextList));
   }
 
-  function saveTaskEdit(dayKey, taskId, text, min) {
+  function saveTaskEdit(dayKey, taskId, text, min, cadence) {
     const routine = Store.get("routine") || {};
     const list = Array.isArray(routine[dayKey]) ? routine[dayKey] : [];
     const nextList = list.map(function (t) {
       if (t.id !== taskId) return t;
-      return Object.assign({}, t, { text: text, min: min });
+      const next = Object.assign({}, t, { text: text, min: min });
+      /* Weekly is the default, so store it as the absence of the field —
+         keeps the doc small and old tasks keep behaving as before. */
+      if (cadence && cadence !== "weekly") next.cadence = cadence;
+      else delete next.cadence;
+      return next;
     });
     Store.setDoc("routine", nextRoutineWithDay(dayKey, nextList));
   }
@@ -8065,10 +8249,25 @@ const House = (function () {
       min: "1",
       value: String(task.min || 10),
     });
+    const cad = task.cadence || "weekly";
+    const dayName = Fmt.dayName(DAY_KEYS.indexOf(dayKey));
+    const cadSelect = UI.h(
+      "select",
+      { class: "select" },
+      UI.h("option", { value: "weekly", text: "Every " + dayName, selected: cad === "weekly" ? true : null }),
+      UI.h("option", { value: "biweekly", text: "Every other " + dayName, selected: cad === "biweekly" ? true : null }),
+      UI.h("option", { value: "monthly", text: "First " + dayName + " of the month", selected: cad === "monthly" ? true : null })
+    );
 
     const s = UI.sheet({
       title: "Edit task",
-      body: UI.h("div", { class: "stack" }, field("Task", textInput), field("Minutes", minInput)),
+      body: UI.h(
+        "div",
+        { class: "stack" },
+        field("Task", textInput),
+        field("Minutes", minInput),
+        field("How often", cadSelect)
+      ),
       actions: [
         UI.h(
           "button",
@@ -8088,7 +8287,7 @@ const House = (function () {
                   return;
                 }
                 const newMin = Math.max(1, Number(minInput.value) || 10);
-                saveTaskEdit(dayKey, task.id, newText, newMin);
+                saveTaskEdit(dayKey, task.id, newText, newMin, cadSelect.value);
                 s.close();
               },
             },
@@ -8101,7 +8300,15 @@ const House = (function () {
 
   function buildEditRow(dayKey, tasks, task, idx) {
     const row = UI.h("div", { class: "edit-row" });
-    row.appendChild(UI.h("span", { class: "e-text", text: task.text }));
+    const label = CADENCE_LABEL[task.cadence || "weekly"];
+    row.appendChild(
+      UI.h(
+        "span",
+        { class: "e-text" },
+        task.text,
+        label ? UI.h("span", { class: "chip chip-amber e-cad", text: label }) : null
+      )
+    );
     row.appendChild(UI.h("span", { class: "e-min", text: Fmt.minutes(task.min) }));
     row.appendChild(
       UI.h(

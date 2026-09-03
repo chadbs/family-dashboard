@@ -29,6 +29,45 @@
     },
   };
 
+  /* The stuff Kenzie keeps on hand — spices, oils, baking basics. Anything
+     on this list is assumed already in the cupboard and is kept OFF the
+     grocery list when it builds, so the list stays to fresh things to buy.
+     If she runs out of one she just adds it back by hand. */
+  const SEED_PANTRY = [
+    "Salt", "Black pepper", "Olive oil", "Vegetable oil", "Cooking oil",
+    "Flour", "Sugar", "Brown sugar", "Baking powder", "Baking soda",
+    "Vanilla", "Cornstarch", "Rice", "Paprika", "Smoked paprika", "Cumin",
+    "Chili powder", "Oregano", "Basil", "Thyme", "Rosemary", "Cinnamon",
+    "Garlic powder", "Onion powder", "Italian seasoning", "Red pepper flakes",
+    "Bay leaves", "Soy sauce", "Vinegar", "Honey", "Ketchup", "Mustard",
+    "Mayo", "Worcestershire sauce", "Hot sauce", "Cooking spray",
+  ];
+
+  const Pantry = {
+    list: function () {
+      const p = (Store.get("config") || {}).pantry;
+      return Array.isArray(p) ? p : SEED_PANTRY.slice();
+    },
+    save: function (next) {
+      Store.mergeDoc("config", { pantry: next });
+    },
+  };
+
+  /* True when an ingredient is something she already keeps. Matches a pantry
+     entry only when it appears as whole words INSIDE the item — so "paprika"
+     catches "smoked paprika", but "black pepper" never catches "bell pepper"
+     and "garlic powder" never catches fresh "garlic". */
+  function inPantry(name) {
+    const item = String(name || "").toLowerCase().trim();
+    if (!item) return false;
+    return Pantry.list().some(function (p) {
+      const term = String(p || "").toLowerCase().trim();
+      if (!term) return false;
+      const re = new RegExp("\\b" + term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "\\b");
+      return re.test(item);
+    });
+  }
+
   /* Keyword table, cheapest-and-most-specific-first so a jarred sauce
      doesn't get mistaken for the vegetable in its name ("canned diced
      tomatoes" should land in Pantry, not Produce). Doesn't have to be
@@ -554,6 +593,13 @@
         });
       });
 
+      /* Drop the things she keeps on hand (spices, oils, baking) before the
+         staples go on — a staple is something she always wants bought, so it
+         is never pantry-filtered. */
+      Object.keys(wanted).forEach(function (key) {
+        if (inPantry(wanted[key].name)) delete wanted[key];
+      });
+
       Staples.list().forEach(function (s) {
         if (!s || !s.item) return;
         addWanted(s.item, s.qty, s.store, s.cat || categorize(s.item), "Weekly staples");
@@ -999,6 +1045,82 @@
     });
   }
 
+  /* The already-have list: spices and staples she keeps, kept off the
+     shopping list. Chips you can tap to remove, plus a box to add more. */
+  function openPantrySheet() {
+    let working = Pantry.list().slice();
+    let sheet;
+
+    function render() {
+      const chips = UI.h("div", { class: "chip-row pantry-chips" });
+      working.forEach(function (name, i) {
+        const chip = UI.h(
+          "button",
+          { class: "pantry-chip", type: "button", "aria-label": "Remove " + name },
+          UI.h("span", { text: name }),
+          UI.icon("x")
+        );
+        chip.addEventListener("click", function () {
+          working.splice(i, 1);
+          render();
+        });
+        chips.appendChild(chip);
+      });
+
+      const addInput = UI.h("input", {
+        class: "input",
+        type: "text",
+        placeholder: "Add something you keep on hand",
+        data: { keep: "pantry-add" },
+      });
+      function add() {
+        const v = addInput.value.trim();
+        if (!v) return;
+        if (!working.some(function (x) { return x.toLowerCase() === v.toLowerCase(); })) working.push(v);
+        addInput.value = "";
+        render();
+        const el = sheet.el.querySelector('[data-keep="pantry-add"]');
+        if (el) el.focus();
+      }
+      addInput.addEventListener("keydown", function (e) {
+        if (e.key === "Enter") { e.preventDefault(); add(); }
+      });
+
+      const body = UI.h(
+        "div",
+        { class: "stack" },
+        UI.h("p", { class: "tiny muted", text: "Spices and staples you already keep. These stay OFF the grocery list. Run out of one? Just add it to the list by hand that week." }),
+        working.length ? chips : UI.h("p", { class: "muted", text: "Nothing yet." }),
+        UI.h("div", { class: "quickadd" }, addInput, UI.h("button", { class: "ibtn", type: "button", "aria-label": "Add", on: { click: add } }, UI.icon("plus")))
+      );
+      if (sheet) sheet.setBody(body);
+      return body;
+    }
+
+    sheet = UI.sheet({
+      title: "Already have",
+      body: render(),
+      actions: [
+        UI.h("button", { class: "btn", type: "button", on: { click: function () { sheet.close(); } } }, "Cancel"),
+        UI.h(
+          "button",
+          {
+            class: "btn btn-primary",
+            type: "button",
+            on: {
+              click: function () {
+                Pantry.save(working.map(function (s) { return s.trim(); }).filter(Boolean));
+                sheet.close();
+                UI.toast("Saved what you keep on hand");
+              },
+            },
+          },
+          "Save"
+        ),
+      ],
+    });
+  }
+
   function renderGroceryTab() {
     const wrap = UI.h("div", { class: "stack" });
 
@@ -1038,7 +1160,12 @@
           UI.icon("star"),
           "Weekly staples"
         ),
-        UI.h("span", { class: "tiny muted", text: "Things you always need" })
+        UI.h(
+          "button",
+          { class: "btn btn-sm", type: "button", on: { click: openPantrySheet } },
+          UI.icon("check"),
+          "Already have"
+        )
       )
     );
 

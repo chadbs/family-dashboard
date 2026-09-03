@@ -102,3 +102,21 @@
 .staple-line .input, .staple-line .select { min-height: 42px; }
 .staple-qty { flex: 0 0 42%; }
 .staple-store { flex: 0 0 42%; }
+
+/* "Already have" pantry chips — tap the x to remove. */
+.pantry-chips { gap: 8px; }
+.pantry-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: var(--r-pill);
+  border: 1px solid var(--line);
+  background: var(--surface-2);
+  color: var(--ink);
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+.pantry-chip:hover { border-color: var(--tulip); color: var(--tulip); }
+.pantry-chip svg { width: 13px; height: 13px; color: var(--ink-3); }
+.pantry-chip:hover svg { color: var(--tulip); }
