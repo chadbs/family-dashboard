@@ -1433,6 +1433,22 @@ body { overscroll-behavior-y: none; }
 .cart-links { display: flex; gap: 8px; flex-wrap: wrap; }
 .cart-links .btn { flex: 1; min-width: 140px; }
 
+/* What is already on this day, at the top of the picker, with the way to
+   take it off right next to it. */
+.planned-now {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: var(--r);
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+}
+.pn-emoji { font-size: 1.6rem; line-height: 1; flex-shrink: 0; }
+.pn-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.pn-name { font-weight: 600; line-height: 1.25; overflow-wrap: anywhere; }
+.pn-sub { font-size: 0.8rem; color: var(--ink-2); }
+
 
 /* ==== css/30-recipes.css ==== */
 /* Recipe photos — the box gets a lot nicer once her pins come over. */
@@ -1612,106 +1628,79 @@ body { overscroll-behavior-y: none; }
 /* ==== css/60-display.css ==== */
 /* ============================================================
    Display — the wall on the Surface.
-   The real pages, one at a time, with a thin bar on top. Sized to be
-   read from a few feet away without turning anything into a billboard.
+
+   The ordinary app, fully usable, plus a thin always-on bar on top.
+   Nothing here hides a control: the whole point of the wall is that
+   someone can walk up and tick a chore or give a star.
    ============================================================ */
 
-body.display-mode { overflow-x: hidden; }
-body.display-mode .tabbar { display: none; }
-body.display-mode .toasts { bottom: 24px; }
+:root { --wallbar-h: 52px; }
 
-/* Bigger overall, because it is read standing up and further away. */
-html.display-root { font-size: 22px; }
+/* Bigger overall, because it is read standing a few feet back. */
+html.display-root { font-size: 21px; }
 
-body.display-mode .view {
-  max-width: 1180px;
-  padding: calc(var(--wallbar-h) + 22px) 30px 30px;
-  gap: 22px;
+/* The bar sits above everything; the app starts below it, so the side
+   rail and the bar never overlap. */
+body.display-mode .app { padding-top: var(--wallbar-h); }
+
+@media (min-width: 900px) {
+  body.display-mode .tabbar {
+    top: var(--wallbar-h);
+    height: calc(100dvh - var(--wallbar-h));
+  }
 }
-
-:root { --wallbar-h: 58px; }
 
 .wallbar {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
-  z-index: 50;
+  z-index: 60;
   height: var(--wallbar-h);
   display: flex;
   align-items: center;
   gap: 20px;
-  padding: 0 22px;
-  background: color-mix(in srgb, var(--surface) 92%, transparent);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  padding: 0 20px;
+  background: var(--surface);
   border-bottom: 1px solid var(--line);
 }
 
-.wb-left { display: flex; align-items: baseline; gap: 14px; min-width: 0; }
+.wb-left { display: flex; align-items: baseline; gap: 13px; min-width: 0; }
 .wb-time {
   font-family: var(--serif);
-  font-size: 1.55rem;
+  font-size: 1.4rem;
   font-weight: 400;
   line-height: 1;
   letter-spacing: -0.01em;
   white-space: nowrap;
 }
 .wb-date {
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   color: var(--ink-2);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
-
-.wb-mid { flex: 1; display: flex; justify-content: center; }
-.wb-dots { display: flex; gap: 7px; }
-.wb-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--line-2);
-  transition: background 0.3s ease;
-}
-.wb-dot[data-on="true"] { background: var(--delft); }
-
+.wb-mid { flex: 1; }
 .wb-temp {
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   font-weight: 600;
   color: var(--ink-2);
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
 }
 
-/* The page fades as it changes, so the wall never snaps. */
-body.display-mode main > .view { animation: wall-in 0.5s ease both; }
-@keyframes wall-in { from { opacity: 0; transform: translateY(6px); } }
-@media (prefers-reduced-motion: reduce) {
-  body.display-mode main > .view { animation: none; }
-}
-
-/* Nothing is typed on the wall, and nothing there should trigger a big
-   action — a sleeve brushing "Plan the week" would rewrite the dinners.
-   Ticking a cleaning task or a kid's chore still works, which is the point. */
-body.display-mode .quickadd,
-body.display-mode .segmented,
-body.display-mode input[type="search"],
-body.display-mode .btn-row,
-body.display-mode .btn-block,
-body.display-mode .btn-danger { display: none; }
-
-/* Give the checkable rows a bit more room for small fingers on a big screen. */
-body.display-mode .check { min-height: 62px; }
+/* Touch targets get a little more room on a wall screen — the kids use it
+   standing on a stool. */
+body.display-mode .check { min-height: 60px; }
 body.display-mode .chore-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
-body.display-mode .chore-pic { font-size: 3rem; }
+body.display-mode .chore-pic { font-size: 2.9rem; }
+body.display-mode .chore-tile { min-height: 150px; }
 
-/* A short screen (an old 768-tall laptop panel) needs less chrome, but the
-   type still has to carry across a kitchen. */
+/* A short panel (an old 768-tall screen) wants a touch less. */
 @media (max-height: 800px) {
   html.display-root { font-size: 19px; }
-  :root { --wallbar-h: 50px; }
-  body.display-mode .view { padding-top: calc(var(--wallbar-h) + 14px); gap: 18px; }
+  :root { --wallbar-h: 48px; }
 }
 
 
@@ -5903,11 +5892,39 @@ const Weather = (function () {
         { class: "inline" },
         UI.h("button", { class: "btn btn-sm", type: "button", on: { click: function () { finish({ kind: "out" }, "Planned"); } } }, "Eating out"),
         UI.h("button", { class: "btn btn-sm", type: "button", on: { click: function () { finish({ kind: "leftovers" }, "Planned"); } } }, "Leftovers"),
-        UI.h("button", { class: "btn btn-sm", type: "button", on: { click: showTypeForm } }, "Type it in"),
-        UI.h("button", { class: "btn btn-sm", type: "button", on: { click: function () { finish(null, "Cleared"); } } }, "Clear this day")
+        UI.h("button", { class: "btn btn-sm", type: "button", on: { click: showTypeForm } }, "Type it in")
       );
 
-      const body = UI.h("div", { class: "stack" }, searchInput, quickRow, resultsHost);
+      /* When the day already has something on it, say so and offer to take
+         it off — otherwise the only way to clear a dinner is a small button
+         that looks like the three next to it. */
+      const current = Plan.slotFor(date);
+      let currentRow = null;
+      if (current) {
+        const d = describeSlot(current);
+        currentRow = UI.h(
+          "div",
+          { class: "planned-now" },
+          UI.h("span", { class: "pn-emoji", text: d.emoji || "🍽️" }),
+          UI.h(
+            "span",
+            { class: "pn-main" },
+            UI.h("span", { class: "pn-name", text: d.name || "Planned" }),
+            UI.h("span", { class: "pn-sub", text: "Pick something else below, or take it off." })
+          ),
+          UI.h(
+            "button",
+            {
+              class: "btn btn-sm btn-danger",
+              type: "button",
+              on: { click: function () { finish(null, "Cleared " + Fmt.dayName(Fmt.dayIdx(date))); } },
+            },
+            "Remove"
+          )
+        );
+      }
+
+      const body = UI.h("div", { class: "stack" }, currentRow, searchInput, quickRow, resultsHost);
       var s = UI.sheet({ title: title, body: body });
       renderResults();
     },
@@ -9705,66 +9722,28 @@ const Rewards = (function () {
 
 /* ==== js/60-display.js ========================================================= */
 /* ============================================================
-   Display — the always-on wall on the Surface.
+   Display — the Surface on the kitchen wall.
 
-   It shows the REAL pages, slowly rotating: Today, this week's dinners,
-   the cleaning routine, the kids' chores and stars. Not a bespoke wall
-   layout with giant numbers — the same screens the phones show, just
-   bigger, with the tab bar swapped for a thin bar across the top that
-   carries the clock and the backyard temperature.
+   It is the ordinary app, in full, with every button and checkbox live:
+   give a star, tick a chore, plan a dinner, edit a job. Nothing is hidden
+   and nothing rotates — the family walks up to it and uses it.
 
-   Rotating the actual pages means the wall never drifts out of step with
-   the app: anything added to a screen shows up here for free.
+   What /display adds over / is only what an always-on screen wants:
 
-   Touch anything and the rotation holds for a minute, so a kid ticking
-   off chores does not have the page slide away mid-tap.
+     * a thin bar across the top with the time, the date and the backyard
+       temperature, so a glance from across the room is worth something;
+     * light through the day, dark from 7pm, whatever the machine's own
+       setting says;
+     * slightly larger type, because it is read standing up;
+     * a reload at 4am so a screen left running for months quietly picks up
+       new builds.
    ============================================================ */
 
 const Display = (function () {
-  const ROTATE_MS = 24000;
-  const HOLD_MS = 60000;
-
-  /* Where the wall stops, in order. `before` puts a screen into the right
-     sub-tab so the rotation always shows the useful face of it. */
-  const STOPS = [
-    { route: "today", label: "Today" },
-    {
-      route: "meals",
-      label: "This week",
-      before: function () {
-        UI.state.mealsTab = "week";
-        UI.state.weekOffset = 0;
-      },
-    },
-    {
-      route: "house",
-      label: "Cleaning",
-      before: function () {
-        UI.state.houseTab = "cleaning";
-        UI.state.openDay = DAY_KEYS[Fmt.dayIdx(new Date())];
-      },
-    },
-    { route: "rewards", label: "Chores & stars" },
-    {
-      route: "meals",
-      label: "Grocery list",
-      before: function () {
-        UI.state.mealsTab = "grocery";
-      },
-      skip: function () {
-        return !Store.list("grocery").length;
-      },
-    },
-  ];
-
   let started = false;
-  let idx = 0;
-  let holdUntil = 0;
-  let bar = null;
   let clockEl = null;
   let dateEl = null;
   let tempEl = null;
-  let dotsEl = null;
 
   function active() {
     try {
@@ -9775,8 +9754,7 @@ const Display = (function () {
     }
   }
 
-  /* Light by day, dark in the evening — the same hours the old wall used,
-     whatever the machine's own setting is. */
+  /* Light by day, dark in the evening — the hours the old wall used. */
   function applyWallTheme(now) {
     const h = (now || new Date()).getHours();
     document.documentElement.setAttribute("data-theme", h >= 19 || h < 7 ? "dark" : "light");
@@ -9786,15 +9764,15 @@ const Display = (function () {
     clockEl = UI.h("div", { class: "wb-time nums" });
     dateEl = UI.h("div", { class: "wb-date" });
     tempEl = UI.h("div", { class: "wb-temp" });
-    dotsEl = UI.h("div", { class: "wb-dots", "aria-hidden": "true" });
-    bar = UI.h(
-      "div",
-      { class: "wallbar" },
-      UI.h("div", { class: "wb-left" }, clockEl, dateEl),
-      UI.h("div", { class: "wb-mid" }, dotsEl),
-      tempEl
+    document.body.appendChild(
+      UI.h(
+        "div",
+        { class: "wallbar" },
+        UI.h("div", { class: "wb-left" }, clockEl, dateEl),
+        UI.h("div", { class: "wb-mid" }),
+        tempEl
+      )
     );
-    document.body.appendChild(bar);
   }
 
   function tick() {
@@ -9825,60 +9803,17 @@ const Display = (function () {
     applyWallTheme(now);
   }
 
-  function paintDots() {
-    if (!dotsEl) return;
-    dotsEl.textContent = "";
-    STOPS.forEach(function (s, i) {
-      dotsEl.appendChild(UI.h("span", { class: "wb-dot", "data-on": i === idx ? "true" : "false" }));
-    });
-  }
-
-  function show(i) {
-    for (let n = 0; n < STOPS.length; n++) {
-      const s = STOPS[(i + n) % STOPS.length];
-      let skip = false;
-      try {
-        skip = s.skip ? s.skip() : false;
-      } catch (e) {
-        skip = false;
-      }
-      if (skip) continue;
-      idx = (i + n) % STOPS.length;
-      try {
-        if (s.before) s.before();
-      } catch (e) {
-        /* a bad sub-tab must not stop the wall */
-      }
-      Router.go(s.route);
-      paintDots();
-      return;
-    }
-    Router.go("today");
-  }
-
-  function rotate() {
-    if (Date.now() < holdUntil) return;
-    show(idx + 1);
-  }
-
-  function hold() {
-    holdUntil = Date.now() + HOLD_MS;
-  }
-
   function start() {
     if (started) return;
     started = true;
     buildBar();
     tick();
-    show(0);
+    Router.go("today");
     setInterval(tick, 1000);
-    setInterval(rotate, ROTATE_MS);
-    document.addEventListener("pointerdown", hold, { passive: true });
-    /* A wall left running for months should not accumulate anything; the
-       page reloads itself nightly so the app also picks up new builds. */
+    /* Nothing accumulates on a screen that runs for months, and it picks up
+       whatever has shipped since. 4am, when nobody is looking at it. */
     setInterval(function () {
-      const h = new Date().getHours();
-      if (h === 4) location.reload();
+      if (new Date().getHours() === 4) location.reload();
     }, 60 * 60 * 1000);
   }
 

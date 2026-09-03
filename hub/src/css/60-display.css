@@ -1,103 +1,76 @@
 /* ============================================================
    Display — the wall on the Surface.
-   The real pages, one at a time, with a thin bar on top. Sized to be
-   read from a few feet away without turning anything into a billboard.
+
+   The ordinary app, fully usable, plus a thin always-on bar on top.
+   Nothing here hides a control: the whole point of the wall is that
+   someone can walk up and tick a chore or give a star.
    ============================================================ */
 
-body.display-mode { overflow-x: hidden; }
-body.display-mode .tabbar { display: none; }
-body.display-mode .toasts { bottom: 24px; }
+:root { --wallbar-h: 52px; }
 
-/* Bigger overall, because it is read standing up and further away. */
-html.display-root { font-size: 22px; }
+/* Bigger overall, because it is read standing a few feet back. */
+html.display-root { font-size: 21px; }
 
-body.display-mode .view {
-  max-width: 1180px;
-  padding: calc(var(--wallbar-h) + 22px) 30px 30px;
-  gap: 22px;
+/* The bar sits above everything; the app starts below it, so the side
+   rail and the bar never overlap. */
+body.display-mode .app { padding-top: var(--wallbar-h); }
+
+@media (min-width: 900px) {
+  body.display-mode .tabbar {
+    top: var(--wallbar-h);
+    height: calc(100dvh - var(--wallbar-h));
+  }
 }
-
-:root { --wallbar-h: 58px; }
 
 .wallbar {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
-  z-index: 50;
+  z-index: 60;
   height: var(--wallbar-h);
   display: flex;
   align-items: center;
   gap: 20px;
-  padding: 0 22px;
-  background: color-mix(in srgb, var(--surface) 92%, transparent);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  padding: 0 20px;
+  background: var(--surface);
   border-bottom: 1px solid var(--line);
 }
 
-.wb-left { display: flex; align-items: baseline; gap: 14px; min-width: 0; }
+.wb-left { display: flex; align-items: baseline; gap: 13px; min-width: 0; }
 .wb-time {
   font-family: var(--serif);
-  font-size: 1.55rem;
+  font-size: 1.4rem;
   font-weight: 400;
   line-height: 1;
   letter-spacing: -0.01em;
   white-space: nowrap;
 }
 .wb-date {
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   color: var(--ink-2);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
-
-.wb-mid { flex: 1; display: flex; justify-content: center; }
-.wb-dots { display: flex; gap: 7px; }
-.wb-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--line-2);
-  transition: background 0.3s ease;
-}
-.wb-dot[data-on="true"] { background: var(--delft); }
-
+.wb-mid { flex: 1; }
 .wb-temp {
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   font-weight: 600;
   color: var(--ink-2);
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
 }
 
-/* The page fades as it changes, so the wall never snaps. */
-body.display-mode main > .view { animation: wall-in 0.5s ease both; }
-@keyframes wall-in { from { opacity: 0; transform: translateY(6px); } }
-@media (prefers-reduced-motion: reduce) {
-  body.display-mode main > .view { animation: none; }
-}
-
-/* Nothing is typed on the wall, and nothing there should trigger a big
-   action — a sleeve brushing "Plan the week" would rewrite the dinners.
-   Ticking a cleaning task or a kid's chore still works, which is the point. */
-body.display-mode .quickadd,
-body.display-mode .segmented,
-body.display-mode input[type="search"],
-body.display-mode .btn-row,
-body.display-mode .btn-block,
-body.display-mode .btn-danger { display: none; }
-
-/* Give the checkable rows a bit more room for small fingers on a big screen. */
-body.display-mode .check { min-height: 62px; }
+/* Touch targets get a little more room on a wall screen — the kids use it
+   standing on a stool. */
+body.display-mode .check { min-height: 60px; }
 body.display-mode .chore-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
-body.display-mode .chore-pic { font-size: 3rem; }
+body.display-mode .chore-pic { font-size: 2.9rem; }
+body.display-mode .chore-tile { min-height: 150px; }
 
-/* A short screen (an old 768-tall laptop panel) needs less chrome, but the
-   type still has to carry across a kitchen. */
+/* A short panel (an old 768-tall screen) wants a touch less. */
 @media (max-height: 800px) {
   html.display-root { font-size: 19px; }
-  :root { --wallbar-h: 50px; }
-  body.display-mode .view { padding-top: calc(var(--wallbar-h) + 14px); gap: 18px; }
+  :root { --wallbar-h: 48px; }
 }

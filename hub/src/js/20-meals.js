@@ -245,11 +245,39 @@
         { class: "inline" },
         UI.h("button", { class: "btn btn-sm", type: "button", on: { click: function () { finish({ kind: "out" }, "Planned"); } } }, "Eating out"),
         UI.h("button", { class: "btn btn-sm", type: "button", on: { click: function () { finish({ kind: "leftovers" }, "Planned"); } } }, "Leftovers"),
-        UI.h("button", { class: "btn btn-sm", type: "button", on: { click: showTypeForm } }, "Type it in"),
-        UI.h("button", { class: "btn btn-sm", type: "button", on: { click: function () { finish(null, "Cleared"); } } }, "Clear this day")
+        UI.h("button", { class: "btn btn-sm", type: "button", on: { click: showTypeForm } }, "Type it in")
       );
 
-      const body = UI.h("div", { class: "stack" }, searchInput, quickRow, resultsHost);
+      /* When the day already has something on it, say so and offer to take
+         it off — otherwise the only way to clear a dinner is a small button
+         that looks like the three next to it. */
+      const current = Plan.slotFor(date);
+      let currentRow = null;
+      if (current) {
+        const d = describeSlot(current);
+        currentRow = UI.h(
+          "div",
+          { class: "planned-now" },
+          UI.h("span", { class: "pn-emoji", text: d.emoji || "🍽️" }),
+          UI.h(
+            "span",
+            { class: "pn-main" },
+            UI.h("span", { class: "pn-name", text: d.name || "Planned" }),
+            UI.h("span", { class: "pn-sub", text: "Pick something else below, or take it off." })
+          ),
+          UI.h(
+            "button",
+            {
+              class: "btn btn-sm btn-danger",
+              type: "button",
+              on: { click: function () { finish(null, "Cleared " + Fmt.dayName(Fmt.dayIdx(date))); } },
+            },
+            "Remove"
+          )
+        );
+      }
+
+      const body = UI.h("div", { class: "stack" }, currentRow, searchInput, quickRow, resultsHost);
       var s = UI.sheet({ title: title, body: body });
       renderResults();
     },

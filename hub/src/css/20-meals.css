@@ -78,3 +78,19 @@
 .cart-status .cs-sub { font-size: 0.83rem; color: var(--ink-2); }
 .cart-links { display: flex; gap: 8px; flex-wrap: wrap; }
 .cart-links .btn { flex: 1; min-width: 140px; }
+
+/* What is already on this day, at the top of the picker, with the way to
+   take it off right next to it. */
+.planned-now {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: var(--r);
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+}
+.pn-emoji { font-size: 1.6rem; line-height: 1; flex-shrink: 0; }
+.pn-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.pn-name { font-weight: 600; line-height: 1.25; overflow-wrap: anywhere; }
+.pn-sub { font-size: 0.8rem; color: var(--ink-2); }
