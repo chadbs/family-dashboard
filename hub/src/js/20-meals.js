@@ -43,6 +43,34 @@
     "Mayo", "Worcestershire sauce", "Hot sauce", "Cooking spray",
   ];
 
+  /* Put every weekly staple onto the grocery list now, skipping any already
+     there. Staples are always-wanted, so they bypass the pantry filter.
+     Returns how many were newly added. */
+  function putStaplesOnList() {
+    const have = {};
+    Store.list("grocery").forEach(function (it) {
+      have[(it.name || "").trim().toLowerCase()] = true;
+    });
+    let added = 0;
+    Staples.list().forEach(function (s) {
+      if (!s || !s.item) return;
+      const key = s.item.trim().toLowerCase();
+      if (have[key]) return;
+      Store.put("grocery", null, {
+        name: s.item.trim(),
+        qty: s.qty || "",
+        cat: s.cat || categorize(s.item),
+        store: normStore(s.store) || "",
+        done: false,
+        src: "Weekly staples",
+        at: new Date().toISOString(),
+      });
+      have[key] = true;
+      added++;
+    });
+    return added;
+  }
+
   const Pantry = {
     list: function () {
       const p = (Store.get("config") || {}).pantry;
@@ -859,7 +887,7 @@
       { class: "g-row", "data-done": it.done ? "true" : "false", "data-skip": it.skip ? "true" : "false" },
       UI.h("button", { class: "box", type: "button", "aria-label": it.done ? "Not in the cart" : "In the cart", on: { click: function () { Store.patch("grocery", it.id, { done: !it.done }); } } }, UI.icon("check")),
       main,
-      UI.h("button", { class: "g-have", type: "button", "aria-pressed": it.skip ? "true" : "false", title: "Already have it at home", on: { click: function () { Store.patch("grocery", it.id, { skip: !it.skip }); } } }, it.skip ? "have it" : "have it?")
+      UI.h("button", { class: "g-have", type: "button", title: "I have this — take it off the list", on: { click: function () { Store.remove("grocery", it.id); UI.toast("Took " + it.name + " off the list"); } } }, "have it")
     );
   }
 
@@ -1034,8 +1062,9 @@
                   })
                   .filter(function (s) { return s.item; });
                 Staples.save(cleaned);
+                const n = putStaplesOnList();
                 sheet.close();
-                UI.toast("Saved your weekly staples");
+                UI.toast(n ? "Saved — added " + n + " to your list" : "Saved your weekly staples");
               },
             },
           },
