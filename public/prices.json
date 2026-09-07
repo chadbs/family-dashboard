@@ -1,45 +1,45 @@
 {
   "whole milk": {
-    "meijer": 3.31,
+    "meijer": 3.18,
     "aldi": 3.15,
     "deal": null,
-    "at": "2026-09-01T13:08:00.000Z"
+    "at": "2026-09-07T09:30:44.000Z"
   },
   "greek yogurt": {
-    "meijer": 3.69,
-    "aldi": 3.49,
+    "meijer": 3.99,
+    "aldi": 3.85,
     "deal": null,
-    "at": "2026-09-01T13:08:00.000Z"
+    "at": "2026-09-07T09:30:44.000Z"
   },
   "chicken breast": {
-    "meijer": 2.99,
+    "meijer": 2.29,
     "aldi": 2.19,
     "deal": null,
-    "at": "2026-09-01T13:08:00.000Z"
+    "at": "2026-09-07T09:30:44.000Z"
   },
   "chicken thighs": {
-    "meijer": 2.69,
+    "meijer": 3.49,
     "aldi": 3.59,
     "deal": null,
-    "at": "2026-09-01T13:08:00.000Z"
+    "at": "2026-09-07T09:30:44.000Z"
   },
   "ground beef": {
-    "meijer": 2.49,
+    "meijer": 3.99,
     "aldi": 5.29,
     "deal": null,
-    "at": "2026-09-01T13:08:00.000Z"
+    "at": "2026-09-07T09:30:44.000Z"
   },
   "pork": {
-    "meijer": 5.69,
+    "meijer": 2.79,
     "aldi": 3.29,
     "deal": null,
-    "at": "2026-09-01T13:08:00.000Z"
+    "at": "2026-09-07T09:30:44.000Z"
   },
   "italian sausage": {
-    "meijer": 4.99,
+    "meijer": 5.49,
     "aldi": 3.25,
     "deal": null,
-    "at": "2026-09-01T13:08:00.000Z"
+    "at": "2026-09-07T09:30:44.000Z"
   },
   "shrimp": {
     "meijer": 12.59,
@@ -57,85 +57,85 @@
     "meijer": 2.59,
     "aldi": 2.19,
     "deal": null,
-    "at": "2026-09-01T13:08:00.000Z"
+    "at": "2026-09-07T09:30:44.000Z"
   },
   "broccoli": {
-    "meijer": 1.49,
+    "meijer": 1.7,
     "aldi": 2.09,
     "deal": null,
-    "at": "2026-09-01T13:08:00.000Z"
+    "at": "2026-09-07T09:30:44.000Z"
   },
   "bell pepper": {
     "meijer": 1.49,
-    "aldi": 1.69,
+    "aldi": 1,
     "deal": null,
-    "at": "2026-09-01T13:08:00.000Z"
+    "at": "2026-09-07T09:30:44.000Z"
   },
   "potatoes": {
-    "meijer": 1.49,
-    "aldi": 3.93,
+    "meijer": 3.19,
+    "aldi": 2.99,
     "deal": null,
-    "at": "2026-09-01T13:08:00.000Z"
+    "at": "2026-09-07T09:30:44.000Z"
   },
   "corn": {
-    "meijer": 0.85,
-    "aldi": 0.81,
+    "meijer": 1.27,
+    "aldi": 0.62,
     "deal": null,
-    "at": "2026-09-01T13:08:00.000Z"
+    "at": "2026-09-07T09:30:44.000Z"
   },
   "lettuce": {
     "meijer": 2.59,
-    "aldi": 1.99,
+    "aldi": 2.09,
     "deal": null,
-    "at": "2026-09-01T13:08:00.000Z"
+    "at": "2026-09-07T09:30:44.000Z"
   },
   "tomato": {
-    "meijer": 2.29,
-    "aldi": 0.89,
+    "meijer": 2.39,
+    "aldi": 1.15,
     "deal": null,
-    "at": "2026-09-01T13:08:00.000Z"
+    "at": "2026-09-07T09:30:44.000Z"
   },
   "onion": {
     "meijer": 1.49,
     "aldi": 2.65,
     "deal": null,
-    "at": "2026-09-01T13:08:00.000Z"
+    "at": "2026-09-07T09:30:44.000Z"
   },
   "green onion": {
-    "meijer": 1.09,
-    "aldi": 0.95,
+    "meijer": 1.19,
+    "aldi": 1.19,
     "deal": null,
-    "at": "2026-09-01T13:08:00.000Z"
+    "at": "2026-09-07T09:30:44.000Z"
   },
   "mushrooms": {
     "meijer": 3.66,
-    "aldi": 1.75,
+    "aldi": 1.29,
     "deal": null,
-    "at": "2026-09-01T13:08:00.000Z"
+    "at": "2026-09-07T09:30:44.000Z"
   },
   "lemons": {
-    "meijer": 0.9,
-    "aldi": 4.09,
+    "meijer": 6.99,
+    "aldi": 2.49,
     "deal": null,
-    "at": "2026-09-01T13:08:00.000Z"
+    "at": "2026-09-07T09:30:44.000Z"
   },
   "garlic": {
     "meijer": 0.37,
-    "aldi": 0.89,
+    "aldi": 1.89,
     "deal": null,
-    "at": "2026-09-01T13:08:00.000Z"
+    "at": "2026-09-07T09:30:44.000Z"
   },
   "cherry tomatoes": {
     "meijer": 3.59,
     "aldi": 1.99,
     "deal": null,
-    "at": "2026-09-01T13:08:00.000Z"
+    "at": "2026-09-07T09:30:44.000Z"
   },
   "avocado": {
     "meijer": 0.92,
-    "aldi": 0.89,
+    "aldi": 0.65,
     "deal": null,
-    "at": "2026-09-01T13:08:00.000Z"
+    "at": "2026-09-07T09:30:44.000Z"
   },
   "lime": {
     "meijer": 2.99,
@@ -151,21 +151,21 @@
   },
   "cheese slices": {
     "meijer": 3.2,
-    "aldi": 2.05,
+    "aldi": 1.95,
     "deal": null,
-    "at": "2026-09-01T13:08:00.000Z"
+    "at": "2026-09-07T09:30:44.000Z"
   },
   "heavy cream": {
     "meijer": 3.66,
     "aldi": 3.07,
     "deal": null,
-    "at": "2026-09-01T13:08:00.000Z"
+    "at": "2026-09-07T09:30:44.000Z"
   },
   "butter": {
-    "meijer": 3.09,
+    "meijer": 3.99,
     "aldi": 3.55,
     "deal": null,
-    "at": "2026-09-01T13:08:00.000Z"
+    "at": "2026-09-07T09:30:44.000Z"
   },
   "fresh mozzarella": {
     "meijer": 4.49,
@@ -181,45 +181,45 @@
   },
   "cashews": {
     "meijer": 5.49,
-    "aldi": 5.19,
+    "aldi": 4.69,
     "deal": null,
-    "at": "2026-09-01T13:08:00.000Z"
+    "at": "2026-09-07T09:30:44.000Z"
   },
   "ramen noodles": {
-    "meijer": 0.69,
-    "aldi": 1.65,
+    "meijer": 0.59,
+    "aldi": 1.55,
     "deal": null,
-    "at": "2026-09-01T13:08:00.000Z"
+    "at": "2026-09-07T09:30:44.000Z"
   },
   "canned whole tomatoes": {
-    "meijer": 1.49,
+    "meijer": 1.99,
     "aldi": null,
     "deal": null,
-    "at": "2026-09-01T13:08:00.000Z"
+    "at": "2026-09-07T09:30:44.000Z"
   },
   "corn tortillas": {
     "meijer": 3.49,
     "aldi": 2.15,
     "deal": null,
-    "at": "2026-09-01T13:08:00.000Z"
+    "at": "2026-09-07T09:30:44.000Z"
   },
   "shelf-stable gnocchi": {
     "meijer": 2.99,
     "aldi": 3.99,
     "deal": null,
-    "at": "2026-09-01T13:08:00.000Z"
+    "at": "2026-09-07T09:30:44.000Z"
   },
   "baby potatoes": {
     "meijer": 3.99,
-    "aldi": 3.29,
+    "aldi": 3.65,
     "deal": null,
-    "at": "2026-09-01T13:08:00.000Z"
+    "at": "2026-09-07T09:30:44.000Z"
   },
   "basil": {
     "meijer": 4.99,
     "aldi": null,
     "deal": null,
-    "at": "2026-09-01T13:08:00.000Z"
+    "at": "2026-09-07T09:30:44.000Z"
   },
   "cilantro": {
     "meijer": 0.99,
@@ -244,5 +244,17 @@
     "aldi": 3.85,
     "deal": null,
     "at": "2026-08-24T20:52:59.000Z"
+  },
+  "frozen peas & carrots": {
+    "meijer": null,
+    "aldi": null,
+    "deal": null,
+    "at": "2026-09-07T09:30:44.000Z"
+  },
+  "puff pastry": {
+    "meijer": 6.99,
+    "aldi": 3.99,
+    "deal": null,
+    "at": "2026-09-07T09:30:44.000Z"
   }
 }
