@@ -7,6 +7,12 @@
       "runtimeArgs": ["server.js"],
       "port": 8080,
       "autoPort": true
+    },
+    {
+      "name": "hub",
+      "runtimeExecutable": "cmd",
+      "runtimeArgs": ["/c", "set HOUSE_KV_PATH=%TEMP%\\house-dev.kv&& deno run -A --unstable-kv cloud/main.ts"],
+      "port": 8000
     }
   ]
 }
