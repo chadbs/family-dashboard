@@ -419,6 +419,151 @@ async function importRecipe(rawUrl: string) {
   return extractRecipe(page.html, page.finalUrl);
 }
 
+/* ---------- voice ----------
+
+   The Bible game and the morning verse are read aloud to a four-year-old and
+   a two-year-old, and the browser's built-in speech sounds like a 1998 sat
+   nav. So we synthesise properly with ElevenLabs — but only once per line,
+   ever: every clip is cached in KV under a hash of its text and served from
+   there afterwards, which keeps a free account comfortably inside its monthly
+   allowance. The app's own lines are a fixed, small corpus.
+
+   If ELEVENLABS_API_KEY is not set, or the month's budget is spent, or the
+   upstream is unhappy, this hands back 204 and the client quietly falls back
+   to the browser voice. The feature is never load-bearing. */
+
+const VOICE_KEY = () => Deno.env.get("ELEVENLABS_API_KEY") || "";
+/* Rachel — warm, unhurried, the calmest of the stock voices. */
+const VOICE_ID = () => Deno.env.get("ELEVENLABS_VOICE_ID") || "21m00Tcm4TlvDq8ikWAM";
+/* flash v2.5 bills at half a credit per character, so a 10,000-credit free
+   month is ~20,000 characters. We stop well short of that and never spend a
+   character twice. */
+const VOICE_MODEL = "eleven_flash_v2_5";
+const VOICE_MONTHLY_CHARS = 9000;
+const VOICE_MAX_CHARS = 400;
+const CHUNK = 48 * 1024;
+
+async function sha256(s: string) {
+  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(s));
+  return Array.from(new Uint8Array(buf))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("")
+    .slice(0, 32);
+}
+
+function monthKey() {
+  const d = new Date();
+  return d.getUTCFullYear() + "-" + String(d.getUTCMonth() + 1).padStart(2, "0");
+}
+
+async function voiceUsed() {
+  const r = await kv.get<number>(["voice", "used", monthKey()]);
+  return typeof r.value === "number" ? r.value : 0;
+}
+
+async function voiceStatus() {
+  const used = await voiceUsed();
+  return {
+    enabled: !!VOICE_KEY(),
+    used,
+    cap: VOICE_MONTHLY_CHARS,
+    month: monthKey(),
+    model: VOICE_MODEL,
+  };
+}
+
+const AUDIO_HEADERS = {
+  "content-type": "audio/mpeg",
+  /* The text is the cache key, so a clip can never change. Let the phone and
+     the edge keep it for a year. */
+  "cache-control": "public, max-age=31536000, immutable",
+};
+
+async function cachedClip(hash: string) {
+  const meta = await kv.get<{ n: number }>(["voice", "clip", hash]);
+  if (!meta.value) return null;
+  const parts: Uint8Array[] = [];
+  for (let i = 0; i < meta.value.n; i++) {
+    const part = await kv.get<Uint8Array>(["voice", "clip", hash, i]);
+    if (!part.value) return null;
+    parts.push(part.value);
+  }
+  const total = parts.reduce((n, p) => n + p.length, 0);
+  const out = new Uint8Array(total);
+  let at = 0;
+  for (const p of parts) {
+    out.set(p, at);
+    at += p.length;
+  }
+  return out;
+}
+
+async function storeClip(hash: string, bytes: Uint8Array) {
+  const n = Math.ceil(bytes.length / CHUNK);
+  if (n > 10) return; /* far larger than anything we say; skip the cache */
+  for (let i = 0; i < n; i++) {
+    await kv.set(["voice", "clip", hash, i], bytes.slice(i * CHUNK, (i + 1) * CHUNK));
+  }
+  await kv.set(["voice", "clip", hash], { n });
+}
+
+/* One in-flight request per line, so a screen that asks twice while the first
+   is still being synthesised does not pay twice. */
+const voiceInFlight = new Map<string, Promise<Uint8Array | null>>();
+
+async function synthesise(text: string, hash: string): Promise<Uint8Array | null> {
+  const key = VOICE_KEY();
+  if (!key) return null;
+  const used = await voiceUsed();
+  if (used + text.length > VOICE_MONTHLY_CHARS) return null;
+
+  const res = await fetch(
+    "https://api.elevenlabs.io/v1/text-to-speech/" + VOICE_ID() + "?output_format=mp3_22050_32",
+    {
+      method: "POST",
+      headers: { "xi-api-key": key, "content-type": "application/json" },
+      body: JSON.stringify({
+        text,
+        model_id: VOICE_MODEL,
+        voice_settings: { stability: 0.4, similarity_boost: 0.75, style: 0.25, use_speaker_boost: true },
+      }),
+    }
+  );
+  if (!res.ok) {
+    console.warn("elevenlabs " + res.status + " " + (await res.text()).slice(0, 200));
+    return null;
+  }
+  const bytes = new Uint8Array(await res.arrayBuffer());
+  if (!bytes.length) return null;
+  await kv.set(["voice", "used", monthKey()], used + text.length);
+  await storeClip(hash, bytes);
+  return bytes;
+}
+
+async function say(raw: string): Promise<Response> {
+  const text = raw.trim().replace(/\s+/g, " ").slice(0, VOICE_MAX_CHARS);
+  if (!text) return new Response(null, { status: 204 });
+  const hash = await sha256(VOICE_ID() + "|" + VOICE_MODEL + "|" + text);
+
+  const hit = await cachedClip(hash);
+  if (hit) return new Response(hit, { headers: { ...AUDIO_HEADERS, "x-clip": "hit" } });
+
+  let job = voiceInFlight.get(hash);
+  if (!job) {
+    job = synthesise(text, hash).finally(() => voiceInFlight.delete(hash));
+    voiceInFlight.set(hash, job);
+  }
+  let bytes: Uint8Array | null = null;
+  try {
+    bytes = await job;
+  } catch (e) {
+    console.warn("voice failed: " + String((e as Error)?.message || e));
+  }
+  /* No key, no budget, or a bad day upstream: the client uses its own voice. */
+  if (!bytes) return new Response(null, { status: 204 });
+  return new Response(bytes, { headers: { ...AUDIO_HEADERS, "x-clip": "new" } });
+}
+
 /* ---------- the page ---------- */
 
 let pageCache: string | null = null;
@@ -515,6 +660,14 @@ async function handler(req: Request): Promise<Response> {
     } catch (e) {
       return json({ ok: false, error: String((e as Error)?.message || e) }, 200);
     }
+  }
+
+  /* The read-aloud voice. See the ---- voice ---- block above. */
+  if (p === "/api/say/status") {
+    return json(await voiceStatus());
+  }
+  if (p === "/api/say") {
+    return await say(url.searchParams.get("t") || "");
   }
 
   if (p === "/manifest.webmanifest") {

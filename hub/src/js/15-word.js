@@ -15,7 +15,7 @@
 
 const Voice = (function () {
   let cached = null;
-  let supported = typeof window !== "undefined" && "speechSynthesis" in window;
+  const supported = typeof window !== "undefined" && "speechSynthesis" in window;
 
   function score(v) {
     if (!/^en/i.test(v.lang || "")) return -1;
@@ -58,7 +58,7 @@ const Voice = (function () {
     } catch (e) { /* fine */ }
   }
 
-  function speak(text, opts) {
+  function browserSpeak(text, opts) {
     if (!supported) return false;
     const o = opts || {};
     try {
@@ -76,11 +76,114 @@ const Voice = (function () {
     }
   }
 
-  function hush() {
-    try { window.speechSynthesis.cancel(); } catch (e) { /* fine */ }
+  /* ---- the good voice ----
+     The hosted app can synthesise a line properly and hands back an mp3
+     (see /api/say in cloud/main.ts). It answers 204 when it can't, and then
+     we fall back to the browser. Clips are memoised here as well as cached
+     on the server, so a repeated prompt costs nothing at all. */
+
+  let server = null;     /* null = untried, true/false once known */
+  let el = null;         /* one <audio>, unlocked by the first real tap */
+  let unlocked = false;
+  let lastAsked = "";
+  const clips = new Map();
+  const SILENCE =
+    "data:audio/mpeg;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA//tQxAADB8AhSmxhIIEVCSiJrDCQBTcu3UrAIwUdkRgQbFAZC1CQEwTJ9mjRvBA4UOLD8nKVOWfh+UlK3z/177OXOle0KVK5nnzXPmveWjNORFllsbmoxDVUlM7A//tQxAgAA4AhSmxhIIEVCSiJrDCQBTcu3UrAIwUdkRgQbFAZC1CQEwTJ9mjRvBA4UOLD8nKVOWfh+UlK3z/177OXOle0KVK5nnzXPmveWjNORFllsbmoxDVU";
+
+  function audio() {
+    if (el) return el;
+    try {
+      el = new Audio();
+      el.preload = "auto";
+    } catch (e) {
+      el = null;
+    }
+    return el;
   }
 
-  return { speak: speak, hush: hush, pick: pick, supported: supported };
+  /* Phones refuse to play audio that no finger started. The game is nothing
+     but taps, so we spend the very first one priming a silent clip; every
+     later play reuses that same element and is allowed through. */
+  function unlock() {
+    if (unlocked) return;
+    const a = audio();
+    if (!a) return;
+    unlocked = true;
+    try {
+      a.src = SILENCE;
+      const p = a.play();
+      if (p && p.catch) p.catch(function () { /* it will work on a later tap */ });
+    } catch (e) { /* fine */ }
+  }
+  if (typeof document !== "undefined") {
+    ["pointerdown", "touchstart", "click"].forEach(function (ev) {
+      document.addEventListener(ev, unlock, { once: true, capture: true, passive: true });
+    });
+  }
+
+  function url(text) {
+    return "/api/say?t=" + encodeURIComponent(text);
+  }
+
+  /* Ask for a line ahead of time so it plays the instant it is wanted. */
+  function prefetch(text) {
+    if (server === false || !text) return;
+    const t = String(text).trim();
+    if (!t || clips.has(t)) return;
+    clips.set(
+      t,
+      fetch(url(t))
+        .then(function (r) {
+          if (r.status === 204) { server = false; return null; }
+          if (!r.ok) return null;
+          server = true;
+          return r.blob().then(function (b) { return URL.createObjectURL(b); });
+        })
+        .catch(function () { return null; })
+    );
+  }
+
+  function speak(text, opts) {
+    const t = String(text || "").trim();
+    if (!t) return false;
+    hush();
+    if (server === false) return browserSpeak(t, opts);
+
+    prefetch(t);
+    const want = t;
+    clips.get(t).then(function (src) {
+      /* Something else started talking while this was loading. */
+      if (want !== lastAsked) return;
+      const a = audio();
+      if (!src || !a) return void browserSpeak(t, opts);
+      try {
+        a.src = src;
+        a.playbackRate = (opts && opts.rate) || 1;
+        const p = a.play();
+        if (p && p.catch) p.catch(function () { browserSpeak(t, opts); });
+      } catch (e) {
+        browserSpeak(t, opts);
+      }
+    });
+    lastAsked = t;
+    return true;
+  }
+
+  function hush() {
+    lastAsked = "";
+    try { window.speechSynthesis.cancel(); } catch (e) { /* fine */ }
+    try { if (el) { el.pause(); el.currentTime = 0; } } catch (e) { /* fine */ }
+  }
+
+  return {
+    speak: speak,
+    hush: hush,
+    prefetch: prefetch,
+    unlock: unlock,
+    pick: pick,
+    supported: supported,
+    server: function () { return server; },
+  };
 })();
 
 const Word = (function () {
