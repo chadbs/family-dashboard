@@ -442,6 +442,11 @@ const VOICE_WANTED = [
   "rachel", "sarah", "lily", "alice", "jessica", "matilda", "bella",
   "aria", "charlotte", "dorothy", "elli", "freya", "grace",
 ];
+/* Rachel, the long-standing stock voice. Used when the key is scoped too
+   narrowly to list the account's own voices — a key only needs text-to-
+   speech permission to read to the girls, and asking for more than that
+   would be asking for trouble. */
+const VOICE_FALLBACK = "21m00Tcm4TlvDq8ikWAM";
 let voiceIdCache = "";
 let voiceNameCache = "";
 let voiceError = "";
@@ -458,14 +463,18 @@ async function resolveVoice(): Promise<string> {
     });
     if (!res.ok) {
       voiceError = "voices " + res.status + ": " + (await res.text()).slice(0, 160);
-      return "";
+      voiceIdCache = VOICE_FALLBACK;
+      voiceNameCache = "Rachel (default)";
+      return voiceIdCache;
     }
     const data = await res.json();
     const list: Array<{ voice_id?: string; name?: string; labels?: Record<string, string> }> =
       Array.isArray(data?.voices) ? data.voices : [];
     if (!list.length) {
       voiceError = "the account has no voices";
-      return "";
+      voiceIdCache = VOICE_FALLBACK;
+      voiceNameCache = "Rachel (default)";
+      return voiceIdCache;
     }
     let best = list[0];
     let bestRank = 1e6;
@@ -479,7 +488,9 @@ async function resolveVoice(): Promise<string> {
     return voiceIdCache;
   } catch (e) {
     voiceError = "voices: " + String((e as Error)?.message || e);
-    return "";
+    voiceIdCache = VOICE_FALLBACK;
+    voiceNameCache = "Rachel (default)";
+    return voiceIdCache;
   }
 }
 /* flash v2.5 bills at half a credit per character, so a 10,000-credit free
@@ -601,9 +612,8 @@ async function synthesise(text: string, hash: string): Promise<Uint8Array | null
     if (!res.ok) {
       voiceError = model + " " + res.status + ": " + (await res.text()).slice(0, 160);
       console.warn("elevenlabs " + voiceError);
-      /* A refused voice is worth re-resolving once; a refused model just
-         means try the next one. */
-      if (res.status === 400 && !Deno.env.get("ELEVENLABS_VOICE_ID")) voiceIdCache = "";
+      /* A permissions problem will not fix itself by trying another model. */
+      if (res.status === 401 || res.status === 403) return null;
       continue;
     }
     const bytes = new Uint8Array(await res.arrayBuffer());
