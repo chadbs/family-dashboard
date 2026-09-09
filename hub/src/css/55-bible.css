@@ -44,6 +44,22 @@
 .bg-kids { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; width: 100%; margin-top: 4px; }
 .bg-kids[data-n="1"] { grid-template-columns: minmax(0, 220px); justify-content: center; }
 .bg-kids[data-n="2"] { grid-template-columns: 1fr 1fr; }
+.bg-kid-wrap { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.bg-kid-wrap .bg-kid { flex: 1; }
+/* The difficulty chip under each child. Tap to swap Little <-> Big. */
+.bg-level {
+  display: flex; align-items: center; justify-content: center; gap: 3px;
+  padding: 5px 8px;
+  border-radius: 999px;
+  border: 1.5px solid var(--line);
+  background: var(--surface);
+  color: var(--ink-3);
+  font-size: 0.7rem; font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.bg-level svg { width: 13px; height: 13px; }
+.bg-level[data-level="big"] { color: var(--delft); border-color: var(--delft); background: var(--delft-soft); }
 .bg-kid {
   display: flex; flex-direction: column; align-items: center; gap: 3px;
   padding: 16px 8px 12px;
@@ -63,23 +79,34 @@
 .bg-kid-name { font-family: var(--serif); font-size: 1.25rem; }
 .bg-kid-sub { font-size: 0.7rem; color: var(--ink-3); font-weight: 650; letter-spacing: 0.02em; text-transform: uppercase; }
 
-/* Story trail: the ten stories in rotation, today lit, tomorrow teased. */
+/* Story trail: the ten stories in rotation. Today is lit, and any of them
+   can be tapped to play it now. */
 .bg-trail { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
+.bg-trail-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 .bg-trail-row { display: flex; gap: 6px; overflow-x: auto; padding: 4px 2px 8px; scrollbar-width: none; }
 .bg-trail-row::-webkit-scrollbar { display: none; }
 .bg-trail-stop {
   flex: 0 0 auto;
   display: flex; flex-direction: column; align-items: center; gap: 3px;
-  width: 54px; padding: 8px 0 6px;
+  width: 62px; padding: 8px 2px 6px;
   border-radius: 14px;
   border: 1.5px solid var(--line);
   background: var(--surface);
-  opacity: 0.55;
+  color: var(--ink-3);
+  opacity: 0.62;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: transform 0.14s cubic-bezier(0.2, 0.8, 0.3, 1.3), opacity 0.15s ease, border-color 0.15s ease;
 }
-.bg-trail-stop.is-today { opacity: 1; border-color: var(--delft); background: var(--delft-soft); transform: scale(1.06); }
-.bg-trail-stop.is-next { opacity: 0.9; border-style: dashed; }
+.bg-trail-stop:hover { opacity: 1; border-color: var(--delft); }
+.bg-trail-stop:active { transform: scale(0.94); }
+.bg-trail-stop.is-today { opacity: 0.95; border-style: dashed; }
+.bg-trail-stop.is-now { opacity: 1; border-color: var(--delft); border-style: solid; background: var(--delft-soft); color: var(--delft); transform: scale(1.06); }
 .bg-trail-icon { font-size: 1.5rem; line-height: 1; }
-.bg-trail-tag { font-size: 0.58rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--delft); }
+.bg-trail-tag {
+  font-size: 0.55rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em;
+  max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
 
 /* In play */
 .bg-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
@@ -116,6 +143,9 @@
 .bg-grid { display: grid; gap: 10px; }
 .bg-grid-2 { grid-template-columns: 1fr 1fr; }
 .bg-grid-3 { grid-template-columns: 1fr 1fr 1fr; }
+.bg-grid-4 { grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.bg-grid-4 .bg-tile { min-height: 78px; border-bottom-width: 4px; }
+.bg-grid-4 .bg-glyph { font-size: 2.2rem; }
 
 .bg-tile {
   min-height: 104px;
@@ -173,6 +203,42 @@
 .bg-counter-of { font-size: 1rem; color: var(--ink-3); }
 .bg-bignum { font-size: 4rem; animation: bg-pop 0.35s ease; }
 
+/* ---- the thinking rounds (the big level) ---- */
+
+/* A wrong tile at the big level is taken off the board. */
+.bg-dead { opacity: 0.3; filter: grayscale(1); border-bottom-width: 2px; }
+.bg-dead .bg-glyph { transform: scale(0.86); }
+
+/* Smallest to biggest: the rungs fill in as she gets them right. */
+.bg-ladder { display: flex; align-items: flex-end; justify-content: center; gap: 10px; padding: 2px 0 6px; }
+.bg-rung {
+  display: grid; place-items: center;
+  width: 52px; border-radius: 14px;
+  border: 2px dashed var(--line-2);
+  background: var(--surface-2);
+  color: var(--ink-3);
+  font-weight: 700;
+}
+.bg-rung:nth-child(1) { height: 44px; }
+.bg-rung:nth-child(2) { height: 56px; }
+.bg-rung:nth-child(3) { height: 70px; }
+.bg-rung.is-on { border-style: solid; border-color: var(--leaf); background: var(--leaf-soft); animation: bg-pop 0.4s cubic-bezier(0.2, 0.8, 0.3, 1.4); }
+.bg-rung-glyph { font-size: 1.7rem; line-height: 1; }
+.bg-rung:not(.is-on) .bg-rung-glyph { font-size: 1.1rem; font-family: var(--serif); }
+
+/* Which side has more: two clusters, counted by eye. */
+.bg-many { min-height: 150px; padding: 12px 8px; }
+.bg-many-wrap { display: flex; flex-wrap: wrap; align-content: center; justify-content: center; gap: 4px; max-width: 100%; }
+.bg-many-glyph { font-size: 1.9rem; line-height: 1; }
+
+/* Remember what was there. */
+.bg-peeking { animation: bg-look 0.5s ease; }
+@keyframes bg-look { from { transform: scale(0.94); opacity: 0.5; } }
+.bg-quiet { opacity: 0.45; }
+.bg-hole { border-style: dashed; border-color: var(--amber); animation: bg-breathe 1.6s ease-in-out infinite; }
+.bg-choices { display: flex; gap: 10px; justify-content: center; padding-top: 4px; border-top: 1px dashed var(--line); margin-top: 4px; }
+.bg-answer { flex: 1; min-height: 96px; max-width: 130px; }
+
 .bg-sort-item { text-align: center; font-size: 4.6rem; line-height: 1; padding: 6px 0 2px; transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.3, 1.2); }
 .bg-sort-go[data-to="sea"] { transform: translateX(-30%) scale(0.9); }
 .bg-sort-go[data-to="land"] { transform: translateX(30%) scale(0.9); }
@@ -186,6 +252,12 @@
 @keyframes bg-fall { to { transform: translateY(520px) rotate(220deg); opacity: 0; } }
 .bg-done-icon { font-size: 4.4rem; line-height: 1; animation: bg-pop 0.6s cubic-bezier(0.2, 0.8, 0.3, 1.5); filter: drop-shadow(0 8px 12px rgba(20, 33, 43, 0.2)); }
 .bg-done-title { font-family: var(--serif); font-size: 2rem; line-height: 1.1; }
+.bg-perfect {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 12px; border-radius: 999px;
+  background: var(--leaf-soft); color: var(--leaf);
+  font-size: 0.78rem; font-weight: 700; letter-spacing: 0.02em;
+}
 .bg-done-verse { font-family: var(--serif); font-size: 1.12rem; line-height: 1.4; color: var(--ink-2); margin-top: 6px; max-width: 34ch; text-wrap: pretty; }
 .bg-done-actions { width: 100%; margin-top: 10px; }
 .bg-big-btn { min-height: 54px; font-size: 1.05rem; }

@@ -472,6 +472,15 @@ async function voiceStatus() {
   };
 }
 
+/* KV hands bytes back over a generic buffer type that Response will not
+   accept; one copy into a plain array settles it. The clips are tens of
+   kilobytes, so this costs nothing worth measuring. */
+function audioBody(bytes: Uint8Array) {
+  const copy = new Uint8Array(bytes.length);
+  copy.set(bytes);
+  return copy;
+}
+
 const AUDIO_HEADERS = {
   "content-type": "audio/mpeg",
   /* The text is the cache key, so a clip can never change. Let the phone and
@@ -546,7 +555,7 @@ async function say(raw: string): Promise<Response> {
   const hash = await sha256(VOICE_ID() + "|" + VOICE_MODEL + "|" + text);
 
   const hit = await cachedClip(hash);
-  if (hit) return new Response(hit, { headers: { ...AUDIO_HEADERS, "x-clip": "hit" } });
+  if (hit) return new Response(audioBody(hit), { headers: { ...AUDIO_HEADERS, "x-clip": "hit" } });
 
   let job = voiceInFlight.get(hash);
   if (!job) {
@@ -561,7 +570,7 @@ async function say(raw: string): Promise<Response> {
   }
   /* No key, no budget, or a bad day upstream: the client uses its own voice. */
   if (!bytes) return new Response(null, { status: 204 });
-  return new Response(bytes, { headers: { ...AUDIO_HEADERS, "x-clip": "new" } });
+  return new Response(audioBody(bytes), { headers: { ...AUDIO_HEADERS, "x-clip": "new" } });
 }
 
 /* ---------- the page ---------- */

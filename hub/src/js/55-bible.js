@@ -1,41 +1,96 @@
 /* ============================================================
-   Bible — a little game for Addison (4) and Sophie (2).
+   Bible — the game for Addison (4) and Sophie (2).
 
-   Each day has a story: Creation, Noah, David, Jonah, the Good Shepherd,
+   Each story gets a day: Creation, Noah, David, Jonah, the Good Shepherd,
    Daniel, the loaves and fishes, baby Moses, the fruit of the Spirit,
-   Jesus and the children. Five quick rounds, all touch: tap the right
-   picture, find the one that is hiding, tap them all, count them out,
-   match the pairs, or choose where a creature belongs. Every prompt is
-   read aloud, because one of the players cannot read yet.
+   Jesus and the children. Everything is read aloud and driven by touch,
+   because one of the players cannot read and neither of them can type.
 
-   Design rules, in the order they matter for a two-year-old:
-     - nothing is ever a dead end: a miss wobbles, says "try again", and
-       the right tile starts to nudge if nobody finds it for a while;
-     - every hit is loud and bright: a burst, a chime, a word of praise;
-     - rounds are short and the board changes shape each time, so five
-       rounds feel like five different games;
-     - no stars, no scores, no timers. Finishing the story is the prize,
-       and tomorrow there is a new one.
+   TWO LEVELS, because a two-year-old and a four-year-old are not playing
+   the same game:
 
-   The day's story and its rounds come from the date, so the wall and
-   both phones agree on what "today's game" is.
+     Little (Sophie)  five rounds, four big tiles, count to five, a hint
+                      that arrives quickly, no penalty for a wrong tap.
+     Big (Addison)    six rounds, six tiles, twelve-square boards, four
+                      pairs, counting past five — and four round types she
+                      has to actually think about: put them in order by
+                      size, remember what was hiding, spot the one that
+                      does not belong, and judge which side has more. A
+                      wrong tile is taken off the board rather than just
+                      wobbling, so guessing runs out but the round always
+                      converges. Hints wait much longer.
+
+   Design rules, in the order they matter:
+     - never a dead end. Every round is winnable and the nudge escalates.
+     - the difficulty ramps inside a session: the first round is a gimme,
+       the last one is the real thing.
+     - no two rounds of the same shape in a row.
+     - a hit is loud, bright and instant. A miss is gentle and informative.
+     - no stars, no score, no timer. Finishing the story is the prize, and
+       a clean run is quietly acknowledged.
+
+   The day's story and its boards come from the date, so the wall and both
+   phones agree — but the story trail at the bottom is tappable, so any
+   story can be played on any day.
    ============================================================ */
 
 const BibleGame = (function () {
-  /* ---------- the animals, so the prompts can say their names ---------- */
+  /* ---------- the animal kingdom ----------
+     `where` places it for the odd-one-out round, `size` orders it for the
+     smallest-to-biggest round, `name` lets the prompts speak it aloud.
+     "both" lives in the water and on the land, so it is never the answer
+     to a habitat question. */
 
-  const NAMES = {
-    "\u{1F430}": "bunny", "\u{1F422}": "turtle", "\u{1F992}": "giraffe", "\u{1F418}": "elephant",
-    "\u{1F981}": "lion", "\u{1F42F}": "tiger", "\u{1F43B}": "bear", "\u{1F411}": "sheep",
-    "\u{1F410}": "goat", "\u{1F415}": "dog", "\u{1F431}": "cat", "\u{1F438}": "frog",
-    "\u{1F986}": "duck", "\u{1F426}": "bird", "\u{1F54A}️": "dove", "\u{1F41F}": "fish",
-    "\u{1F40B}": "whale", "\u{1F419}": "octopus", "\u{1F420}": "fish", "\u{1F980}": "crab",
-    "\u{1F41D}": "bee", "\u{1F98B}": "butterfly", "\u{1F41C}": "ant", "\u{1F401}": "mouse",
-    "\u{1F42E}": "cow", "\u{1F437}": "pig", "\u{1F414}": "chicken", "\u{1F434}": "horse",
-    "\u{1F427}": "penguin", "\u{1F98C}": "deer", "\u{1F9A9}": "flamingo", "\u{1F40C}": "snail",
+  const ANIMALS = {
+    "\u{1F430}": { name: "bunny", where: "land", size: 2 },
+    "\u{1F422}": { name: "turtle", where: "both", size: 2 },
+    "\u{1F992}": { name: "giraffe", where: "land", size: 6 },
+    "\u{1F418}": { name: "elephant", where: "land", size: 7 },
+    "\u{1F981}": { name: "lion", where: "land", size: 5 },
+    "\u{1F42F}": { name: "tiger", where: "land", size: 5 },
+    "\u{1F43B}": { name: "bear", where: "land", size: 5 },
+    "\u{1F411}": { name: "sheep", where: "land", size: 4 },
+    "\u{1F410}": { name: "goat", where: "land", size: 4 },
+    "\u{1F415}": { name: "dog", where: "land", size: 3 },
+    "\u{1F431}": { name: "cat", where: "land", size: 3 },
+    "\u{1F438}": { name: "frog", where: "both", size: 1 },
+    "\u{1F986}": { name: "duck", where: "both", size: 2 },
+    "\u{1F426}": { name: "bird", where: "land", size: 1 },
+    "\u{1F54A}️": { name: "dove", where: "land", size: 1 },
+    "\u{1F41F}": { name: "fish", where: "sea", size: 2 },
+    "\u{1F40B}": { name: "whale", where: "sea", size: 8 },
+    "\u{1F419}": { name: "octopus", where: "sea", size: 4 },
+    "\u{1F980}": { name: "crab", where: "sea", size: 2 },
+    "\u{1F41A}": { name: "shell", where: "sea", size: 1 },
+    "\u{1F41D}": { name: "bee", where: "land", size: 1 },
+    "\u{1F98B}": { name: "butterfly", where: "land", size: 1 },
+    "\u{1F401}": { name: "mouse", where: "land", size: 1 },
+    "\u{1F42E}": { name: "cow", where: "land", size: 5 },
+    "\u{1F437}": { name: "pig", where: "land", size: 4 },
+    "\u{1F414}": { name: "chicken", where: "land", size: 2 },
+    "\u{1F434}": { name: "horse", where: "land", size: 6 },
+    "\u{1F98C}": { name: "deer", where: "land", size: 4 },
+    "\u{1F406}": { name: "leopard", where: "land", size: 5 },
+    "\u{1F407}": { name: "rabbit", where: "land", size: 2 },
+    "\u{1F420}": { name: "little fish", where: "sea", size: 1 },
   };
 
-  /* ---------- the stories ---------- */
+  function nameOf(glyph) {
+    const a = ANIMALS[glyph];
+    return a ? a.name : "";
+  }
+  function plural(glyph) {
+    const n = nameOf(glyph);
+    if (!n) return "";
+    if (n === "sheep" || n === "fish" || n === "little fish" || n === "deer") return n;
+    if (/[^aeiou]y$/.test(n)) return n.slice(0, -1) + "ies";   /* bunny -> bunnies */
+    if (/(s|sh|ch|x|z)$/.test(n)) return n + "es";             /* octopus -> octopuses */
+    return n + "s";
+  }
+
+  /* ---------- the stories ----------
+     `cast` is what the procedural rounds draw on, so a story's harder
+     rounds are still about that story's animals. */
 
   const STORIES = [
     {
@@ -45,17 +100,18 @@ const BibleGame = (function () {
       verse: "In the beginning God created the heaven and the earth.",
       icon: "\u{1F30D}",
       sky: "day",
+      cast: ["\u{1F430}", "\u{1F422}", "\u{1F992}", "\u{1F41F}", "\u{1F426}", "\u{1F418}", "\u{1F98B}"],
       rounds: [
         { type: "pick", prompt: "God made the sun to light the day. Tap the sun!", answer: "☀️", others: ["\u{1F31A}", "\u{1F41F}", "\u{1F333}"] },
         { type: "pick", prompt: "God made the moon to shine at night. Tap the moon!", answer: "\u{1F319}", others: ["☀️", "\u{1F41D}", "\u{1F338}"] },
-        { type: "tapall", prompt: "God made all the stars. Tap every star!", target: "⭐", filler: ["☁️", "\u{1F319}"], count: 5, total: 9 },
+        { type: "tapall", prompt: "God made all the stars. Tap every star!", target: "⭐", filler: ["☁️", "\u{1F319}"], count: 5 },
         { type: "pick", prompt: "God made the turtle, slow and steady. Tap the turtle!", answer: "\u{1F422}", others: ["\u{1F430}", "\u{1F992}", "\u{1F33B}"] },
         { type: "pick", prompt: "God made the bunny with long ears. Tap the bunny!", answer: "\u{1F430}", others: ["\u{1F422}", "\u{1F418}", "\u{1F33A}"] },
         { type: "pick", prompt: "God made the giraffe with a long neck. Tap the giraffe!", answer: "\u{1F992}", others: ["\u{1F430}", "\u{1F438}", "\u{1F41F}"] },
         { type: "sort", prompt: "Where does the whale live?", item: "\u{1F40B}", answer: "sea" },
         { type: "sort", prompt: "Where does the bunny live?", item: "\u{1F430}", answer: "land" },
-        { type: "count", prompt: "God rested on day seven. Tap seven flowers!", item: "\u{1F33C}", n: 7 },
-        { type: "pairs", prompt: "Match the animals God made!", items: ["\u{1F430}", "\u{1F422}", "\u{1F992}"] },
+        { type: "count", prompt: "God rested on the seventh day. Tap seven flowers!", item: "\u{1F33C}", n: 7 },
+        { type: "pairs", prompt: "Match the animals God made!", items: ["\u{1F430}", "\u{1F422}", "\u{1F992}", "\u{1F98B}"] },
       ],
     },
     {
@@ -65,15 +121,15 @@ const BibleGame = (function () {
       verse: "There went in two and two unto Noah into the ark.",
       icon: "\u{1F6A2}",
       sky: "rain",
+      cast: ["\u{1F992}", "\u{1F422}", "\u{1F430}", "\u{1F42F}", "\u{1F43B}", "\u{1F418}", "\u{1F54A}️"],
       rounds: [
-        { type: "pairs", prompt: "The animals came two by two. Match the pairs!", items: ["\u{1F992}", "\u{1F422}", "\u{1F430}"] },
+        { type: "pairs", prompt: "The animals came two by two. Match the pairs!", items: ["\u{1F992}", "\u{1F422}", "\u{1F430}", "\u{1F42F}"] },
         { type: "pick", prompt: "Noah built a big boat. Tap the boat!", answer: "\u{1F6A2}", others: ["\u{1F697}", "\u{1F3E0}", "\u{1F6B2}"] },
         { type: "count", prompt: "Two giraffes walked on. Tap two giraffes!", item: "\u{1F992}", n: 2 },
         { type: "count", prompt: "Two turtles crawled on. Tap two turtles!", item: "\u{1F422}", n: 2 },
         { type: "pick", prompt: "After the rain God sent a rainbow. Tap the rainbow!", answer: "\u{1F308}", others: ["☁️", "⛈️", "❄️"] },
-        { type: "tapall", prompt: "It rained and rained. Tap every raindrop!", target: "\u{1F4A7}", filler: ["☀️", "\u{1F33B}"], count: 5, total: 9 },
-        { type: "find", prompt: "A dove brought back a leaf. Find the dove!", target: "\u{1F54A}️", filler: "☁️", size: 9 },
-        { type: "pairs", prompt: "Two of every kind! Match them up!", items: ["\u{1F42F}", "\u{1F43B}", "\u{1F418}"] },
+        { type: "tapall", prompt: "It rained and rained. Tap every raindrop!", target: "\u{1F4A7}", filler: ["☀️", "\u{1F33B}"], count: 5 },
+        { type: "find", prompt: "A dove brought back a leaf. Find the dove!", target: "\u{1F54A}️", filler: "☁️" },
       ],
     },
     {
@@ -83,15 +139,15 @@ const BibleGame = (function () {
       verse: "I come to thee in the name of the LORD of hosts.",
       icon: "\u{1F411}",
       sky: "day",
+      cast: ["\u{1F411}", "\u{1F401}", "\u{1F992}", "\u{1F410}", "\u{1F415}", "\u{1F98C}"],
       rounds: [
         { type: "count", prompt: "David picked five smooth stones. Tap five stones!", item: "\u{1FAA8}", n: 5 },
         { type: "pick", prompt: "David was a shepherd boy. Tap the sheep!", answer: "\u{1F411}", others: ["\u{1F437}", "\u{1F414}", "\u{1F431}"] },
-        { type: "find", prompt: "One little sheep wandered off. Find the sheep!", target: "\u{1F411}", filler: "\u{1F33F}", size: 9 },
+        { type: "find", prompt: "One little sheep wandered off. Find the sheep!", target: "\u{1F411}", filler: "\u{1F33F}" },
         { type: "pick", prompt: "Goliath was very tall, like a giraffe. Tap the giraffe!", answer: "\u{1F992}", others: ["\u{1F430}", "\u{1F422}", "\u{1F401}"] },
         { type: "pick", prompt: "David was small, like a little mouse. Tap the mouse!", answer: "\u{1F401}", others: ["\u{1F992}", "\u{1F418}", "\u{1F40B}"] },
-        { type: "tapall", prompt: "David trusted God. Tap every heart!", target: "❤️", filler: ["\u{1FAA8}", "\u{1F33F}"], count: 4, total: 9 },
+        { type: "tapall", prompt: "David trusted God. Tap every heart!", target: "❤️", filler: ["\u{1FAA8}", "\u{1F33F}"], count: 4 },
         { type: "pick", prompt: "David played the harp for the king. Tap the harp!", answer: "\u{1FA95}", others: ["\u{1F941}", "\u{1F3BA}", "\u{1F3B8}"] },
-        { type: "sort", prompt: "Who is bigger?", item: "\u{1F992}", answer: "land", labels: { sea: "Bunny \u{1F430}", land: "Giraffe \u{1F992}" } },
       ],
     },
     {
@@ -101,15 +157,15 @@ const BibleGame = (function () {
       verse: "I cried by reason of mine affliction unto the LORD, and he heard me.",
       icon: "\u{1F40B}",
       sky: "sea",
+      cast: ["\u{1F40B}", "\u{1F41F}", "\u{1F419}", "\u{1F980}", "\u{1F422}", "\u{1F41A}"],
       rounds: [
         { type: "pick", prompt: "A big fish swallowed Jonah. Tap the big fish!", answer: "\u{1F40B}", others: ["\u{1F41F}", "\u{1F980}", "\u{1F422}"] },
         { type: "sort", prompt: "Where does the big fish live?", item: "\u{1F40B}", answer: "sea" },
-        { type: "find", prompt: "Jonah got on a boat. Find the boat!", target: "⛵", filler: "\u{1F30A}", size: 9 },
-        { type: "count", prompt: "Jonah was inside three days. Tap three fish!", item: "\u{1F41F}", n: 3 },
-        { type: "tapall", prompt: "The sea was stormy. Tap every wave!", target: "\u{1F30A}", filler: ["⛵", "\u{1F41F}"], count: 5, total: 9 },
+        { type: "find", prompt: "Jonah got on a boat. Find the boat!", target: "⛵", filler: "\u{1F30A}" },
+        { type: "count", prompt: "Jonah was inside for three days. Tap three fish!", item: "\u{1F41F}", n: 3 },
+        { type: "tapall", prompt: "The sea was stormy. Tap every wave!", target: "\u{1F30A}", filler: ["⛵", "\u{1F41F}"], count: 5 },
         { type: "pick", prompt: "Jonah prayed, and God heard him. Tap the praying hands!", answer: "\u{1F64F}", others: ["\u{1F44B}", "\u{1F44F}", "✌️"] },
-        { type: "sort", prompt: "Where does a sea turtle swim?", item: "\u{1F422}", answer: "sea" },
-        { type: "pairs", prompt: "Match the sea creatures!", items: ["\u{1F40B}", "\u{1F419}", "\u{1F422}"] },
+        { type: "pairs", prompt: "Match the sea creatures!", items: ["\u{1F40B}", "\u{1F419}", "\u{1F422}", "\u{1F980}"] },
       ],
     },
     {
@@ -119,14 +175,15 @@ const BibleGame = (function () {
       verse: "The LORD is my shepherd; I shall not want.",
       icon: "\u{1F411}",
       sky: "meadow",
+      cast: ["\u{1F411}", "\u{1F430}", "\u{1F98C}", "\u{1F410}", "\u{1F415}", "\u{1F98B}"],
       rounds: [
-        { type: "find", prompt: "One sheep is lost. Find the sheep!", target: "\u{1F411}", filler: "\u{1F33F}", size: 9 },
+        { type: "find", prompt: "One sheep is lost. Find the sheep!", target: "\u{1F411}", filler: "\u{1F33F}" },
         { type: "count", prompt: "The shepherd counts his sheep. Tap four sheep!", item: "\u{1F411}", n: 4 },
-        { type: "tapall", prompt: "Bring every sheep home. Tap all the sheep!", target: "\u{1F411}", filler: ["\u{1F33F}", "\u{1F332}"], count: 5, total: 9 },
+        { type: "tapall", prompt: "Bring every sheep home. Tap all the sheep!", target: "\u{1F411}", filler: ["\u{1F33F}", "\u{1F332}"], count: 5 },
         { type: "pick", prompt: "The shepherd leads them to water. Tap the water!", answer: "\u{1F4A7}", others: ["\u{1F525}", "\u{1FAA8}", "\u{1F335}"] },
         { type: "pick", prompt: "A bunny hopped by the flock. Tap the bunny!", answer: "\u{1F430}", others: ["\u{1F411}", "\u{1F410}", "\u{1F415}"] },
         { type: "sort", prompt: "Is a sheep gentle or scary?", item: "\u{1F411}", answer: "land", labels: { sea: "Scary \u{1F43A}", land: "Gentle \u{1F411}" } },
-        { type: "pairs", prompt: "Match the meadow friends!", items: ["\u{1F411}", "\u{1F430}", "\u{1F98C}"] },
+        { type: "pairs", prompt: "Match the meadow friends!", items: ["\u{1F411}", "\u{1F430}", "\u{1F98C}", "\u{1F98B}"] },
       ],
     },
     {
@@ -136,14 +193,15 @@ const BibleGame = (function () {
       verse: "Suffer the little children to come unto me, and forbid them not.",
       icon: "\u{1F476}",
       sky: "day",
+      cast: ["\u{1F430}", "\u{1F431}", "\u{1F415}", "\u{1F98B}", "\u{1F426}", "\u{1F422}"],
       rounds: [
-        { type: "tapall", prompt: "Jesus loves every child. Tap all the children!", target: "\u{1F467}", filler: ["\u{1F333}", "\u{1F33C}"], count: 5, total: 9 },
+        { type: "tapall", prompt: "Jesus loves every child. Tap all the children!", target: "\u{1F467}", filler: ["\u{1F333}", "\u{1F33C}"], count: 5 },
         { type: "pick", prompt: "Jesus loves you! Tap the heart!", answer: "❤️", others: ["⭐", "\u{1F338}", "\u{1F31E}"] },
         { type: "count", prompt: "Tap three hearts for Jesus!", item: "\u{1F49B}", n: 3 },
-        { type: "find", prompt: "One child is hiding. Find the little one!", target: "\u{1F476}", filler: "\u{1F33B}", size: 9 },
+        { type: "find", prompt: "One child is hiding. Find the little one!", target: "\u{1F476}", filler: "\u{1F33B}" },
         { type: "pick", prompt: "We can talk to Jesus in prayer. Tap the praying hands!", answer: "\u{1F64F}", others: ["\u{1F44B}", "\u{1F91D}", "\u{1F44D}"] },
         { type: "sort", prompt: "Does Jesus love little ones?", item: "\u{1F476}", answer: "land", labels: { sea: "No \u{1F614}", land: "Yes! ❤️" } },
-        { type: "pairs", prompt: "Match the happy faces!", items: ["\u{1F600}", "\u{1F60A}", "\u{1F970}"] },
+        { type: "pairs", prompt: "Match the happy faces!", items: ["\u{1F600}", "\u{1F60A}", "\u{1F970}", "\u{1F917}"] },
       ],
     },
     {
@@ -153,14 +211,15 @@ const BibleGame = (function () {
       verse: "My God hath sent his angel, and hath shut the lions' mouths.",
       icon: "\u{1F981}",
       sky: "night",
+      cast: ["\u{1F981}", "\u{1F42F}", "\u{1F406}", "\u{1F431}", "\u{1F401}", "\u{1F430}"],
       rounds: [
         { type: "pick", prompt: "Daniel was put in with the lions. Tap the lion!", answer: "\u{1F981}", others: ["\u{1F42E}", "\u{1F430}", "\u{1F437}"] },
         { type: "count", prompt: "The lions stayed quiet. Tap three lions!", item: "\u{1F981}", n: 3 },
-        { type: "find", prompt: "God sent an angel. Find the angel!", target: "\u{1F47C}", filler: "\u{1F981}", size: 9 },
+        { type: "find", prompt: "God sent an angel. Find the angel!", target: "\u{1F47C}", filler: "\u{1F981}" },
         { type: "pick", prompt: "Daniel prayed three times a day. Tap the praying hands!", answer: "\u{1F64F}", others: ["\u{1F44F}", "\u{1F919}", "\u{1F44B}"] },
-        { type: "tapall", prompt: "Daniel was safe all night. Tap every star!", target: "⭐", filler: ["\u{1F981}", "\u{1F319}"], count: 4, total: 9 },
+        { type: "tapall", prompt: "Daniel was safe all night. Tap every star!", target: "⭐", filler: ["\u{1F981}", "\u{1F319}"], count: 4 },
         { type: "sort", prompt: "Where does a lion live?", item: "\u{1F981}", answer: "land" },
-        { type: "pairs", prompt: "Match the big cats!", items: ["\u{1F981}", "\u{1F42F}", "\u{1F406}"] },
+        { type: "pairs", prompt: "Match the big cats!", items: ["\u{1F981}", "\u{1F42F}", "\u{1F406}", "\u{1F431}"] },
       ],
     },
     {
@@ -170,14 +229,15 @@ const BibleGame = (function () {
       verse: "And they did all eat, and were filled.",
       icon: "\u{1F35E}",
       sky: "meadow",
+      cast: ["\u{1F41F}", "\u{1F420}", "\u{1F426}", "\u{1F430}", "\u{1F98B}", "\u{1F411}"],
       rounds: [
         { type: "count", prompt: "A boy had five loaves of bread. Tap five!", item: "\u{1F35E}", n: 5 },
         { type: "count", prompt: "And two little fish. Tap two fish!", item: "\u{1F41F}", n: 2 },
         { type: "pick", prompt: "Jesus gave thanks and shared it. Tap the basket!", answer: "\u{1F9FA}", others: ["\u{1F392}", "\u{1F4E6}", "\u{1F6D2}"] },
-        { type: "tapall", prompt: "Everyone was full! Tap all the bread!", target: "\u{1F35E}", filler: ["\u{1F41F}", "\u{1F9FA}"], count: 5, total: 9 },
-        { type: "find", prompt: "Find the boy who shared his lunch!", target: "\u{1F466}", filler: "\u{1F35E}", size: 9 },
+        { type: "tapall", prompt: "Everyone was full! Tap all the bread!", target: "\u{1F35E}", filler: ["\u{1F41F}", "\u{1F9FA}"], count: 5 },
+        { type: "find", prompt: "Find the boy who shared his lunch!", target: "\u{1F466}", filler: "\u{1F35E}" },
         { type: "sort", prompt: "Where does a fish live?", item: "\u{1F41F}", answer: "sea" },
-        { type: "pairs", prompt: "Match the food!", items: ["\u{1F35E}", "\u{1F41F}", "\u{1F347}"] },
+        { type: "pairs", prompt: "Match the food!", items: ["\u{1F35E}", "\u{1F41F}", "\u{1F347}", "\u{1F34E}"] },
       ],
     },
     {
@@ -187,14 +247,15 @@ const BibleGame = (function () {
       verse: "She took for him an ark of bulrushes, and laid it in the flags by the river's brink.",
       icon: "\u{1F476}",
       sky: "sea",
+      cast: ["\u{1F438}", "\u{1F986}", "\u{1F422}", "\u{1F41F}", "\u{1F98B}", "\u{1F426}"],
       rounds: [
-        { type: "find", prompt: "Baby Moses floated in a basket. Find the basket!", target: "\u{1F9FA}", filler: "\u{1F33E}", size: 9 },
+        { type: "find", prompt: "Baby Moses floated in a basket. Find the basket!", target: "\u{1F9FA}", filler: "\u{1F33E}" },
         { type: "pick", prompt: "The basket floated on the river. Tap the water!", answer: "\u{1F4A7}", others: ["\u{1F525}", "\u{1F33B}", "\u{1FAA8}"] },
         { type: "pick", prompt: "A princess found the baby. Tap the baby!", answer: "\u{1F476}", others: ["\u{1F418}", "\u{1F431}", "\u{1F338}"] },
         { type: "count", prompt: "Tap three reeds by the river!", item: "\u{1F33E}", n: 3 },
         { type: "sort", prompt: "Where does a frog live?", item: "\u{1F438}", answer: "sea", labels: { sea: "River \u{1F4A7}", land: "Desert \u{1F335}" } },
-        { type: "tapall", prompt: "God kept Moses safe. Tap every heart!", target: "❤️", filler: ["\u{1F33E}", "\u{1F4A7}"], count: 4, total: 9 },
-        { type: "pairs", prompt: "Match the river friends!", items: ["\u{1F438}", "\u{1F986}", "\u{1F422}"] },
+        { type: "tapall", prompt: "God kept Moses safe. Tap every heart!", target: "❤️", filler: ["\u{1F33E}", "\u{1F4A7}"], count: 4 },
+        { type: "pairs", prompt: "Match the river friends!", items: ["\u{1F438}", "\u{1F986}", "\u{1F422}", "\u{1F41F}"] },
       ],
     },
     {
@@ -204,12 +265,13 @@ const BibleGame = (function () {
       verse: "But the fruit of the Spirit is love, joy, peace.",
       icon: "\u{1F34E}",
       sky: "meadow",
+      cast: ["\u{1F430}", "\u{1F54A}️", "\u{1F98B}", "\u{1F41D}", "\u{1F422}", "\u{1F411}"],
       rounds: [
         { type: "pick", prompt: "Love is a fruit of the Spirit. Tap the heart!", answer: "❤️", others: ["\u{1F34E}", "\u{1F34C}", "\u{1F347}"] },
         { type: "pick", prompt: "Joy is a fruit of the Spirit. Tap the happy face!", answer: "\u{1F600}", others: ["\u{1F622}", "\u{1F620}", "\u{1F634}"] },
-        { type: "tapall", prompt: "Good fruit grows! Tap all the apples!", target: "\u{1F34E}", filler: ["\u{1F33F}", "\u{1F333}"], count: 5, total: 9 },
+        { type: "tapall", prompt: "Good fruit grows! Tap all the apples!", target: "\u{1F34E}", filler: ["\u{1F33F}", "\u{1F333}"], count: 5 },
         { type: "count", prompt: "Tap four bananas!", item: "\u{1F34C}", n: 4 },
-        { type: "pairs", prompt: "Match the fruit!", items: ["\u{1F34E}", "\u{1F34C}", "\u{1F347}"] },
+        { type: "pairs", prompt: "Match the fruit!", items: ["\u{1F34E}", "\u{1F34C}", "\u{1F347}", "\u{1F353}"] },
         { type: "pick", prompt: "Peace is a fruit of the Spirit. Tap the dove!", answer: "\u{1F54A}️", others: ["\u{1F981}", "\u{1F40A}", "\u{1F98A}"] },
         { type: "pick", prompt: "Gentleness, like a bunny. Tap the bunny!", answer: "\u{1F430}", others: ["\u{1F40A}", "\u{1F981}", "\u{1F988}"] },
         { type: "sort", prompt: "Is being kind good or bad?", item: "\u{1F91D}", answer: "land", labels: { sea: "Bad \u{1F614}", land: "Good \u{1F31F}" } },
@@ -217,11 +279,29 @@ const BibleGame = (function () {
     },
   ];
 
-  const ROUNDS_PER_GAME = 5;
-  const HINT_AFTER_MS = 7000;
+  /* ---------- levels ---------- */
 
-  const PRAISE = ["Yes!", "You found it!", "Great job!", "Wonderful!", "That's right!", "Hooray!", "Well done!", "Good looking!"];
-  const NUDGE = ["Try again!", "Almost! Look again.", "Not that one. Keep looking!", "Hmm, try another one."];
+  const LEVELS = {
+    little: {
+      key: "little", label: "Little", sub: "Ages 2-3",
+      rounds: 5, hint: 7000, pick: 4, find: 9, pairs: 3, tapall: 9,
+      countBump: 0, peek: 4200, eliminate: false, procedural: false,
+    },
+    big: {
+      key: "big", label: "Big", sub: "Ages 4+",
+      rounds: 6, hint: 13000, pick: 6, find: 12, pairs: 4, tapall: 12,
+      countBump: 2, peek: 2800, eliminate: true, procedural: true,
+    },
+  };
+
+  /* How hard each shape is, so a session can ramp instead of lurching. */
+  const WEIGHT = {
+    pick: 1, sort: 1, find: 2, tapall: 2, count: 2,
+    pairs: 3, more: 3, oddone: 4, order: 5, missing: 5,
+  };
+
+  const PRAISE = ["Yes!", "You found it!", "Great job!", "Wonderful!", "That's right!", "Hooray!", "Well done!", "Clever girl!"];
+  const NUDGE = ["Try again!", "Almost! Look again.", "Not that one. Keep looking!", "Hmm, have another go."];
 
   /* ---------- tiny helpers ---------- */
 
@@ -257,6 +337,10 @@ const BibleGame = (function () {
     return a;
   }
 
+  function take(arr, n, r) {
+    return shuffle(arr, r).slice(0, n);
+  }
+
   function pickOne(list) {
     return list[Math.floor(Math.random() * list.length)];
   }
@@ -266,8 +350,220 @@ const BibleGame = (function () {
     return STORIES[(Word.dayOfYear(d) + d.getFullYear()) % STORIES.length];
   }
 
-  function nameOf(glyph) {
-    return NAMES[glyph] || "";
+  function storyById(id) {
+    return STORIES.filter(function (s) { return s.id === id; })[0] || null;
+  }
+
+  /* ---------- the harder rounds, built from the story's cast ----------
+     These are generated rather than written out, so Addison gets a board
+     she has not seen before even on a story she has played all week. */
+
+  function castPool(story) {
+    const extra = Object.keys(ANIMALS);
+    return story.cast.concat(extra.filter(function (g) { return story.cast.indexOf(g) < 0; }));
+  }
+
+  /* Smallest to biggest. Three animals, three clearly different sizes. */
+  function makeOrder(story, r) {
+    const pool = castPool(story).filter(function (g) { return ANIMALS[g]; });
+    let chosen = null;
+    for (let attempt = 0; attempt < 40 && !chosen; attempt++) {
+      const three = take(pool, 3, r);
+      const sizes = three.map(function (g) { return ANIMALS[g].size; });
+      const uniq = sizes.filter(function (s, i) { return sizes.indexOf(s) === i; });
+      if (uniq.length === 3) chosen = three;
+    }
+    if (!chosen) return null;
+    const seq = chosen.slice().sort(function (a, b) { return ANIMALS[a].size - ANIMALS[b].size; });
+    return {
+      type: "order",
+      prompt: "Tap them from smallest to biggest!",
+      seq: seq,
+      tiles: shuffle(chosen, r),
+    };
+  }
+
+  /* Which side has more? Real counting, no reading. */
+  function makeMore(story, r) {
+    const g = take(story.cast, 1, r)[0];
+    const small = 2 + Math.floor(r() * 3);        /* 2-4 */
+    const big = small + 1 + Math.floor(r() * 2);  /* 1-2 more */
+    const leftIsBig = r() < 0.5;
+    return {
+      type: "more",
+      prompt: "Which side has MORE " + plural(g) + "?",
+      glyph: g,
+      left: leftIsBig ? big : small,
+      right: leftIsBig ? small : big,
+      answer: leftIsBig ? "left" : "right",
+    };
+  }
+
+  /* Three belong together, one does not. */
+  function makeOddOne(story, r) {
+    const all = castPool(story).filter(function (g) { return ANIMALS[g].where !== "both"; });
+    const sea = all.filter(function (g) { return ANIMALS[g].where === "sea"; });
+    const land = all.filter(function (g) { return ANIMALS[g].where === "land"; });
+    if (sea.length < 3 || land.length < 3) return null;
+    const seaIsGroup = r() < 0.5;
+    const group = seaIsGroup ? take(sea, 3, r) : take(land, 3, r);
+    const odd = seaIsGroup ? take(land, 1, r)[0] : take(sea, 1, r)[0];
+    return {
+      type: "oddone",
+      prompt: seaIsGroup
+        ? "Three of these live in the water. Tap the one that does not!"
+        : "Three of these live on the land. Tap the one that does not!",
+      answer: odd,
+      tiles: shuffle(group.concat([odd]), r),
+    };
+  }
+
+  /* Look hard, then remember. One of them hides. */
+  function makeMissing(story, r, level) {
+    const n = level.key === "big" ? 5 : 4;
+    const pool = castPool(story);
+    const shown = take(pool, n, r);
+    const hideAt = Math.floor(r() * shown.length);
+    const answer = shown[hideAt];
+    const decoys = take(
+      pool.filter(function (g) { return shown.indexOf(g) < 0; }),
+      2,
+      r
+    );
+    if (decoys.length < 2) return null;
+    return {
+      type: "missing",
+      prompt: "Look carefully and remember!",
+      prompt2: "Which one is hiding?",
+      tiles: shown,
+      hideAt: hideAt,
+      answer: answer,
+      choices: shuffle(decoys.concat([answer]), r),
+    };
+  }
+
+  function proceduralRounds(story, r, level) {
+    return [makeOrder(story, r), makeMore(story, r), makeOddOne(story, r), makeMissing(story, r, level)]
+      .filter(Boolean);
+  }
+
+  /* ---------- building a session ---------- */
+
+  function distractors(story, avoid, n, r) {
+    const pool = castPool(story)
+      .concat(["\u{1F33B}", "\u{1F333}", "\u{1FAA8}", "\u{1F33F}", "☁️", "\u{1F31F}"])
+      .filter(function (g) { return avoid.indexOf(g) < 0; });
+    return take(pool, n, r);
+  }
+
+  /* Give a written round its board at this level. */
+  function buildRound(spec, r, level, story) {
+    const round = Object.assign({}, spec);
+    if (spec.type === "pick" || spec.type === "oddone") {
+      if (spec.type === "pick") {
+        const want = level.pick - 1;
+        let others = spec.others.slice();
+        if (others.length < want) {
+          others = others.concat(distractors(story, [spec.answer].concat(others), want - others.length, r));
+        }
+        round.tiles = shuffle([spec.answer].concat(others.slice(0, want)), r);
+      }
+    } else if (spec.type === "tapall") {
+      const total = level.tapall;
+      const count = Math.min(spec.count + (level.key === "big" ? 1 : 0), total - 3);
+      const tiles = [];
+      for (let i = 0; i < count; i++) tiles.push(spec.target);
+      while (tiles.length < total) tiles.push(spec.filler[Math.floor(r() * spec.filler.length)]);
+      round.count = count;
+      round.tiles = shuffle(tiles, r);
+    } else if (spec.type === "find") {
+      const size = level.find;
+      const tiles = [];
+      for (let i = 0; i < size; i++) tiles.push(spec.filler);
+      tiles[Math.floor(r() * size)] = spec.target;
+      round.tiles = tiles;
+    } else if (spec.type === "count") {
+      const n = Math.min(spec.n + level.countBump, 10);
+      round.n = n;
+      round.prompt = level.countBump && spec.n !== n
+        ? spec.prompt.replace(/tap (\w+)/i, "Tap " + numberWord(n))
+        : spec.prompt;
+      round.tiles = [];
+      const total = Math.max(n + 2, 6);
+      for (let i = 0; i < total; i++) round.tiles.push(spec.item);
+    } else if (spec.type === "pairs") {
+      const items = spec.items.slice(0, level.pairs);
+      round.tiles = shuffle(items.concat(items), r);
+    }
+    return round;
+  }
+
+  const NUMBER_WORDS = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"];
+  function numberWord(n) {
+    return NUMBER_WORDS[n] || String(n);
+  }
+
+  /* Pick the session's rounds: ramp them, and never the same shape twice
+     in a row. */
+  function chooseRounds(story, level, r) {
+    const written = story.rounds
+      .filter(function (s) { return !s.level || s.level === level.key; })
+      .map(function (s) { return buildRound(s, r, level, story); });
+
+    let pool = shuffle(written, r);
+    if (level.procedural) {
+      const gen = shuffle(proceduralRounds(story, r, level), r);
+      /* Half the big session is thinking rounds, and at least two of them. */
+      const wantGen = Math.max(2, Math.floor(level.rounds / 2));
+      pool = gen.slice(0, wantGen).concat(pool);
+    }
+
+    const want = Math.min(level.rounds, pool.length);
+    /* Take a spread rather than the first N, so a session is not all one
+       shape when a story leans heavily on one. */
+    const chosen = [];
+    const byType = {};
+    pool.forEach(function (rd) {
+      const seen = byType[rd.type] || 0;
+      if (chosen.length < want && seen < 2) {
+        byType[rd.type] = seen + 1;
+        chosen.push(rd);
+      }
+    });
+    for (let i = 0; chosen.length < want && i < pool.length; i++) {
+      if (chosen.indexOf(pool[i]) < 0) chosen.push(pool[i]);
+    }
+
+    chosen.sort(function (a, b) { return (WEIGHT[a.type] || 2) - (WEIGHT[b.type] || 2); });
+    /* Break up neighbours of the same shape without undoing the ramp. */
+    for (let i = 1; i < chosen.length; i++) {
+      if (chosen[i].type !== chosen[i - 1].type) continue;
+      for (let j = i + 1; j < chosen.length; j++) {
+        if (chosen[j].type !== chosen[i].type) {
+          const t = chosen[i];
+          chosen[i] = chosen[j];
+          chosen[j] = t;
+          break;
+        }
+      }
+    }
+    return chosen;
+  }
+
+  /* ---------- who is playing, and at what level ---------- */
+
+  function levelFor(name) {
+    const cfg = Store.get("config") || {};
+    const map = cfg.gameLevel || {};
+    const want = map[name];
+    return LEVELS[want] || LEVELS.little;
+  }
+
+  function setLevel(name, key) {
+    if (!name) return;
+    const patch = {};
+    patch[name] = key;
+    Store.mergeDoc("config", { gameLevel: patch });
   }
 
   /* ---------- sound ---------- */
@@ -310,13 +606,14 @@ const BibleGame = (function () {
     miss: function () { tone(260, 140, "triangle", 0, 0.1); tone(220, 200, "triangle", 120, 0.1); },
     tap: function () { tone(540, 60, "sine", 0, 0.1); },
     flip: function () { tone(700, 50, "sine", 0, 0.08); },
+    peek: function () { tone(880, 90, "sine", 0, 0.1); tone(660, 120, "sine", 90, 0.09); },
     start: function () { [523, 659, 784].forEach(function (f, i) { tone(f, 180, "sine", i * 110, 0.12); }); },
     win: function () { [523, 659, 784, 1047, 784, 1047, 1319].forEach(function (f, i) { tone(f, 240, "sine", i * 110, 0.14); }); },
   };
 
   function say(text) {
     if (muted) return;
-    Voice.speak(text, { rate: 0.95, pitch: 1.08 });
+    Voice.speak(text, { rate: 1 });
   }
   function hush() {
     Voice.hush();
@@ -367,12 +664,10 @@ const BibleGame = (function () {
       grad.addColorStop(1, "rgba(255,255,255,0)");
       g.fillStyle = grad;
       g.fillRect(0, 0, 64, 64);
-      const t = new THREE.CanvasTexture(c);
-      return t;
+      return new THREE.CanvasTexture(c);
     }
 
-    /* Colour and motion per sky. Colours are the house palette's delft,
-       amber and leaf, lightened for dark mode. */
+    /* Colour and motion per sky, from the house palette. */
     const LOOKS = {
       day:    { light: 0x2f5d8a, dark: 0xdfe9f5, size: [3, 8],  drift: [0.06, -0.10], wobble: 0.35, twinkle: 0.4 },
       meadow: { light: 0xb8860b, dark: 0xffe08a, size: [2, 6],  drift: [0.12, -0.14], wobble: 0.6,  twinkle: 0.5 },
@@ -450,13 +745,12 @@ const BibleGame = (function () {
     function tick() {
       raf = null;
       if (!canvas.isConnected) {
-        if (++idle < 90) { raf = requestAnimationFrame(tick); }
+        if (++idle < 90) raf = requestAnimationFrame(tick);
         return;
       }
       idle = 0;
       if (document.hidden) { raf = requestAnimationFrame(tick); return; }
-      const container = canvas.parentNode;
-      if (fit(container)) seed(LOOKS[mode] || LOOKS.day);
+      if (fit(canvas.parentNode)) seed(LOOKS[mode] || LOOKS.day);
       const look = LOOKS[mode] || LOOKS.day;
       const pos = geo.attributes.position.array;
       const alpha = geo.attributes.alpha.array;
@@ -512,51 +806,36 @@ const BibleGame = (function () {
     return UI.state.bible;
   }
 
-  function startGame(kid, fresh) {
+  /* Which story the start screen is offering: today's, or one tapped on
+     the trail. */
+  function offered() {
     const st = S();
-    const story = storyForDay(new Date());
-    const seedStr = fresh ? String(Math.random()) : Fmt.dayKey() + ":" + story.id;
+    return (st.pickId && storyById(st.pickId)) || storyForDay(new Date());
+  }
+
+  function startGame(kid, level, fresh) {
+    const st = S();
+    const story = offered();
+    const seedStr = fresh
+      ? String(Math.random())
+      : Fmt.dayKey() + ":" + story.id + ":" + level.key;
     const r = rng(hashStr(seedStr));
-    const rounds = shuffle(story.rounds, r).slice(0, ROUNDS_PER_GAME).map(function (spec) {
-      return buildRound(spec, r);
-    });
+    const rounds = chooseRounds(story, level, r);
+    clearTimers();
     st.phase = "play";
     st.kid = kid;
+    st.level = level;
     st.story = story;
     st.rounds = rounds;
     st.idx = 0;
+    st.clean = true;
     st.roundState = null;
     st.enter = true;
     SFX.start();
+    Voice.unlock();
     Router.refresh();
-    setTimeout(function () { say(rounds[0].prompt); }, 400);
+    speakRound(rounds[0], 380);
     armHint();
-  }
-
-  /* Lay out a round's tiles from its spec, using the shared RNG so a day's
-     board is the same on every device. */
-  function buildRound(spec, r) {
-    const round = Object.assign({}, spec);
-    if (spec.type === "pick") {
-      round.tiles = shuffle([spec.answer].concat(spec.others), r);
-    } else if (spec.type === "tapall") {
-      const tiles = [];
-      for (let i = 0; i < spec.count; i++) tiles.push(spec.target);
-      while (tiles.length < spec.total) tiles.push(spec.filler[Math.floor(r() * spec.filler.length)]);
-      round.tiles = shuffle(tiles, r);
-    } else if (spec.type === "find") {
-      const tiles = [];
-      for (let i = 0; i < spec.size; i++) tiles.push(spec.filler);
-      tiles[Math.floor(r() * spec.size)] = spec.target;
-      round.tiles = tiles;
-    } else if (spec.type === "count") {
-      round.tiles = [];
-      const total = Math.max(spec.n + 2, 6);
-      for (let i = 0; i < total; i++) round.tiles.push(spec.item);
-    } else if (spec.type === "pairs") {
-      round.tiles = shuffle(spec.items.concat(spec.items), r);
-    }
-    return round;
   }
 
   function currentRound() {
@@ -566,53 +845,87 @@ const BibleGame = (function () {
 
   function roundState() {
     const st = S();
-    if (!st.roundState) st.roundState = { done: [], picked: [], count: 0, wrong: null, solved: false, hint: false };
+    if (!st.roundState) {
+      st.roundState = { done: [], picked: [], dead: [], count: 0, wrong: null, solved: false, hint: false, peeked: false };
+    }
     return st.roundState;
   }
 
-  /* The idle nudge. If nothing right has happened for a while, the tile
-     they need starts to bob. Any correct tap resets the clock. */
+  /* Say a round's prompt, and get the next one's audio ready while this one
+     plays so the game never waits on the network. */
+  function speakRound(round, delay) {
+    setTimeout(function () {
+      say(round.prompt);
+      const st = S();
+      const next = st.rounds && st.rounds[st.idx + 1];
+      if (next) Voice.prefetch(next.prompt);
+      if (round.prompt2) Voice.prefetch(round.prompt2);
+    }, delay || 0);
+  }
+
+  /* ---- timers: the idle nudge, and the peek in the remember round ---- */
+
   let hintTimer = null;
+  let peekTimer = null;
+
+  function clearTimers() {
+    clearTimeout(hintTimer);
+    clearTimeout(peekTimer);
+    hintTimer = null;
+    peekTimer = null;
+  }
+
   function armHint() {
     clearTimeout(hintTimer);
+    const st = S();
+    const wait = (st.level || LEVELS.little).hint;
     hintTimer = setTimeout(function () {
-      const st = S();
-      if (st.phase !== "play" || Router.current() !== "bible") return;
+      const s = S();
+      if (s.phase !== "play" || Router.current() !== "bible") return;
       const rs = roundState();
-      if (rs.solved) return;
+      if (rs.solved || (currentRound() || {}).type === "missing" && !rs.peeked) return;
       rs.hint = true;
       Router.refresh();
-    }, HINT_AFTER_MS);
+    }, wait);
   }
-  function disarmHint() {
-    clearTimeout(hintTimer);
-    hintTimer = null;
+
+  function armPeek(round) {
+    if (peekTimer) return;
+    const st = S();
+    peekTimer = setTimeout(function () {
+      peekTimer = null;
+      const rs = roundState();
+      rs.peeked = true;
+      SFX.peek();
+      Router.refresh();
+      say(round.prompt2);
+      armHint();
+    }, (st.level || LEVELS.little).peek);
   }
 
   function advance() {
     const st = S();
     st.roundState = null;
+    clearTimers();
     if (st.idx + 1 >= st.rounds.length) {
       st.phase = "done";
-      disarmHint();
       SFX.win();
       Router.refresh();
       setTimeout(function () {
         say("You did it" + (st.kid ? ", " + st.kid : "") + "! " + st.story.verse);
-      }, 500);
+      }, 520);
       return;
     }
     st.idx++;
     st.enter = true;
     Router.refresh();
-    const next = st.rounds[st.idx];
-    setTimeout(function () { say(next.prompt); }, 350);
+    speakRound(st.rounds[st.idx], 340);
     armHint();
   }
 
   function good(el) {
     SFX.good();
-    disarmHint();
+    clearTimeout(hintTimer);
     const rs = roundState();
     rs.solved = true;
     rs.hint = false;
@@ -622,10 +935,15 @@ const BibleGame = (function () {
     setTimeout(advance, 900);
   }
 
+  /* A wrong tap. At the big level the tile is taken off the board, so
+     guessing gets you nowhere but the round still always converges. */
   function miss(key) {
     SFX.miss();
+    const st = S();
     const rs = roundState();
+    st.clean = false;
     rs.wrong = key;
+    if ((st.level || LEVELS.little).eliminate && key && rs.dead.indexOf(key) < 0) rs.dead.push(key);
     Router.refresh();
     setTimeout(function () {
       const r2 = roundState();
@@ -633,7 +951,7 @@ const BibleGame = (function () {
         r2.wrong = null;
         Router.refresh();
       }
-    }, 500);
+    }, 520);
     say(pickOne(NUDGE));
   }
 
@@ -673,16 +991,12 @@ const BibleGame = (function () {
         type: "button",
         "aria-label": o.label || nameOf(glyph) || glyph,
         disabled: o.disabled ? true : null,
-        style: { "--i": String(o.index || 0) },
       },
       UI.h("span", { class: "bg-glyph", text: o.hidden ? "❓" : glyph })
     );
-    /* CSS custom properties don't go through Object.assign on style. */
     b.style.setProperty("--i", String(o.index || 0));
     if (o.onTap) {
-      b.addEventListener("click", function (ev) {
-        o.onTap(ev.currentTarget);
-      });
+      b.addEventListener("click", function (ev) { o.onTap(ev.currentTarget); });
     }
     return b;
   }
@@ -706,22 +1020,34 @@ const BibleGame = (function () {
   }
 
   function renderKidPicker(root) {
+    const st = S();
     const shop = typeof Rewards !== "undefined" ? Rewards.shop() || {} : {};
     const kids = shop.kids || [];
     const now = new Date();
-    const story = storyForDay(now);
+    const today = storyForDay(now);
+    const story = offered();
     const tomorrow = tomorrowStory(now);
+    const chosen = story.id !== today.id;
 
     root.appendChild(
       UI.h(
         "div",
         { class: "page-head bg-head" },
-        UI.h("div", {}, UI.h("div", { class: "eyebrow", text: "Today's Bible game" }), UI.h("div", { class: "title", text: story.name })),
+        UI.h(
+          "div",
+          {},
+          UI.h("div", { class: "eyebrow", text: chosen ? "A story you picked" : "Today's Bible game" }),
+          UI.h("div", { class: "title", text: story.name })
+        ),
         muteButton()
       )
     );
 
+    /* One card per kid: tap the picture to play, tap the level chip to
+       change how hard it is. */
     const players = kids.map(function (k) {
+      const level = levelFor(k.name);
+      const card = UI.h("div", { class: "bg-kid-wrap" });
       const b = UI.h(
         "button",
         { class: "bg-kid", type: "button" },
@@ -729,50 +1055,89 @@ const BibleGame = (function () {
         UI.h("span", { class: "bg-kid-name", text: k.name }),
         UI.h("span", { class: "bg-kid-sub", text: "Tap to play" })
       );
-      b.addEventListener("click", function () { startGame(k.name, false); });
-      return b;
+      b.addEventListener("click", function () { startGame(k.name, levelFor(k.name), false); });
+      const chip = UI.h(
+        "button",
+        { class: "bg-level", type: "button", "data-level": level.key, "aria-label": "Difficulty for " + k.name + ": " + level.label },
+        UI.h("span", { text: level.label }),
+        UI.icon("chevron")
+      );
+      chip.addEventListener("click", function () {
+        setLevel(k.name, level.key === "big" ? "little" : "big");
+        SFX.tap();
+      });
+      card.appendChild(b);
+      card.appendChild(chip);
+      return card;
     });
-    const anyone = UI.h(
+
+    const anyone = UI.h("div", { class: "bg-kid-wrap" });
+    const anyBtn = UI.h(
       "button",
       { class: "bg-kid bg-kid-anyone", type: "button" },
       UI.h("span", { class: "bg-kid-emoji", text: story.icon }),
       UI.h("span", { class: "bg-kid-name", text: kids.length ? "Together" : "Play" }),
       UI.h("span", { class: "bg-kid-sub", text: "Tap to play" })
     );
-    anyone.addEventListener("click", function () { startGame("", false); });
+    anyBtn.addEventListener("click", function () { startGame("", LEVELS.little, false); });
+    anyone.appendChild(anyBtn);
     players.push(anyone);
 
     const intro = UI.h(
-        "div",
-        { class: "card bg-intro bg-sky", "data-sky": story.sky },
-        UI.h("div", { class: "bg-scene", "aria-hidden": "true" }, sceneBits(story.sky)),
-        UI.h("div", { class: "bg-intro-icon", text: story.icon }),
-        UI.h("p", { class: "bg-intro-verse", text: "“" + story.verse + "”" }),
-        UI.h("div", { class: "word-ref", text: story.ref + " (KJV)" }),
-        UI.h("div", { class: "bg-intro-text", text: "Five quick rounds. Everything is read out loud, so just listen and tap." }),
-        UI.h("div", { class: "eyebrow", text: "Who's playing?" }),
-        UI.h("div", { class: "bg-kids", "data-n": String(players.length) }, players)
+      "div",
+      { class: "card bg-intro bg-sky", "data-sky": story.sky },
+      UI.h("div", { class: "bg-scene", "aria-hidden": "true" }, sceneBits(story.sky)),
+      UI.h("div", { class: "bg-intro-icon", text: story.icon }),
+      UI.h("p", { class: "bg-intro-verse", text: "“" + story.verse + "”" }),
+      UI.h("div", { class: "word-ref", text: story.ref + " (KJV)" }),
+      UI.h("div", { class: "bg-intro-text", text: "Everything is read out loud, so just listen and tap." }),
+      UI.h("div", { class: "eyebrow", text: "Who's playing?" }),
+      UI.h("div", { class: "bg-kids", "data-n": String(players.length) }, players)
     );
     root.appendChild(intro);
     Backdrop.attach(intro, story.sky);
+
+    /* The trail is tappable: any story, any day. */
+    const head = UI.h("div", { class: "bg-trail-head" }, UI.h("div", { class: "eyebrow", text: "Pick a story" }));
+    if (chosen) {
+      const back = UI.h("button", { class: "btn btn-sm", type: "button" }, "Back to today");
+      back.addEventListener("click", function () {
+        st.pickId = null;
+        SFX.tap();
+        Router.refresh();
+      });
+      head.appendChild(back);
+    }
 
     root.appendChild(
       UI.h(
         "div",
         { class: "bg-trail" },
-        UI.h("div", { class: "eyebrow", text: "Story trail" }),
+        head,
         UI.h(
           "div",
           { class: "bg-trail-row" },
           STORIES.map(function (s) {
-            const isToday = s.id === story.id;
+            const isNow = s.id === story.id;
+            const isToday = s.id === today.id;
             const isNext = s.id === tomorrow.id;
-            return UI.h(
-              "div",
-              { class: "bg-trail-stop" + (isToday ? " is-today" : "") + (isNext ? " is-next" : ""), title: s.name },
+            const stop = UI.h(
+              "button",
+              {
+                class: "bg-trail-stop" + (isNow ? " is-now" : "") + (isToday ? " is-today" : ""),
+                type: "button",
+                title: s.name,
+                "aria-label": s.name,
+              },
               UI.h("span", { class: "bg-trail-icon", text: s.icon }),
-              isToday ? UI.h("span", { class: "bg-trail-tag", text: "Today" }) : isNext ? UI.h("span", { class: "bg-trail-tag", text: "Tomorrow" }) : null
+              UI.h("span", { class: "bg-trail-tag", text: isToday ? "Today" : isNext ? "Next" : s.name.split(" ")[0] })
             );
+            stop.addEventListener("click", function () {
+              st.pickId = isToday ? null : s.id;
+              SFX.tap();
+              Router.refresh();
+            });
+            return stop;
           })
         )
       )
@@ -780,7 +1145,7 @@ const BibleGame = (function () {
   }
 
   /* Soft scenery behind the board — clouds, waves, hills — as text so it
-     costs nothing and matches the tiles. */
+     costs nothing and matches the tiles. Used until three.js arrives. */
   function sceneBits(sky) {
     const bits = {
       day: ["☁️", "☁️", "\u{1F33F}", "\u{1F33C}", "\u{1F33F}"],
@@ -797,12 +1162,14 @@ const BibleGame = (function () {
   }
 
   function renderPrompt(round) {
+    const rs = roundState();
+    const text = round.type === "missing" && rs.peeked ? round.prompt2 : round.prompt;
     const btn = UI.h("button", { class: "ibtn bg-say", type: "button", "aria-label": "Say it again" }, UI.icon("sound"));
-    btn.addEventListener("click", function () { say(round.prompt); });
+    btn.addEventListener("click", function () { say(text); });
     return UI.h(
       "div",
       { class: "bg-prompt" },
-      UI.h("div", { class: "bg-prompt-row" }, UI.h("p", { class: "bg-prompt-text", text: round.prompt }), btn)
+      UI.h("div", { class: "bg-prompt-row" }, UI.h("p", { class: "bg-prompt-text", text: text }), btn)
     );
   }
 
@@ -821,40 +1188,24 @@ const BibleGame = (function () {
   function hintCls(rs, isTarget) {
     return rs.hint && isTarget && !rs.solved ? " bg-hint" : "";
   }
-
-  function renderPick(round) {
-    const rs = roundState();
-    return UI.h(
-      "div",
-      { class: "bg-grid bg-grid-2" },
-      round.tiles.map(function (g, i) {
-        const key = "t" + i;
-        const isAns = g === round.answer;
-        return tile(g, {
-          index: i,
-          cls: (rs.solved && isAns ? "bg-hit" : rs.wrong === key ? "bg-miss" : "") + hintCls(rs, isAns),
-          disabled: rs.solved,
-          onTap: function (el) {
-            if (isAns) good(el);
-            else miss(key);
-          },
-        });
-      })
-    );
+  function deadCls(rs, key) {
+    return rs.dead.indexOf(key) >= 0 ? " bg-dead" : "";
   }
 
-  function renderFind(round) {
+  /* One tap, one right answer: pick, find and odd-one-out all share this. */
+  function renderChoiceBoard(round, answer, cols) {
     const rs = roundState();
     return UI.h(
       "div",
-      { class: "bg-grid bg-grid-3" },
+      { class: "bg-grid bg-grid-" + cols },
       round.tiles.map(function (g, i) {
         const key = "t" + i;
-        const isAns = g === round.target;
+        const isAns = g === answer;
+        const dead = rs.dead.indexOf(key) >= 0;
         return tile(g, {
           index: i,
-          cls: (rs.solved && isAns ? "bg-hit" : rs.wrong === key ? "bg-miss" : "") + hintCls(rs, isAns),
-          disabled: rs.solved,
+          cls: (rs.solved && isAns ? "bg-hit" : rs.wrong === key ? "bg-miss" : "") + deadCls(rs, key) + hintCls(rs, isAns),
+          disabled: rs.solved || dead,
           onTap: function (el) {
             if (isAns) good(el);
             else miss(key);
@@ -888,8 +1239,8 @@ const BibleGame = (function () {
           if (showHint) hinted = true;
           return tile(g, {
             index: i,
-            cls: (gone ? "bg-gone" : rs.wrong === key ? "bg-miss" : "") + hintCls(rs, showHint),
-            disabled: gone || rs.solved,
+            cls: (gone ? "bg-gone" : rs.wrong === key ? "bg-miss" : "") + deadCls(rs, key) + hintCls(rs, showHint),
+            disabled: gone || rs.solved || rs.dead.indexOf(key) >= 0,
             onTap: function (el) {
               if (g !== round.target) return miss(key);
               SFX.tap();
@@ -932,7 +1283,7 @@ const BibleGame = (function () {
               armHint();
               tone(440 + rs.count * 60, 110, "sine", 0, 0.12);
               burst(el, ["✨"]);
-              say(String(rs.count));
+              say(numberWord(rs.count));
               if (rs.count >= round.n) good(null);
               else Router.refresh();
             },
@@ -954,7 +1305,7 @@ const BibleGame = (function () {
     const hintAt = rs.picked.length === 0 ? firstDown(round, rs) : -1;
     return UI.h(
       "div",
-      { class: "bg-grid bg-grid-3" },
+      { class: "bg-grid bg-grid-" + (round.tiles.length > 6 ? "4" : "3") },
       round.tiles.map(function (g, i) {
         const key = "t" + i;
         const matched = rs.done.indexOf(key) >= 0;
@@ -982,13 +1333,14 @@ const BibleGame = (function () {
                   r2.picked = [];
                   if (r2.done.length >= round.tiles.length) return good(null);
                   SFX.good();
-                  say(pickOne(["A pair!", "They match!", nameOf(ga) ? "Two " + nameOf(ga) + "s!" : "Two of a kind!"]));
+                  say(nameOf(ga) ? "Two " + plural(ga) + "!" : "A pair!");
                 } else {
                   SFX.miss();
                   r2.picked = [];
+                  S().clean = false;
                 }
                 Router.refresh();
-              }, 750);
+              }, 760);
             }
           },
         });
@@ -1028,6 +1380,148 @@ const BibleGame = (function () {
     );
   }
 
+  /* ---- the thinking rounds ---- */
+
+  /* Smallest to biggest, in order. A wrong tap starts the run again, so
+     she has to hold the whole sequence in her head. */
+  function renderOrder(round) {
+    const rs = roundState();
+    const nextWanted = round.seq[rs.done.length];
+    return UI.h(
+      "div",
+      { class: "bg-stack" },
+      UI.h(
+        "div",
+        { class: "bg-ladder", "aria-hidden": "true" },
+        round.seq.map(function (g, i) {
+          const filled = i < rs.done.length;
+          return UI.h("span", { class: "bg-rung" + (filled ? " is-on" : "") }, UI.h("span", { class: "bg-rung-glyph", text: filled ? rs.done[i] : String(i + 1) }));
+        })
+      ),
+      UI.h(
+        "div",
+        { class: "bg-grid bg-grid-3" },
+        round.tiles.map(function (g, i) {
+          const key = "t" + i;
+          const used = rs.done.indexOf(g) >= 0;
+          return tile(g, {
+            index: i,
+            cls: (used ? "bg-counted" : rs.wrong === key ? "bg-miss" : "") + hintCls(rs, g === nextWanted),
+            disabled: used || rs.solved,
+            onTap: function (el) {
+              if (g !== nextWanted) {
+                rs.done = [];
+                return miss(key);
+              }
+              rs.done.push(g);
+              rs.hint = false;
+              armHint();
+              tone(440 + rs.done.length * 110, 120, "sine", 0, 0.12);
+              burst(el, ["✨"]);
+              if (rs.done.length >= round.seq.length) good(null);
+              else {
+                say(nameOf(g));
+                Router.refresh();
+              }
+            },
+          });
+        })
+      )
+    );
+  }
+
+  /* Which side has more? Two clusters, one tap. */
+  function renderMore(round) {
+    const rs = roundState();
+    function side(which, n) {
+      const cluster = [];
+      for (let i = 0; i < n; i++) cluster.push(UI.h("span", { class: "bg-many-glyph", text: round.glyph }));
+      const b = UI.h(
+        "button",
+        {
+          class: "bg-tile bg-many" +
+            (rs.solved && which === round.answer ? " bg-hit" : rs.wrong === which ? " bg-miss" : "") +
+            deadCls(rs, which) + hintCls(rs, which === round.answer),
+          type: "button",
+          disabled: rs.solved || rs.dead.indexOf(which) >= 0 ? true : null,
+          "aria-label": n + " " + plural(round.glyph),
+        },
+        UI.h("span", { class: "bg-many-wrap" }, cluster)
+      );
+      b.addEventListener("click", function (ev) {
+        if (which === round.answer) good(ev.currentTarget);
+        else miss(which);
+      });
+      return b;
+    }
+    return UI.h("div", { class: "bg-grid bg-grid-2" }, side("left", round.left), side("right", round.right));
+  }
+
+  /* Look, then remember. The board is shown, then one tile hides. */
+  function renderMissing(round) {
+    const rs = roundState();
+    if (!rs.peeked) {
+      armPeek(round);
+      return UI.h(
+        "div",
+        { class: "bg-stack" },
+        UI.h(
+          "div",
+          { class: "bg-grid bg-grid-3 bg-peeking" },
+          round.tiles.map(function (g, i) {
+            return tile(g, { index: i, disabled: true });
+          })
+        )
+      );
+    }
+    return UI.h(
+      "div",
+      { class: "bg-stack" },
+      UI.h(
+        "div",
+        { class: "bg-grid bg-grid-3" },
+        round.tiles.map(function (g, i) {
+          const isHidden = i === round.hideAt;
+          return tile(g, {
+            index: i,
+            hidden: isHidden && !rs.solved,
+            label: isHidden ? "The hidden one" : nameOf(g),
+            cls: isHidden ? (rs.solved ? "bg-hit" : "bg-down bg-hole") : "bg-quiet",
+            disabled: true,
+          });
+        })
+      ),
+      UI.h("div", { class: "bg-choices" },
+        round.choices.map(function (g, i) {
+          const key = "c" + i;
+          const dead = rs.dead.indexOf(key) >= 0;
+          return tile(g, {
+            index: i,
+            cls: "bg-answer" + (rs.solved && g === round.answer ? " bg-hit" : rs.wrong === key ? " bg-miss" : "") + deadCls(rs, key) + hintCls(rs, g === round.answer),
+            disabled: rs.solved || dead,
+            onTap: function (el) {
+              if (g === round.answer) good(el);
+              else miss(key);
+            },
+          });
+        })
+      )
+    );
+  }
+
+  function renderBoard(round) {
+    if (round.type === "pick") return renderChoiceBoard(round, round.answer, round.tiles.length > 4 ? 3 : 2);
+    if (round.type === "oddone") return renderChoiceBoard(round, round.answer, 2);
+    if (round.type === "find") return renderChoiceBoard(round, round.target, round.tiles.length > 9 ? 4 : 3);
+    if (round.type === "tapall") return renderTapAll(round);
+    if (round.type === "count") return renderCount(round);
+    if (round.type === "pairs") return renderPairs(round);
+    if (round.type === "order") return renderOrder(round);
+    if (round.type === "more") return renderMore(round);
+    if (round.type === "missing") return renderMissing(round);
+    return renderSort(round);
+  }
+
   function renderPlay(root) {
     const st = S();
     const round = currentRound();
@@ -1039,7 +1533,7 @@ const BibleGame = (function () {
     quit.addEventListener("click", function () {
       st.phase = "kid";
       st.roundState = null;
-      disarmHint();
+      clearTimers();
       hush();
       Router.refresh();
     });
@@ -1048,26 +1542,23 @@ const BibleGame = (function () {
       UI.h(
         "div",
         { class: "bg-top" },
-        UI.h("div", { class: "bg-who" }, UI.h("span", { class: "bg-story-icon", text: st.story.icon }), UI.h("span", { text: st.story.name + (st.kid ? " · " + st.kid : "") })),
+        UI.h(
+          "div",
+          { class: "bg-who" },
+          UI.h("span", { class: "bg-story-icon", text: st.story.icon }),
+          UI.h("span", { text: st.story.name + (st.kid ? " · " + st.kid : "") })
+        ),
         UI.h("div", { class: "bg-top-actions" }, muteButton(), quit)
       )
     );
     root.appendChild(renderProgress());
-
-    let board;
-    if (round.type === "pick") board = renderPick(round);
-    else if (round.type === "find") board = renderFind(round);
-    else if (round.type === "tapall") board = renderTapAll(round);
-    else if (round.type === "count") board = renderCount(round);
-    else if (round.type === "pairs") board = renderPairs(round);
-    else board = renderSort(round);
 
     const card = UI.h(
       "div",
       { class: "card bg-board bg-sky" + (st.enter ? " bg-enter" : ""), "data-sky": st.story.sky },
       UI.h("div", { class: "bg-scene", "aria-hidden": "true" }, sceneBits(st.story.sky)),
       renderPrompt(round),
-      board
+      renderBoard(round)
     );
     st.enter = false;
     root.appendChild(card);
@@ -1079,7 +1570,7 @@ const BibleGame = (function () {
     const tomorrow = tomorrowStory(new Date());
 
     const again = UI.h("button", { class: "btn btn-primary btn-block bg-big-btn", type: "button" }, "Play again");
-    again.addEventListener("click", function () { startGame(st.kid, true); });
+    again.addEventListener("click", function () { startGame(st.kid, st.level, true); });
     const other = UI.h("button", { class: "btn btn-block", type: "button" }, "All done");
     other.addEventListener("click", function () { st.phase = "kid"; hush(); Router.refresh(); });
     const read = UI.h("button", { class: "btn btn-sm", type: "button" }, UI.icon("sound"), "Read the verse");
@@ -1087,18 +1578,23 @@ const BibleGame = (function () {
 
     const confetti = ["⭐", "✨", "\u{1F31F}", "\u{1F49B}", "⭐", "✨", "\u{1F31F}", "\u{1F49B}", "⭐", "✨", "\u{1F31F}", "\u{1F49B}"];
     const done = UI.h(
-        "div",
-        { class: "card bg-done bg-sky", "data-sky": st.story.sky },
-        UI.h("div", { class: "bg-confetti", "aria-hidden": "true" }, confetti.map(function (g, i) {
-          return UI.h("span", { class: "bg-conf", text: g, style: { left: (4 + i * 8) + "%", animationDelay: (i * 0.09) + "s", animationDuration: (2.2 + (i % 3) * 0.4) + "s" } });
-        })),
-        UI.h("div", { class: "bg-done-icon", text: st.story.icon }),
-        UI.h("div", { class: "bg-done-title", text: "You did it" + (st.kid ? ", " + st.kid : "") + "!" }),
-        UI.h("p", { class: "bg-done-verse", text: "“" + st.story.verse + "”" }),
-        UI.h("div", { class: "word-ref", text: st.story.ref + " (KJV)" }),
-        read,
-        UI.h("div", { class: "stack bg-done-actions" }, again, other),
-        UI.h("div", { class: "bg-tomorrow" }, UI.h("span", { text: tomorrow.icon }), UI.h("span", { text: "Tomorrow: " + tomorrow.name }))
+      "div",
+      { class: "card bg-done bg-sky", "data-sky": st.story.sky },
+      UI.h("div", { class: "bg-confetti", "aria-hidden": "true" }, confetti.map(function (g, i) {
+        return UI.h("span", {
+          class: "bg-conf",
+          text: g,
+          style: { left: (4 + i * 8) + "%", animationDelay: (i * 0.09) + "s", animationDuration: (2.2 + (i % 3) * 0.4) + "s" },
+        });
+      })),
+      UI.h("div", { class: "bg-done-icon", text: st.story.icon }),
+      UI.h("div", { class: "bg-done-title", text: "You did it" + (st.kid ? ", " + st.kid : "") + "!" }),
+      st.clean ? UI.h("div", { class: "bg-perfect" }, UI.h("span", { text: "✨" }), UI.h("span", { text: "Every one, first try" })) : null,
+      UI.h("p", { class: "bg-done-verse", text: "“" + st.story.verse + "”" }),
+      UI.h("div", { class: "word-ref", text: st.story.ref + " (KJV)" }),
+      read,
+      UI.h("div", { class: "stack bg-done-actions" }, again, other),
+      UI.h("div", { class: "bg-tomorrow" }, UI.h("span", { text: tomorrow.icon }), UI.h("span", { text: "Tomorrow: " + tomorrow.name }))
     );
     root.appendChild(done);
     Backdrop.attach(done, "party");
@@ -1115,5 +1611,12 @@ const BibleGame = (function () {
 
   Router.on("bible", renderBible);
 
-  return { storyForDay: storyForDay, stories: STORIES };
+  return {
+    storyForDay: storyForDay,
+    stories: STORIES,
+    levels: LEVELS,
+    chooseRounds: chooseRounds,
+    rng: rng,
+    hashStr: hashStr,
+  };
 })();

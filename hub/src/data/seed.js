@@ -295,5 +295,7 @@ const SEED_CONFIG = {
   pinterestUrl: "",
   trashDay: 1,          // 0=Sun ... pickup is Monday, so the reminder shows Sunday night
   recycleWeek: "even",
+  // How hard the Bible game is per child. Changed from the game's own screen.
+  gameLevel: { Addison: "big", Sophie: "little" },
   updatedAt: "2026-09-02T12:00:00.000Z",
 };
