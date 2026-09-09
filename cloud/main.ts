@@ -510,7 +510,11 @@ function voiceTag() {
    remember whichever one the account actually accepts. */
 const VOICE_MODELS = ["eleven_flash_v2_5", "eleven_turbo_v2_5", "eleven_multilingual_v2"];
 let modelCache = "";
-const VOICE_MONTHLY_CHARS = 9000;
+/* A free month is 10,000 credits and flash bills half a credit a character,
+   so the real ceiling is ~20,000 characters. This sits well under it, with
+   room for the catechism lines, and it is only ever a guard: every clip is
+   cached for good, so a settled month spends almost nothing. */
+const VOICE_MONTHLY_CHARS = 15000;
 const VOICE_MAX_CHARS = 400;
 const CHUNK = 48 * 1024;
 
