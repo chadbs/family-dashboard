@@ -433,12 +433,61 @@ async function importRecipe(rawUrl: string) {
    to the browser voice. The feature is never load-bearing. */
 
 const VOICE_KEY = () => Deno.env.get("ELEVENLABS_API_KEY") || "";
-/* Rachel — warm, unhurried, the calmest of the stock voices. */
-const VOICE_ID = () => Deno.env.get("ELEVENLABS_VOICE_ID") || "21m00Tcm4TlvDq8ikWAM";
+
+/* Which voice reads to the girls. An explicit ELEVENLABS_VOICE_ID always
+   wins; otherwise we ask the account what it actually has, because the
+   stock voice list differs between accounts and a hard-coded id from
+   someone else's library just 400s. Warm, unhurried, female voices first. */
+const VOICE_WANTED = [
+  "rachel", "sarah", "lily", "alice", "jessica", "matilda", "bella",
+  "aria", "charlotte", "dorothy", "elli", "freya", "grace",
+];
+let voiceIdCache = "";
+let voiceNameCache = "";
+let voiceError = "";
+
+async function resolveVoice(): Promise<string> {
+  const forced = Deno.env.get("ELEVENLABS_VOICE_ID");
+  if (forced) return forced;
+  if (voiceIdCache) return voiceIdCache;
+  const key = VOICE_KEY();
+  if (!key) return "";
+  try {
+    const res = await fetch("https://api.elevenlabs.io/v2/voices?page_size=100", {
+      headers: { "xi-api-key": key },
+    });
+    if (!res.ok) {
+      voiceError = "voices " + res.status + ": " + (await res.text()).slice(0, 160);
+      return "";
+    }
+    const data = await res.json();
+    const list: Array<{ voice_id?: string; name?: string; labels?: Record<string, string> }> =
+      Array.isArray(data?.voices) ? data.voices : [];
+    if (!list.length) {
+      voiceError = "the account has no voices";
+      return "";
+    }
+    let best = list[0];
+    let bestRank = 1e6;
+    for (const v of list) {
+      const n = (v.name || "").toLowerCase();
+      const rank = VOICE_WANTED.indexOf(n);
+      if (rank >= 0 && rank < bestRank) { bestRank = rank; best = v; }
+    }
+    voiceIdCache = best.voice_id || "";
+    voiceNameCache = best.name || "";
+    return voiceIdCache;
+  } catch (e) {
+    voiceError = "voices: " + String((e as Error)?.message || e);
+    return "";
+  }
+}
 /* flash v2.5 bills at half a credit per character, so a 10,000-credit free
    month is ~20,000 characters. We stop well short of that and never spend a
-   character twice. */
-const VOICE_MODEL = "eleven_flash_v2_5";
+   character twice. Older accounts may not have flash; fall back in order and
+   remember whichever one the account actually accepts. */
+const VOICE_MODELS = ["eleven_flash_v2_5", "eleven_turbo_v2_5", "eleven_multilingual_v2"];
+let modelCache = "";
 const VOICE_MONTHLY_CHARS = 9000;
 const VOICE_MAX_CHARS = 400;
 const CHUNK = 48 * 1024;
@@ -461,15 +510,22 @@ async function voiceUsed() {
   return typeof r.value === "number" ? r.value : 0;
 }
 
-async function voiceStatus() {
+async function voiceStatus(probe: boolean) {
   const used = await voiceUsed();
-  return {
+  const out: Obj = {
     enabled: !!VOICE_KEY(),
     used,
     cap: VOICE_MONTHLY_CHARS,
     month: monthKey(),
-    model: VOICE_MODEL,
+    model: modelCache || VOICE_MODELS[0],
   };
+  if (probe) {
+    const id = await resolveVoice();
+    out.voiceId = id ? id.slice(0, 6) + "…" : "";
+    out.voiceName = voiceNameCache;
+    out.lastError = voiceError;
+  }
+  return out;
 }
 
 /* KV hands bytes back over a generic buffer type that Response will not
@@ -525,34 +581,49 @@ async function synthesise(text: string, hash: string): Promise<Uint8Array | null
   if (!key) return null;
   const used = await voiceUsed();
   if (used + text.length > VOICE_MONTHLY_CHARS) return null;
+  const voice = await resolveVoice();
+  if (!voice) return null;
 
-  const res = await fetch(
-    "https://api.elevenlabs.io/v1/text-to-speech/" + VOICE_ID() + "?output_format=mp3_22050_32",
-    {
-      method: "POST",
-      headers: { "xi-api-key": key, "content-type": "application/json" },
-      body: JSON.stringify({
-        text,
-        model_id: VOICE_MODEL,
-        voice_settings: { stability: 0.4, similarity_boost: 0.75, style: 0.25, use_speaker_boost: true },
-      }),
+  const models = modelCache ? [modelCache] : VOICE_MODELS;
+  for (const model of models) {
+    const res = await fetch(
+      "https://api.elevenlabs.io/v1/text-to-speech/" + voice + "?output_format=mp3_22050_32",
+      {
+        method: "POST",
+        headers: { "xi-api-key": key, "content-type": "application/json" },
+        body: JSON.stringify({
+          text,
+          model_id: model,
+          voice_settings: { stability: 0.4, similarity_boost: 0.75, use_speaker_boost: true },
+        }),
+      }
+    );
+    if (!res.ok) {
+      voiceError = model + " " + res.status + ": " + (await res.text()).slice(0, 160);
+      console.warn("elevenlabs " + voiceError);
+      /* A refused voice is worth re-resolving once; a refused model just
+         means try the next one. */
+      if (res.status === 400 && !Deno.env.get("ELEVENLABS_VOICE_ID")) voiceIdCache = "";
+      continue;
     }
-  );
-  if (!res.ok) {
-    console.warn("elevenlabs " + res.status + " " + (await res.text()).slice(0, 200));
-    return null;
+    const bytes = new Uint8Array(await res.arrayBuffer());
+    if (!bytes.length) continue;
+    modelCache = model;
+    voiceError = "";
+    await kv.set(["voice", "used", monthKey()], used + text.length);
+    await storeClip(hash, bytes);
+    return bytes;
   }
-  const bytes = new Uint8Array(await res.arrayBuffer());
-  if (!bytes.length) return null;
-  await kv.set(["voice", "used", monthKey()], used + text.length);
-  await storeClip(hash, bytes);
-  return bytes;
+  return null;
 }
 
 async function say(raw: string): Promise<Response> {
   const text = raw.trim().replace(/\s+/g, " ").slice(0, VOICE_MAX_CHARS);
   if (!text) return new Response(null, { status: 204 });
-  const hash = await sha256(VOICE_ID() + "|" + VOICE_MODEL + "|" + text);
+  /* The cache key names the voice, so changing voices does not serve the
+     old one back. It deliberately does not name the model: the same words
+     in the same voice are the same clip whichever engine produced them. */
+  const hash = await sha256((await resolveVoice()) + "|" + text);
 
   const hit = await cachedClip(hash);
   if (hit) return new Response(audioBody(hit), { headers: { ...AUDIO_HEADERS, "x-clip": "hit" } });
@@ -673,7 +744,7 @@ async function handler(req: Request): Promise<Response> {
 
   /* The read-aloud voice. See the ---- voice ---- block above. */
   if (p === "/api/say/status") {
-    return json(await voiceStatus());
+    return json(await voiceStatus(url.searchParams.get("probe") === "1"));
   }
   if (p === "/api/say") {
     return await say(url.searchParams.get("t") || "");
