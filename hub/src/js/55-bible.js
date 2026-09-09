@@ -778,18 +778,19 @@ const BibleGame = (function () {
 
   /* ---------- who is playing, and at what level ---------- */
 
+  /* There is no difficulty setting to get wrong. Each child simply has her
+     own game: Addison is nearly five and gets the older one, Sophie is two
+     and gets the gentle one. `config.gameLevel` still carries it so it can
+     be changed without a code edit when they grow. */
+  const GROWN_UP_AT = 4;
+
   function levelFor(name) {
     const cfg = Store.get("config") || {};
-    const map = cfg.gameLevel || {};
-    const want = map[name];
-    return LEVELS[want] || LEVELS.little;
-  }
-
-  function setLevel(name, key) {
-    if (!name) return;
-    const patch = {};
-    patch[name] = key;
-    Store.mergeDoc("config", { gameLevel: patch });
+    const want = (cfg.gameLevel || {})[name];
+    if (LEVELS[want]) return LEVELS[want];
+    const age = (cfg.kidAges || {})[name];
+    if (typeof age === "number") return age >= GROWN_UP_AT ? LEVELS.big : LEVELS.little;
+    return LEVELS.little;
   }
 
   /* ---------- sound ---------- */
