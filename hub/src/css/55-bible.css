@@ -1,0 +1,118 @@
+/* ============================================================
+   Bible game — big, bouncy, touch-first. Toddler fingers, no keyboard.
+   ============================================================ */
+
+.bg-intro { padding: 18px 16px 16px; display: flex; flex-direction: column; gap: 12px; align-items: center; text-align: center; }
+.bg-intro-icon { font-size: 3.4rem; line-height: 1; }
+.bg-intro-text { color: var(--ink-2); font-size: 0.95rem; max-width: 30ch; }
+.bg-kids { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; }
+.bg-kid {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  padding: 18px 10px 14px;
+  border-radius: var(--r-lg);
+  border: 1.5px solid var(--line);
+  background: var(--surface-2);
+  color: var(--ink);
+  cursor: pointer;
+  transition: transform 0.12s ease, border-color 0.15s ease;
+}
+.bg-kid:active { transform: scale(0.96); }
+.bg-kid:hover { border-color: var(--delft); }
+.bg-kid-emoji { font-size: 2.8rem; line-height: 1; }
+.bg-kid-name { font-family: var(--serif); font-size: 1.3rem; }
+.bg-kid-sub { font-size: 0.74rem; color: var(--ink-3); font-weight: 600; }
+
+.bg-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.bg-who { display: flex; align-items: center; gap: 8px; font-weight: 600; color: var(--ink-2); font-size: 0.9rem; }
+.bg-story-icon { font-size: 1.4rem; line-height: 1; }
+
+.bg-prompt { display: flex; flex-direction: column; gap: 8px; }
+.bg-progress { display: flex; gap: 6px; }
+.bg-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--line-2); }
+.bg-dot[data-on="done"] { background: var(--leaf); }
+.bg-dot[data-on="now"] { background: var(--delft); transform: scale(1.25); }
+.bg-prompt-row { display: flex; align-items: flex-start; gap: 8px; }
+.bg-prompt-text {
+  flex: 1;
+  font-family: var(--serif);
+  font-size: 1.35rem;
+  line-height: 1.3;
+  text-wrap: balance;
+}
+.bg-say { color: var(--delft); flex-shrink: 0; }
+
+.bg-board { padding: 14px; }
+.bg-stack { display: flex; flex-direction: column; gap: 12px; align-items: stretch; }
+.bg-grid { display: grid; gap: 10px; }
+.bg-grid-2 { grid-template-columns: 1fr 1fr; }
+.bg-grid-3 { grid-template-columns: 1fr 1fr 1fr; }
+
+.bg-tile {
+  min-height: 108px;
+  border-radius: 18px;
+  border: 2px solid var(--line);
+  background: var(--surface-2);
+  display: grid; place-items: center;
+  cursor: pointer;
+  padding: 0;
+  transition: transform 0.12s ease, background 0.15s ease, border-color 0.15s ease, opacity 0.2s ease;
+  touch-action: manipulation;
+}
+.bg-grid-2 .bg-tile { min-height: 132px; }
+.bg-tile:active { transform: scale(0.94); }
+.bg-tile[disabled] { cursor: default; }
+.bg-glyph { font-size: 3rem; line-height: 1; }
+.bg-grid-2 .bg-glyph { font-size: 3.6rem; }
+
+.bg-hit { background: var(--leaf-soft); border-color: var(--leaf); animation: bg-pop 0.5s cubic-bezier(0.2, 0.8, 0.3, 1.4); }
+.bg-miss { animation: bg-wobble 0.45s ease; border-color: var(--tulip); }
+.bg-gone { opacity: 0.18; transform: scale(0.85); }
+.bg-counted { background: var(--amber-soft); border-color: var(--amber); }
+.bg-down .bg-glyph { color: var(--ink-3); }
+.bg-down { background: var(--delft-soft); border-color: var(--delft-soft); }
+.bg-up { background: var(--surface); border-color: var(--delft); }
+
+@keyframes bg-pop { 40% { transform: scale(1.12); } }
+@keyframes bg-wobble { 20% { transform: translateX(-6px); } 40% { transform: translateX(6px); } 60% { transform: translateX(-4px); } 80% { transform: translateX(4px); } }
+
+.bg-counter, .bg-bignum {
+  text-align: center;
+  font-family: var(--serif);
+  color: var(--delft);
+  line-height: 1;
+}
+.bg-counter { font-size: 1.4rem; }
+.bg-bignum { font-size: 3.6rem; }
+
+.bg-sort-item { text-align: center; font-size: 4.4rem; line-height: 1; padding: 6px 0 2px; }
+.bg-choice { min-height: 96px; }
+.bg-choice-text { font-size: 1.5rem; font-weight: 650; }
+
+.bg-done { position: relative; overflow: hidden; padding: 26px 18px 18px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 8px; }
+.bg-confetti { position: absolute; inset: 0; pointer-events: none; }
+.bg-conf { position: absolute; top: -20px; font-size: 1.4rem; animation: bg-fall 2.4s ease-in forwards; }
+@keyframes bg-fall { to { transform: translateY(420px) rotate(200deg); opacity: 0; } }
+.bg-done-icon { font-size: 4rem; line-height: 1; animation: bg-pop 0.6s cubic-bezier(0.2, 0.8, 0.3, 1.4); }
+.bg-done-title { font-family: var(--serif); font-size: 1.9rem; line-height: 1.1; }
+.bg-done-sub { color: var(--leaf); font-weight: 650; }
+.bg-done-verse { font-family: var(--serif); font-size: 1.12rem; line-height: 1.4; color: var(--ink-2); margin-top: 6px; max-width: 34ch; }
+.bg-done-actions { width: 100%; margin-top: 10px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .bg-hit, .bg-miss, .bg-done-icon, .bg-conf { animation: none; }
+  .bg-conf { display: none; }
+}
+
+/* Six tabs now; keep them legible on a phone. */
+@media (max-width: 899px) {
+  .tabbar button { font-size: 0.64rem; letter-spacing: 0; }
+}
+@media (max-width: 380px) {
+  .tabbar button { font-size: 0.58rem; }
+  .tabbar button svg { width: 19px; height: 19px; }
+}
+
+/* On the wall the tiles can be bigger still. */
+body.display-mode .bg-tile { min-height: 130px; }
+body.display-mode .bg-grid-2 .bg-tile { min-height: 160px; }
+body.display-mode .bg-glyph { font-size: 3.6rem; }

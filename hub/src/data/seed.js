@@ -293,7 +293,7 @@ const SEED_PROJECTS = [
 
 const SEED_CONFIG = {
   pinterestUrl: "",
-  trashDay: 3,
+  trashDay: 1,          // 0=Sun ... pickup is Monday, so the reminder shows Sunday night
   recycleWeek: "even",
   updatedAt: "2026-09-02T12:00:00.000Z",
 };

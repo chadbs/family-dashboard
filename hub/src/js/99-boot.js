@@ -9,6 +9,7 @@ const TABS = [
   { route: "recipes", label: "Recipes", icon: "book" },
   { route: "house", label: "House", icon: "home" },
   { route: "rewards", label: "Stars", icon: "star" },
+  { route: "bible", label: "Bible", icon: "cross" },
 ];
 
 function buildTabBar() {

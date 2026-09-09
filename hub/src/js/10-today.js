@@ -515,6 +515,12 @@
     const strip = renderSunStrip(now);
     if (strip) root.appendChild(strip);
 
+    /* The morning verse, same on every screen in the house. */
+    if (typeof Word !== "undefined") {
+      const word = Word.card(now);
+      if (word) root.appendChild(word);
+    }
+
     const left = UI.h("div", {}, renderCleaningCard(now), renderDinnerSection(now));
     const right = UI.h("div", {}, renderAttentionSection(now), renderGoodToKnowSection(now));
 

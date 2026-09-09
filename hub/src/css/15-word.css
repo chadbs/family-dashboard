@@ -1,0 +1,23 @@
+/* The morning verse. Serif, quiet, with the Reformed line tucked beneath. */
+.word-card { padding: 16px 18px 15px; display: flex; flex-direction: column; gap: 8px; }
+.word-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.word-read { color: var(--delft); }
+.word-verse {
+  font-family: var(--serif);
+  font-size: 1.22rem;
+  line-height: 1.42;
+  letter-spacing: -0.005em;
+  text-wrap: pretty;
+}
+.word-ref { font-size: 0.8rem; font-weight: 650; color: var(--delft); letter-spacing: 0.02em; }
+.word-quote {
+  margin-top: 6px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--line);
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.word-quote-text { font-size: 0.92rem; line-height: 1.45; color: var(--ink-2); font-style: italic; }
+.word-quote-who { font-size: 0.76rem; color: var(--ink-3); font-weight: 600; letter-spacing: 0.02em; }
+body.display-mode .word-verse { font-size: 1.35rem; }
