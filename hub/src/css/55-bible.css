@@ -239,6 +239,98 @@
 .bg-choices { display: flex; gap: 10px; justify-content: center; padding-top: 4px; border-top: 1px dashed var(--line); margin-top: 4px; }
 .bg-answer { flex: 1; min-height: 96px; max-width: 130px; }
 
+/* ---- the catechism round ---- */
+
+.bg-answers { display: flex; flex-direction: column; gap: 10px; }
+.bg-truth {
+  min-height: 0;
+  display: flex; flex-direction: row; align-items: center; gap: 14px;
+  padding: 14px 16px;
+  text-align: left;
+}
+.bg-truth-glyph { font-size: 2.4rem; line-height: 1; flex-shrink: 0; }
+.bg-truth-text {
+  font-family: var(--serif);
+  font-size: 1.18rem;
+  line-height: 1.25;
+  color: var(--ink);
+  text-wrap: pretty;
+}
+
+/* The answer said back. This is the part that matters. */
+.bg-teach {
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+  text-align: center;
+  padding: 18px 6px 6px;
+  animation: bg-rise 0.45s cubic-bezier(0.2, 0.8, 0.3, 1.15);
+}
+@keyframes bg-rise { from { opacity: 0; transform: translateY(14px); } }
+.bg-teach-mark { font-size: 2.4rem; line-height: 1; }
+.bg-teach-text {
+  font-family: var(--serif);
+  font-size: 1.28rem;
+  line-height: 1.42;
+  max-width: 30ch;
+  text-wrap: pretty;
+}
+.bg-teach-go { margin-top: 8px; min-height: 50px; }
+
+/* The catechism round is marked on the progress bar. */
+.bg-dot.is-truth { border-radius: 4px; }
+
+/* ---- the Journey ---- */
+
+.bg-journey {
+  display: flex; align-items: center; justify-content: center; gap: 5px;
+  padding: 7px 8px;
+  border-radius: 999px;
+  border: 1.5px solid var(--amber);
+  background: var(--amber-soft);
+  color: var(--ink);
+  font-size: 0.72rem; font-weight: 700; letter-spacing: 0.02em;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.bg-journey:active { transform: scale(0.95); }
+.bg-progress-wrap { display: flex; flex-direction: column; align-items: center; gap: 5px; }
+.bg-chapter {
+  display: flex; flex-direction: column; align-items: center; gap: 12px;
+  text-align: center;
+  padding: 22px 18px 18px;
+}
+.bg-chapter-head { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; }
+.bg-chapter-icon { font-size: 3.6rem; line-height: 1; animation: bg-breathe 3.2s ease-in-out infinite; }
+.bg-chapter-text {
+  font-family: var(--serif);
+  font-size: 1.3rem;
+  line-height: 1.4;
+  max-width: 32ch;
+  text-wrap: pretty;
+}
+.bg-chapter-pips { display: flex; gap: 8px; }
+.bg-pip { width: 26px; height: 5px; border-radius: 3px; background: var(--line-2); }
+.bg-pip.is-on { background: var(--amber); }
+.bg-journey-badge { background: var(--amber-soft); color: var(--ink-2); }
+
+/* What the questions taught, listed at the end and tappable to hear again. */
+.bg-learned {
+  width: 100%; margin-top: 14px; padding-top: 12px;
+  border-top: 1px dashed var(--line);
+  display: flex; flex-direction: column; gap: 8px;
+}
+.bg-learned-row {
+  display: flex; flex-direction: column; gap: 3px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: var(--surface-2);
+  text-align: left;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.bg-learned-text { font-family: var(--serif); font-size: 0.98rem; line-height: 1.35; color: var(--ink); }
+.bg-learned-ref { font-size: 0.72rem; font-weight: 650; color: var(--delft); }
+
 .bg-sort-item { text-align: center; font-size: 4.6rem; line-height: 1; padding: 6px 0 2px; transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.3, 1.2); }
 .bg-sort-go[data-to="sea"] { transform: translateX(-30%) scale(0.9); }
 .bg-sort-go[data-to="land"] { transform: translateX(30%) scale(0.9); }

@@ -1925,6 +1925,98 @@ body.display-mode .word-verse { font-size: 1.35rem; }
 .bg-choices { display: flex; gap: 10px; justify-content: center; padding-top: 4px; border-top: 1px dashed var(--line); margin-top: 4px; }
 .bg-answer { flex: 1; min-height: 96px; max-width: 130px; }
 
+/* ---- the catechism round ---- */
+
+.bg-answers { display: flex; flex-direction: column; gap: 10px; }
+.bg-truth {
+  min-height: 0;
+  display: flex; flex-direction: row; align-items: center; gap: 14px;
+  padding: 14px 16px;
+  text-align: left;
+}
+.bg-truth-glyph { font-size: 2.4rem; line-height: 1; flex-shrink: 0; }
+.bg-truth-text {
+  font-family: var(--serif);
+  font-size: 1.18rem;
+  line-height: 1.25;
+  color: var(--ink);
+  text-wrap: pretty;
+}
+
+/* The answer said back. This is the part that matters. */
+.bg-teach {
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+  text-align: center;
+  padding: 18px 6px 6px;
+  animation: bg-rise 0.45s cubic-bezier(0.2, 0.8, 0.3, 1.15);
+}
+@keyframes bg-rise { from { opacity: 0; transform: translateY(14px); } }
+.bg-teach-mark { font-size: 2.4rem; line-height: 1; }
+.bg-teach-text {
+  font-family: var(--serif);
+  font-size: 1.28rem;
+  line-height: 1.42;
+  max-width: 30ch;
+  text-wrap: pretty;
+}
+.bg-teach-go { margin-top: 8px; min-height: 50px; }
+
+/* The catechism round is marked on the progress bar. */
+.bg-dot.is-truth { border-radius: 4px; }
+
+/* ---- the Journey ---- */
+
+.bg-journey {
+  display: flex; align-items: center; justify-content: center; gap: 5px;
+  padding: 7px 8px;
+  border-radius: 999px;
+  border: 1.5px solid var(--amber);
+  background: var(--amber-soft);
+  color: var(--ink);
+  font-size: 0.72rem; font-weight: 700; letter-spacing: 0.02em;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.bg-journey:active { transform: scale(0.95); }
+.bg-progress-wrap { display: flex; flex-direction: column; align-items: center; gap: 5px; }
+.bg-chapter {
+  display: flex; flex-direction: column; align-items: center; gap: 12px;
+  text-align: center;
+  padding: 22px 18px 18px;
+}
+.bg-chapter-head { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; }
+.bg-chapter-icon { font-size: 3.6rem; line-height: 1; animation: bg-breathe 3.2s ease-in-out infinite; }
+.bg-chapter-text {
+  font-family: var(--serif);
+  font-size: 1.3rem;
+  line-height: 1.4;
+  max-width: 32ch;
+  text-wrap: pretty;
+}
+.bg-chapter-pips { display: flex; gap: 8px; }
+.bg-pip { width: 26px; height: 5px; border-radius: 3px; background: var(--line-2); }
+.bg-pip.is-on { background: var(--amber); }
+.bg-journey-badge { background: var(--amber-soft); color: var(--ink-2); }
+
+/* What the questions taught, listed at the end and tappable to hear again. */
+.bg-learned {
+  width: 100%; margin-top: 14px; padding-top: 12px;
+  border-top: 1px dashed var(--line);
+  display: flex; flex-direction: column; gap: 8px;
+}
+.bg-learned-row {
+  display: flex; flex-direction: column; gap: 3px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: var(--surface-2);
+  text-align: left;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.bg-learned-text { font-family: var(--serif); font-size: 0.98rem; line-height: 1.35; color: var(--ink); }
+.bg-learned-ref { font-size: 0.72rem; font-weight: 650; color: var(--delft); }
+
 .bg-sort-item { text-align: center; font-size: 4.6rem; line-height: 1; padding: 6px 0 2px; transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.3, 1.2); }
 .bg-sort-go[data-to="sea"] { transform: translateX(-30%) scale(0.9); }
 .bg-sort-go[data-to="land"] { transform: translateX(30%) scale(0.9); }
@@ -11126,6 +11218,169 @@ const BibleGame = (function () {
     },
   ];
 
+  /* ---------- what the story is, told in three beats ----------
+     Spoken between the chapters of a Journey, so the game is a story with
+     rounds in it rather than rounds with a verse stapled on. Plain words,
+     faithful to the text. */
+
+  const BEATS = {
+    creation: [
+      "In the beginning, there was nothing at all. Then God spoke, and there was light.",
+      "God made the sky and the sea, the trees and every animal. And God saw that it was good.",
+      "Last of all God made people, to know him and to love him. And he rested on the seventh day.",
+    ],
+    noah: [
+      "The whole world had turned away from God. But Noah walked with God, and God told him to build an ark.",
+      "Two by two the animals came in, and the rain fell for forty days and forty nights.",
+      "When the water went down, God set a rainbow in the sky, and promised never to flood the whole earth again.",
+    ],
+    david: [
+      "David was the youngest of eight brothers, and he kept his father's sheep.",
+      "A giant named Goliath frightened the whole army. But David said, I come to you in the name of the LORD.",
+      "With one small stone, God gave David the victory. The battle is the LORD's.",
+    ],
+    jonah: [
+      "God told Jonah to go and preach to Nineveh. But Jonah ran the other way, onto a ship.",
+      "A great storm came, and a great fish swallowed Jonah up. For three days he prayed inside it.",
+      "God heard him, and the fish put him safe on dry land. Then Jonah went to Nineveh after all.",
+    ],
+    shepherd: [
+      "Jesus said, I am the good shepherd. He knows every one of his sheep by name.",
+      "If even one little lamb wanders off, the shepherd goes out and looks until he finds it.",
+      "He carries it home on his shoulders, rejoicing. That is how Jesus loves his people.",
+    ],
+    children: [
+      "Mothers and fathers were bringing their little children to Jesus.",
+      "The disciples tried to send them away. They thought Jesus was too busy for children.",
+      "But Jesus said, Suffer the little children to come unto me, and forbid them not. And he took them up in his arms and blessed them.",
+    ],
+    daniel: [
+      "Daniel prayed to God three times every day, with his window open toward Jerusalem.",
+      "A wicked law said no one could pray. Daniel prayed anyway, and they threw him to the lions.",
+      "But God sent his angel and shut the lions' mouths, and in the morning Daniel was not hurt at all.",
+    ],
+    loaves: [
+      "A great crowd followed Jesus all day, and by evening everybody was hungry.",
+      "One boy had five little loaves and two small fish. That was all the food there was.",
+      "Jesus gave thanks, and broke it, and every single person ate and was full. Twelve baskets were left over.",
+    ],
+    moses: [
+      "A cruel king wanted every Hebrew baby boy taken away.",
+      "So a mother hid her baby in a basket, and set it among the reeds at the river's edge.",
+      "The king's own daughter found him, and named him Moses. God was keeping him safe all along.",
+    ],
+    fruit: [
+      "When God saves a person, he puts his own Spirit inside them.",
+      "And the Spirit grows good fruit in them: love, joy, peace, patience and kindness.",
+      "We do not grow it ourselves, any more than an apple makes itself. God grows it in us.",
+    ],
+  };
+
+  /* ---------- the catechism ----------
+     What this family believes, put into questions a small child can answer
+     and a sentence they can carry away. The wrong answers are plainly
+     wrong on purpose: a near-miss would teach the error. Every right
+     answer is followed by the truth spoken out loud, because the point is
+     the teaching, not the tapping.
+
+     The distinction Dad most wants them to have: we are saved by grace,
+     through faith, and we obey *because* we are loved, never in order to
+     be. That ordering appears again and again below. */
+
+  const DOCTRINE_LITTLE = [
+    { q: "Who made you?", options: [["\u{1F30D}", "God made me", 1], ["\u{1F9F8}", "A toy", 0]],
+      teach: "God made you. God made everything there is.", ref: "Genesis 1:1" },
+    { q: "Does God love you?", options: [["❤️", "Yes!", 1], ["\u{1F614}", "No", 0]],
+      teach: "God loves you. He loved us first, before we ever loved him.", ref: "1 John 4:19" },
+    { q: "Who saves us from our sin?", options: [["✝️", "Jesus", 1], ["\u{1F64B}", "I do", 0]],
+      teach: "Jesus saves us. We could never save ourselves.", ref: "Acts 4:12" },
+    { q: "Where do we read about God?", options: [["\u{1F4D6}", "The Bible", 1], ["\u{1F4FA}", "The TV", 0]],
+      teach: "God tells us about himself in the Bible. Every word of it is true.", ref: "Psalm 119:105" },
+    { q: "Who hears you when you pray?", options: [["\u{1F64F}", "God hears me", 1], ["\u{1F634}", "Nobody", 0]],
+      teach: "God hears every prayer, even a very little one.", ref: "Psalm 34:15" },
+    { q: "Who takes care of you every day?", options: [["\u{1F30D}", "God does", 1], ["\u{1F340}", "Good luck", 0]],
+      teach: "God takes care of you every single day. Nothing happens by luck.", ref: "1 Peter 5:7" },
+    { q: "Is God good all the time?", options: [["\u{1F31F}", "All the time", 1], ["⏰", "Only sometimes", 0]],
+      teach: "God is good all the time. He never changes.", ref: "Psalm 100:5" },
+    { q: "Who made the animals?", options: [["\u{1F992}", "God made them", 1], ["\u{1F9D1}", "People made them", 0]],
+      teach: "God made every animal, the giraffe and the bunny and the turtle too.", ref: "Genesis 1:25" },
+    { q: "Who loved us first?", options: [["❤️", "God did", 1], ["\u{1F64B}", "I did", 0]],
+      teach: "We love him, because he first loved us.", ref: "1 John 4:19" },
+    { q: "Can God do anything?", options: [["✨", "Yes, anything", 1], ["\u{1F937}", "Only little things", 0]],
+      teach: "Nothing is too hard for God.", ref: "Jeremiah 32:17" },
+    { q: "Who should we obey?", options: [["\u{1F30D}", "God", 1], ["\u{1F9F8}", "Our toys", 0]],
+      teach: "We obey God, and we obey Mum and Dad, because God tells us to.", ref: "Ephesians 6:1" },
+    { q: "Did Jesus stay dead?", options: [["\u{1F31E}", "He rose again!", 1], ["\u{1FAA6}", "He stayed dead", 0]],
+      teach: "Jesus died for sin, and on the third day he rose again.", ref: "1 Corinthians 15:4" },
+  ];
+
+  const DOCTRINE_BIG = [
+    { q: "Are we saved by believing in Jesus, or by being good?",
+      options: [["✝️", "By trusting Jesus", 1], ["\u{1F3C6}", "By being good", 0], ["\u{1F60A}", "By being nice", 0]],
+      teach: "By grace are ye saved through faith; and that not of yourselves: it is the gift of God. Not by anything we do.",
+      ref: "Ephesians 2:8" },
+    { q: "Why do we obey God? To make him love us, or because he already does?",
+      options: [["❤️", "He already loves us", 1], ["\u{1F3C6}", "To make him love us", 0], ["\u{1F440}", "So people see us", 0]],
+      teach: "We obey because we are loved, never so that we will be. Obeying is our thank-you, not our payment.",
+      ref: "1 John 4:19" },
+    { q: "Who chose first — God, or us?",
+      options: [["\u{1F30D}", "God chose first", 1], ["\u{1F64B}", "I chose first", 0], ["\u{1F3B2}", "It just happened", 0]],
+      teach: "Ye have not chosen me, but I have chosen you. God loved us before we ever knew him.",
+      ref: "John 15:16" },
+    { q: "Who can change a person's heart?",
+      options: [["\u{1F54A}️", "God alone", 1], ["\u{1F4AA}", "Trying really hard", 0], ["\u{1F9D1}", "Your parents", 0]],
+      teach: "Only God can give a new heart. He says: a new heart also will I give you.",
+      ref: "Ezekiel 36:26" },
+    { q: "Why did God make you?",
+      options: [["✨", "For his glory", 1], ["\u{1F3AE}", "To have fun", 0], ["\u{1F4B0}", "To get rich", 0]],
+      teach: "Man's chief end is to glorify God, and to enjoy him for ever.",
+      ref: "Westminster Shorter Catechism" },
+    { q: "Can being nice get you into heaven?",
+      options: [["✝️", "No — only Jesus can", 1], ["\u{1F60A}", "Yes, if I'm nice", 0], ["\u{1F3C6}", "If I'm the best", 0]],
+      teach: "All our best works are not enough. Jesus is the way, the truth, and the life.",
+      ref: "John 14:6" },
+    { q: "So are good works useless?",
+      options: [["\u{1F34E}", "No — they grow from love", 1], ["\u{1F5D1}️", "Yes, useless", 0], ["\u{1F3C6}", "They save us", 0]],
+      teach: "Good works do not save us; they grow out of us once we are saved, like fruit on a tree.",
+      ref: "Ephesians 2:10" },
+    { q: "How many Gods are there?",
+      options: [["☝️", "Only one", 1], ["✌️", "Two", 0], ["\u{1F522}", "Many", 0]],
+      teach: "There is one God, in three persons: the Father, the Son, and the Holy Ghost.",
+      ref: "Deuteronomy 6:4" },
+    { q: "Who is the third person of the Trinity?",
+      options: [["\u{1F54A}️", "The Holy Spirit", 1], ["\u{1F47C}", "An angel", 0], ["\u{1F451}", "A king", 0]],
+      teach: "The Father, the Son, and the Holy Ghost — one God, three persons.",
+      ref: "Matthew 28:19" },
+    { q: "What is sin?",
+      options: [["\u{1F4D6}", "Breaking God's law", 1], ["\u{1F622}", "Feeling sad", 0], ["\u{1F615}", "A little mistake", 0]],
+      teach: "Sin is breaking God's law — in what we do, and in what we want in our hearts.",
+      ref: "1 John 3:4" },
+    { q: "Who has sinned?",
+      options: [["\u{1F30D}", "Every one of us", 1], ["\u{1F608}", "Only bad people", 0], ["\u{1F6AB}", "Nobody", 0]],
+      teach: "All have sinned, and come short of the glory of God. That is why we all need a Saviour.",
+      ref: "Romans 3:23" },
+    { q: "God's love for you — did you earn it?",
+      options: [["\u{1F381}", "No, it's a gift", 1], ["\u{1F3C6}", "I earned it", 0], ["\u{1F91D}", "Half and half", 0]],
+      teach: "It is a gift. A gift you work for is not a gift at all.",
+      ref: "Romans 6:23" },
+    { q: "Does God ever change his mind about loving his children?",
+      options: [["\u{1F5FB}", "Never", 1], ["\u{1F324}️", "Sometimes", 0], ["\u{1F504}", "Every day", 0]],
+      teach: "Nothing can separate us from the love of God. He does not change.",
+      ref: "Romans 8:39" },
+    { q: "When you do wrong, what should you do?",
+      options: [["\u{1F64F}", "Tell God, and be forgiven", 1], ["\u{1F648}", "Hide it", 0], ["\u{1F3C6}", "Do extra chores", 0]],
+      teach: "If we confess our sins, he is faithful and just to forgive us. We do not have to earn it back.",
+      ref: "1 John 1:9" },
+    { q: "Who keeps the whole world going?",
+      options: [["\u{1F30D}", "God does", 1], ["\u{1F340}", "Luck", 0], ["\u{1F9D1}", "People do", 0]],
+      teach: "God holds all things together. Not one sparrow falls without him.",
+      ref: "Matthew 10:29" },
+    { q: "Whose is the whole earth?",
+      options: [["\u{1F30D}", "It is the LORD's", 1], ["\u{1F451}", "The king's", 0], ["\u{1F6AB}", "Nobody's", 0]],
+      teach: "The earth is the LORD's, and the fulness thereof.",
+      ref: "Psalm 24:1" },
+  ];
+
   /* ---------- levels ---------- */
 
   const LEVELS = {
@@ -11141,11 +11396,18 @@ const BibleGame = (function () {
     },
   };
 
-  /* How hard each shape is, so a session can ramp instead of lurching. */
+  /* How hard each shape is, so a session can ramp instead of lurching.
+     The catechism round sits in the middle: it is not hard to tap, but it
+     is the one worth arriving at with a warm brain. */
   const WEIGHT = {
-    pick: 1, sort: 1, find: 2, tapall: 2, count: 2,
+    pick: 1, sort: 1, find: 2, tapall: 2, count: 2, truth: 3,
     pairs: 3, more: 3, oddone: 4, order: 5, missing: 5,
   };
+
+  /* A Journey is the long version: twelve rounds in three chapters, with
+     the story told in between and the catechism closing each chapter. */
+  const JOURNEY_CHAPTERS = 3;
+  const JOURNEY_PER_CHAPTER = 4;
 
   const PRAISE = ["Yes!", "You found it!", "Great job!", "Wonderful!", "That's right!", "Hooray!", "Well done!", "Clever girl!"];
   const NUDGE = ["Try again!", "Almost! Look again.", "Not that one. Keep looking!", "Hmm, have another go."];
@@ -11350,9 +11612,59 @@ const BibleGame = (function () {
     return NUMBER_WORDS[n] || String(n);
   }
 
+  /* A catechism question, with its answers shuffled so the right one is
+     not always in the same place. */
+  function buildTruth(spec, r) {
+    return {
+      type: "truth",
+      prompt: spec.q,
+      teach: spec.teach,
+      ref: spec.ref,
+      options: shuffle(
+        spec.options.map(function (o) { return { glyph: o[0], text: o[1], ok: !!o[2] }; }),
+        r
+      ),
+    };
+  }
+
+  function truthPool(level, r) {
+    const src = level.key === "big" ? DOCTRINE_BIG : DOCTRINE_LITTLE;
+    return shuffle(src, r).map(function (s) { return buildTruth(s, r); });
+  }
+
   /* Pick the session's rounds: ramp them, and never the same shape twice
-     in a row. */
-  function chooseRounds(story, level, r) {
+     in a row. Every session carries at least one catechism round. */
+  function chooseRounds(story, level, r, mode) {
+    if (mode === "journey") return journeyRounds(story, level, r);
+
+    const gameplay = gameplayPool(story, level, r);
+    const truths = truthPool(level, r);
+    const want = Math.min(level.rounds, gameplay.length + 1);
+    const chosen = ramp(spread(gameplay, want - 1), level);
+    /* Drop the question in around two thirds of the way through, once she
+       is warmed up but before she is tired. */
+    chosen.splice(Math.max(1, Math.round(chosen.length * 0.66)), 0, truths[0]);
+    return chosen;
+  }
+
+  /* Twelve rounds, three chapters, the story told between them, and each
+     chapter closing on a question. */
+  function journeyRounds(story, level, r) {
+    const gameplay = gameplayPool(story, level, r);
+    const truths = truthPool(level, r);
+    const perChapter = JOURNEY_PER_CHAPTER - 1;
+    const need = JOURNEY_CHAPTERS * perChapter;
+    const picked = ramp(spread(gameplay, Math.min(need, gameplay.length)), level);
+    const out = [];
+    for (let c = 0; c < JOURNEY_CHAPTERS; c++) {
+      const slice = picked.slice(c * perChapter, (c + 1) * perChapter);
+      slice.forEach(function (rd) { out.push(rd); });
+      if (truths[c]) out.push(truths[c]);
+    }
+    return out;
+  }
+
+  function gameplayPool(story, level, r) {
     const written = story.rounds
       .filter(function (s) { return !s.level || s.level === level.key; })
       .map(function (s) { return buildRound(s, r, level, story); });
@@ -11360,12 +11672,14 @@ const BibleGame = (function () {
     let pool = shuffle(written, r);
     if (level.procedural) {
       const gen = shuffle(proceduralRounds(story, r, level), r);
-      /* Half the big session is thinking rounds, and at least two of them. */
-      const wantGen = Math.max(2, Math.floor(level.rounds / 2));
-      pool = gen.slice(0, wantGen).concat(pool);
+      pool = gen.concat(pool);
     }
+    return pool;
+  }
 
-    const want = Math.min(level.rounds, pool.length);
+  /* Take a spread of shapes rather than the first N, so a session is not
+     all one thing when a story leans heavily on one. */
+  function spread(pool, want) {
     /* Take a spread rather than the first N, so a session is not all one
        shape when a story leans heavily on one. */
     const chosen = [];
@@ -11380,21 +11694,25 @@ const BibleGame = (function () {
     for (let i = 0; chosen.length < want && i < pool.length; i++) {
       if (chosen.indexOf(pool[i]) < 0) chosen.push(pool[i]);
     }
+    return chosen;
+  }
 
-    chosen.sort(function (a, b) { return (WEIGHT[a.type] || 2) - (WEIGHT[b.type] || 2); });
-    /* Break up neighbours of the same shape without undoing the ramp. */
-    for (let i = 1; i < chosen.length; i++) {
-      if (chosen[i].type !== chosen[i - 1].type) continue;
-      for (let j = i + 1; j < chosen.length; j++) {
-        if (chosen[j].type !== chosen[i].type) {
-          const t = chosen[i];
-          chosen[i] = chosen[j];
-          chosen[j] = t;
+  /* Easy first, hard last — but never two of the same shape together. */
+  function ramp(list) {
+    const out = list.slice();
+    out.sort(function (a, b) { return (WEIGHT[a.type] || 2) - (WEIGHT[b.type] || 2); });
+    for (let i = 1; i < out.length; i++) {
+      if (out[i].type !== out[i - 1].type) continue;
+      for (let j = i + 1; j < out.length; j++) {
+        if (out[j].type !== out[i].type) {
+          const t = out[i];
+          out[i] = out[j];
+          out[j] = t;
           break;
         }
       }
     }
-    return chosen;
+    return out;
   }
 
   /* ---------- who is playing, and at what level ---------- */
@@ -11660,29 +11978,49 @@ const BibleGame = (function () {
     return (st.pickId && storyById(st.pickId)) || storyForDay(new Date());
   }
 
-  function startGame(kid, level, fresh) {
+  function startGame(kid, level, fresh, mode) {
     const st = S();
     const story = offered();
     const seedStr = fresh
       ? String(Math.random())
-      : Fmt.dayKey() + ":" + story.id + ":" + level.key;
+      : Fmt.dayKey() + ":" + story.id + ":" + level.key + ":" + (mode || "quick");
     const r = rng(hashStr(seedStr));
-    const rounds = chooseRounds(story, level, r);
+    const rounds = chooseRounds(story, level, r, mode);
     clearTimers();
-    st.phase = "play";
     st.kid = kid;
     st.level = level;
     st.story = story;
     st.rounds = rounds;
+    st.mode = mode || "quick";
     st.idx = 0;
     st.clean = true;
     st.roundState = null;
     st.enter = true;
     SFX.start();
     Voice.unlock();
+    if (st.mode === "journey") {
+      st.chapter = 0;
+      st.phase = "chapter";
+      Router.refresh();
+      setTimeout(function () { say(chapterText(st)); }, 420);
+      return;
+    }
+    st.phase = "play";
     Router.refresh();
     speakRound(rounds[0], 380);
     armHint();
+  }
+
+  /* Which chapter a round belongs to, and the words that open it. */
+  function chapterOf(idx) {
+    return Math.floor(idx / JOURNEY_PER_CHAPTER);
+  }
+  function chapterStart(idx) {
+    return idx % JOURNEY_PER_CHAPTER === 0;
+  }
+  function chapterText(st) {
+    const beats = BEATS[st.story.id] || [];
+    return beats[st.chapter] || st.story.verse;
   }
 
   function currentRound() {
@@ -11700,13 +12038,21 @@ const BibleGame = (function () {
 
   /* Say a round's prompt, and get the next one's audio ready while this one
      plays so the game never waits on the network. */
+  /* Neither of them can read the answers, so a catechism question is read
+     out with its choices, the way you would ask it at the table. */
+  function roundSpeech(round) {
+    if (round.type !== "truth") return round.prompt;
+    return round.prompt + " Is it: " + round.options.map(function (o) { return o.text; }).join("? Or: ") + "?";
+  }
+
   function speakRound(round, delay) {
     setTimeout(function () {
-      say(round.prompt);
+      say(roundSpeech(round));
       const st = S();
       const next = st.rounds && st.rounds[st.idx + 1];
-      if (next) Voice.prefetch(next.prompt);
+      if (next) Voice.prefetch(roundSpeech(next));
       if (round.prompt2) Voice.prefetch(round.prompt2);
+      if (round.teach) Voice.prefetch(round.teach);
     }, delay || 0);
   }
 
@@ -11714,12 +12060,15 @@ const BibleGame = (function () {
 
   let hintTimer = null;
   let peekTimer = null;
+  let teachTimer = null;
 
   function clearTimers() {
     clearTimeout(hintTimer);
     clearTimeout(peekTimer);
+    clearTimeout(teachTimer);
     hintTimer = null;
     peekTimer = null;
+    teachTimer = null;
   }
 
   function armHint() {
@@ -11765,8 +12114,26 @@ const BibleGame = (function () {
     }
     st.idx++;
     st.enter = true;
+    /* On a Journey the story picks up again at the top of each chapter. */
+    if (st.mode === "journey" && chapterStart(st.idx)) {
+      st.chapter = chapterOf(st.idx);
+      st.phase = "chapter";
+      Router.refresh();
+      setTimeout(function () { say(chapterText(st)); }, 380);
+      return;
+    }
     Router.refresh();
     speakRound(st.rounds[st.idx], 340);
+    armHint();
+  }
+
+  /* Leaving the chapter card and getting on with it. */
+  function beginChapter() {
+    const st = S();
+    st.phase = "play";
+    st.enter = true;
+    Router.refresh();
+    speakRound(st.rounds[st.idx], 260);
     armHint();
   }
 
@@ -11774,9 +12141,22 @@ const BibleGame = (function () {
     SFX.good();
     clearTimeout(hintTimer);
     const rs = roundState();
+    const round = currentRound();
     rs.solved = true;
     rs.hint = false;
     if (el) burst(el);
+
+    /* A catechism question is not finished when the right tile is tapped.
+       The answer gets said back, in full, because that is the whole point
+       of asking. */
+    if (round && round.type === "truth") {
+      rs.teaching = true;
+      Router.refresh();
+      say(round.teach);
+      teachTimer = setTimeout(advance, 6200);
+      return;
+    }
+
     say(pickOne(PRAISE));
     Router.refresh();
     setTimeout(advance, 900);
@@ -11902,7 +12282,7 @@ const BibleGame = (function () {
         UI.h("span", { class: "bg-kid-name", text: k.name }),
         UI.h("span", { class: "bg-kid-sub", text: "Tap to play" })
       );
-      b.addEventListener("click", function () { startGame(k.name, levelFor(k.name), false); });
+      b.addEventListener("click", function () { startGame(k.name, levelFor(k.name), false, "quick"); });
       const chip = UI.h(
         "button",
         { class: "bg-level", type: "button", "data-level": level.key, "aria-label": "Difficulty for " + k.name + ": " + level.label },
@@ -11915,6 +12295,17 @@ const BibleGame = (function () {
       });
       card.appendChild(b);
       card.appendChild(chip);
+      /* The long version, for when there is time for the whole story. */
+      if (level.key === "big") {
+        const j = UI.h(
+          "button",
+          { class: "bg-journey", type: "button", "aria-label": "Play the long journey with " + k.name },
+          UI.h("span", { text: "\u{1F5FA}️" }),
+          UI.h("span", { text: "Journey" })
+        );
+        j.addEventListener("click", function () { startGame(k.name, levelFor(k.name), false, "journey"); });
+        card.appendChild(j);
+      }
       return card;
     });
 
@@ -11926,7 +12317,7 @@ const BibleGame = (function () {
       UI.h("span", { class: "bg-kid-name", text: kids.length ? "Together" : "Play" }),
       UI.h("span", { class: "bg-kid-sub", text: "Tap to play" })
     );
-    anyBtn.addEventListener("click", function () { startGame("", LEVELS.little, false); });
+    anyBtn.addEventListener("click", function () { startGame("", LEVELS.little, false, "quick"); });
     anyone.appendChild(anyBtn);
     players.push(anyone);
 
@@ -12022,13 +12413,24 @@ const BibleGame = (function () {
 
   function renderProgress() {
     const st = S();
-    return UI.h(
+    const dots = UI.h(
       "div",
       { class: "bg-progress", "aria-label": "Round " + (st.idx + 1) + " of " + st.rounds.length },
-      st.rounds.map(function (_, i) {
+      st.rounds.map(function (rd, i) {
         const on = i < st.idx ? "done" : i === st.idx ? "now" : "";
-        return UI.h("span", { class: "bg-dot", "data-on": on }, on === "done" ? UI.icon("check") : null);
+        return UI.h(
+          "span",
+          { class: "bg-dot" + (rd.type === "truth" ? " is-truth" : ""), "data-on": on },
+          on === "done" ? UI.icon("check") : null
+        );
       })
+    );
+    if (st.mode !== "journey") return dots;
+    return UI.h(
+      "div",
+      { class: "bg-progress-wrap" },
+      UI.h("div", { class: "tiny muted", text: "Part " + (chapterOf(st.idx) + 1) + " of " + JOURNEY_CHAPTERS }),
+      dots
     );
   }
 
@@ -12356,7 +12758,58 @@ const BibleGame = (function () {
     );
   }
 
+  /* The catechism round. Big soft answers, each with its picture, and the
+     truth said back the moment she gets it right. */
+  function renderTruth(round) {
+    const rs = roundState();
+
+    if (rs.teaching) {
+      const card = UI.h(
+        "div",
+        { class: "bg-teach" },
+        UI.h("div", { class: "bg-teach-mark", text: "✝️" }),
+        UI.h("p", { class: "bg-teach-text", text: round.teach }),
+        round.ref ? UI.h("div", { class: "word-ref", text: round.ref }) : null,
+        UI.h("button", { class: "btn btn-primary btn-block bg-teach-go", type: "button" }, "Amen")
+      );
+      card.querySelector(".bg-teach-go").addEventListener("click", function () {
+        clearTimeout(teachTimer);
+        teachTimer = null;
+        advance();
+      });
+      return card;
+    }
+
+    return UI.h(
+      "div",
+      { class: "bg-answers" },
+      round.options.map(function (o, i) {
+        const key = "o" + i;
+        const dead = rs.dead.indexOf(key) >= 0;
+        const b = UI.h(
+          "button",
+          {
+            class: "bg-tile bg-truth" +
+              (rs.solved && o.ok ? " bg-hit" : rs.wrong === key ? " bg-miss" : "") +
+              deadCls(rs, key) + hintCls(rs, o.ok),
+            type: "button",
+            disabled: rs.solved || dead ? true : null,
+          },
+          UI.h("span", { class: "bg-truth-glyph", text: o.glyph }),
+          UI.h("span", { class: "bg-truth-text", text: o.text })
+        );
+        b.style.setProperty("--i", String(i));
+        b.addEventListener("click", function (ev) {
+          if (o.ok) good(ev.currentTarget);
+          else miss(key);
+        });
+        return b;
+      })
+    );
+  }
+
   function renderBoard(round) {
+    if (round.type === "truth") return renderTruth(round);
     if (round.type === "pick") return renderChoiceBoard(round, round.answer, round.tiles.length > 4 ? 3 : 2);
     if (round.type === "oddone") return renderChoiceBoard(round, round.answer, 2);
     if (round.type === "find") return renderChoiceBoard(round, round.target, round.tiles.length > 9 ? 4 : 3);
@@ -12417,7 +12870,10 @@ const BibleGame = (function () {
     const tomorrow = tomorrowStory(new Date());
 
     const again = UI.h("button", { class: "btn btn-primary btn-block bg-big-btn", type: "button" }, "Play again");
-    again.addEventListener("click", function () { startGame(st.kid, st.level, true); });
+    again.addEventListener("click", function () { startGame(st.kid, st.level, true, st.mode); });
+
+    /* What the questions taught, so it can be read back at bedtime. */
+    const learned = (st.rounds || []).filter(function (r) { return r.type === "truth"; });
     const other = UI.h("button", { class: "btn btn-block", type: "button" }, "All done");
     other.addEventListener("click", function () { st.phase = "kid"; hush(); Router.refresh(); });
     const read = UI.h("button", { class: "btn btn-sm", type: "button" }, UI.icon("sound"), "Read the verse");
@@ -12437,9 +12893,27 @@ const BibleGame = (function () {
       UI.h("div", { class: "bg-done-icon", text: st.story.icon }),
       UI.h("div", { class: "bg-done-title", text: "You did it" + (st.kid ? ", " + st.kid : "") + "!" }),
       st.clean ? UI.h("div", { class: "bg-perfect" }, UI.h("span", { text: "✨" }), UI.h("span", { text: "Every one, first try" })) : null,
+      st.mode === "journey" ? UI.h("div", { class: "bg-perfect bg-journey-badge" }, UI.h("span", { text: "\u{1F5FA}️" }), UI.h("span", { text: "The whole journey" })) : null,
       UI.h("p", { class: "bg-done-verse", text: "“" + st.story.verse + "”" }),
       UI.h("div", { class: "word-ref", text: st.story.ref + " (KJV)" }),
       read,
+      learned.length
+        ? UI.h(
+            "div",
+            { class: "bg-learned" },
+            UI.h("div", { class: "eyebrow", text: learned.length > 1 ? "What we learned" : "What we learned today" }),
+            learned.map(function (t) {
+              const row = UI.h(
+                "button",
+                { class: "bg-learned-row", type: "button", "aria-label": "Read again: " + t.teach },
+                UI.h("span", { class: "bg-learned-text", text: t.teach }),
+                t.ref ? UI.h("span", { class: "bg-learned-ref", text: t.ref }) : null
+              );
+              row.addEventListener("click", function () { say(t.teach); });
+              return row;
+            })
+          )
+        : null,
       UI.h("div", { class: "stack bg-done-actions" }, again, other),
       UI.h("div", { class: "bg-tomorrow" }, UI.h("span", { text: tomorrow.icon }), UI.h("span", { text: "Tomorrow: " + tomorrow.name }))
     );
@@ -12447,10 +12921,73 @@ const BibleGame = (function () {
     Backdrop.attach(done, "party");
   }
 
+  /* The story, between the chapters of a Journey. */
+  function renderChapter(root) {
+    const st = S();
+    const n = st.chapter + 1;
+
+    const go = UI.h(
+      "button",
+      { class: "btn btn-primary btn-block bg-big-btn", type: "button" },
+      n < JOURNEY_CHAPTERS ? "Keep going" : "Last part!"
+    );
+    go.addEventListener("click", beginChapter);
+
+    const again = UI.h("button", { class: "ibtn", type: "button", "aria-label": "Say it again" }, UI.icon("sound"));
+    again.addEventListener("click", function () { say(chapterText(st)); });
+
+    const quit = UI.h("button", { class: "ibtn", type: "button", "aria-label": "Stop playing" }, UI.icon("x"));
+    quit.addEventListener("click", function () {
+      st.phase = "kid";
+      clearTimers();
+      hush();
+      Router.refresh();
+    });
+
+    root.appendChild(
+      UI.h(
+        "div",
+        { class: "bg-top" },
+        UI.h(
+          "div",
+          { class: "bg-who" },
+          UI.h("span", { class: "bg-story-icon", text: st.story.icon }),
+          UI.h("span", { text: st.story.name + (st.kid ? " · " + st.kid : "") })
+        ),
+        UI.h("div", { class: "bg-top-actions" }, muteButton(), quit)
+      )
+    );
+
+    const card = UI.h(
+      "div",
+      { class: "card bg-chapter bg-sky bg-enter", "data-sky": st.story.sky },
+      UI.h("div", { class: "bg-scene", "aria-hidden": "true" }, sceneBits(st.story.sky)),
+      UI.h(
+        "div",
+        { class: "bg-chapter-head" },
+        UI.h("div", { class: "eyebrow", text: "Part " + n + " of " + JOURNEY_CHAPTERS }),
+        again
+      ),
+      UI.h("div", { class: "bg-chapter-icon", text: st.story.icon }),
+      UI.h("p", { class: "bg-chapter-text", text: chapterText(st) }),
+      UI.h(
+        "div",
+        { class: "bg-chapter-pips", "aria-hidden": "true" },
+        [0, 1, 2].map(function (i) {
+          return UI.h("span", { class: "bg-pip" + (i <= st.chapter ? " is-on" : "") });
+        })
+      ),
+      go
+    );
+    root.appendChild(card);
+    Backdrop.attach(card, st.story.sky);
+  }
+
   function renderBible(root) {
     root.classList.add("bg-view");
     Backdrop.load();
     const st = S();
+    if (st.phase === "chapter") return renderChapter(root);
     if (st.phase === "play") return renderPlay(root);
     if (st.phase === "done") return renderDone(root);
     return renderKidPicker(root);
