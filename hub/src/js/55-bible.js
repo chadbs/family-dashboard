@@ -261,14 +261,9 @@ const BibleGame = (function () {
     return list[Math.floor(Math.random() * list.length)];
   }
 
-  function dayOfYear(d) {
-    const start = new Date(d.getFullYear(), 0, 0);
-    return Math.floor((d - start) / 86400000);
-  }
-
   function storyForDay(date) {
     const d = date || new Date();
-    return STORIES[(dayOfYear(d) + d.getFullYear()) % STORIES.length];
+    return STORIES[(Word.dayOfYear(d) + d.getFullYear()) % STORIES.length];
   }
 
   function nameOf(glyph) {
@@ -321,20 +316,194 @@ const BibleGame = (function () {
 
   function say(text) {
     if (muted) return;
-    try {
-      if (!("speechSynthesis" in window)) return;
-      window.speechSynthesis.cancel();
-      const u = new SpeechSynthesisUtterance(text);
-      u.rate = 0.9;
-      u.pitch = 1.05;
-      window.speechSynthesis.speak(u);
-    } catch (e) {
-      /* fine */
-    }
+    Voice.speak(text, { rate: 0.95, pitch: 1.08 });
   }
   function hush() {
-    try { window.speechSynthesis.cancel(); } catch (e) { /* fine */ }
+    Voice.hush();
   }
+
+  /* ---------- the sky: a WebGL particle field behind the board ----------
+     three.js is fetched the first time the tab opens and never blocks the
+     game; until it lands (or if it never does) the CSS scene stands in.
+     One renderer for the life of the page, re-attached to whichever card
+     is on screen, because the view is rebuilt on every tap. */
+
+  const Backdrop = (function () {
+    const SRC = "https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js";
+    const N = 150;
+    let state = "idle"; /* idle | loading | ready | failed */
+    let renderer = null, scene = null, camera = null, points = null, geo = null, mat = null;
+    let canvas = null, mode = "", w = 0, h = 0, raf = null, idle = 0;
+    let vel = null, phase = null, base = null;
+    const reduce = (function () {
+      try { return window.matchMedia("(prefers-reduced-motion: reduce)").matches; } catch (e) { return false; }
+    })();
+
+    function load() {
+      if (state !== "idle" || reduce) return;
+      state = "loading";
+      const s = document.createElement("script");
+      s.src = SRC;
+      s.async = true;
+      s.onload = function () { state = "ready"; Router.refresh(); };
+      s.onerror = function () { state = "failed"; };
+      document.head.appendChild(s);
+    }
+
+    function isDark() {
+      const t = document.documentElement.getAttribute("data-theme");
+      if (t === "dark") return true;
+      if (t === "light") return false;
+      try { return window.matchMedia("(prefers-color-scheme: dark)").matches; } catch (e) { return false; }
+    }
+
+    function softDot() {
+      const c = document.createElement("canvas");
+      c.width = c.height = 64;
+      const g = c.getContext("2d");
+      const grad = g.createRadialGradient(32, 32, 0, 32, 32, 32);
+      grad.addColorStop(0, "rgba(255,255,255,1)");
+      grad.addColorStop(0.35, "rgba(255,255,255,0.7)");
+      grad.addColorStop(1, "rgba(255,255,255,0)");
+      g.fillStyle = grad;
+      g.fillRect(0, 0, 64, 64);
+      const t = new THREE.CanvasTexture(c);
+      return t;
+    }
+
+    /* Colour and motion per sky. Colours are the house palette's delft,
+       amber and leaf, lightened for dark mode. */
+    const LOOKS = {
+      day:    { light: 0x2f5d8a, dark: 0xdfe9f5, size: [3, 8],  drift: [0.06, -0.10], wobble: 0.35, twinkle: 0.4 },
+      meadow: { light: 0xb8860b, dark: 0xffe08a, size: [2, 6],  drift: [0.12, -0.14], wobble: 0.6,  twinkle: 0.5 },
+      sea:    { light: 0x2f5d8a, dark: 0xbfe3ff, size: [3, 10], drift: [0.0,  -0.32], wobble: 0.9,  twinkle: 0.3 },
+      rain:   { light: 0x4b6b86, dark: 0xb9d0e6, size: [2, 4],  drift: [-0.08, 1.6],  wobble: 0.05, twinkle: 0.1 },
+      night:  { light: 0x2f5d8a, dark: 0xfff4c2, size: [2, 7],  drift: [0.02, -0.02], wobble: 0.1,  twinkle: 1.0 },
+      party:  { light: 0xd39a12, dark: 0xffd76a, size: [4, 12], drift: [0.0,  -1.1],  wobble: 1.4,  twinkle: 0.9 },
+    };
+
+    function build() {
+      renderer = new THREE.WebGLRenderer({ alpha: true, antialias: false, powerPreference: "low-power" });
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
+      renderer.setClearColor(0x000000, 0);
+      canvas = renderer.domElement;
+      canvas.className = "bg-gl";
+      canvas.setAttribute("aria-hidden", "true");
+      scene = new THREE.Scene();
+      camera = new THREE.OrthographicCamera(-1, 1, 1, -1, -10, 10);
+
+      geo = new THREE.BufferGeometry();
+      const pos = new Float32Array(N * 3);
+      const size = new Float32Array(N);
+      const alpha = new Float32Array(N);
+      geo.setAttribute("position", new THREE.BufferAttribute(pos, 3));
+      geo.setAttribute("size", new THREE.BufferAttribute(size, 1));
+      geo.setAttribute("alpha", new THREE.BufferAttribute(alpha, 1));
+      vel = new Float32Array(N * 2);
+      phase = new Float32Array(N);
+      base = new Float32Array(N);
+
+      mat = new THREE.ShaderMaterial({
+        uniforms: { color: { value: new THREE.Color(0xffffff) }, map: { value: softDot() }, ratio: { value: renderer.getPixelRatio() } },
+        vertexShader:
+          "attribute float size; attribute float alpha; varying float vA; uniform float ratio;" +
+          "void main(){ vA = alpha; gl_PointSize = size * ratio; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }",
+        fragmentShader:
+          "uniform vec3 color; uniform sampler2D map; varying float vA;" +
+          "void main(){ vec4 t = texture2D(map, gl_PointCoord); gl_FragColor = vec4(color, t.a * vA); }",
+        transparent: true,
+        depthWrite: false,
+        depthTest: false,
+      });
+      points = new THREE.Points(geo, mat);
+      scene.add(points);
+    }
+
+    function seed(look) {
+      const pos = geo.attributes.position.array;
+      const size = geo.attributes.size.array;
+      for (let i = 0; i < N; i++) {
+        pos[i * 3] = (Math.random() - 0.5) * w;
+        pos[i * 3 + 1] = (Math.random() - 0.5) * h;
+        pos[i * 3 + 2] = 0;
+        size[i] = look.size[0] + Math.random() * (look.size[1] - look.size[0]);
+        const spd = 0.6 + Math.random() * 0.9;
+        vel[i * 2] = look.drift[0] * spd;
+        vel[i * 2 + 1] = look.drift[1] * spd;
+        phase[i] = Math.random() * Math.PI * 2;
+        base[i] = 0.25 + Math.random() * 0.5;
+      }
+      geo.attributes.position.needsUpdate = true;
+      geo.attributes.size.needsUpdate = true;
+    }
+
+    function fit(container) {
+      const cw = container.clientWidth, ch = container.clientHeight;
+      if (!cw || !ch || (cw === w && ch === h)) return false;
+      w = cw; h = ch;
+      renderer.setSize(w, h, false);
+      camera.left = -w / 2; camera.right = w / 2; camera.top = h / 2; camera.bottom = -h / 2;
+      camera.updateProjectionMatrix();
+      return true;
+    }
+
+    function tick() {
+      raf = null;
+      if (!canvas.isConnected) {
+        if (++idle < 90) { raf = requestAnimationFrame(tick); }
+        return;
+      }
+      idle = 0;
+      if (document.hidden) { raf = requestAnimationFrame(tick); return; }
+      const container = canvas.parentNode;
+      if (fit(container)) seed(LOOKS[mode] || LOOKS.day);
+      const look = LOOKS[mode] || LOOKS.day;
+      const pos = geo.attributes.position.array;
+      const alpha = geo.attributes.alpha.array;
+      const t = performance.now() / 1000;
+      for (let i = 0; i < N; i++) {
+        let x = pos[i * 3] + vel[i * 2] + Math.sin(t * 0.8 + phase[i]) * look.wobble * 0.3;
+        let y = pos[i * 3 + 1] - vel[i * 2 + 1];
+        if (y > h / 2 + 10) y = -h / 2 - 10;
+        if (y < -h / 2 - 10) y = h / 2 + 10;
+        if (x > w / 2 + 10) x = -w / 2 - 10;
+        if (x < -w / 2 - 10) x = w / 2 + 10;
+        pos[i * 3] = x;
+        pos[i * 3 + 1] = y;
+        alpha[i] = base[i] * (1 - look.twinkle * 0.5 + look.twinkle * 0.5 * Math.sin(t * 2.2 + phase[i] * 3));
+      }
+      geo.attributes.position.needsUpdate = true;
+      geo.attributes.alpha.needsUpdate = true;
+      renderer.render(scene, camera);
+      raf = requestAnimationFrame(tick);
+    }
+
+    /* Put the sky behind this card. Safe to call on every render. */
+    function attach(container, sky) {
+      if (state !== "ready") { load(); return false; }
+      try {
+        if (!renderer) build();
+      } catch (e) {
+        state = "failed";
+        return false;
+      }
+      const look = LOOKS[sky] || LOOKS.day;
+      const dark = isDark();
+      mat.uniforms.color.value.setHex(dark ? look.dark : look.light);
+      mat.blending = dark ? THREE.AdditiveBlending : THREE.NormalBlending;
+      mat.needsUpdate = true;
+      container.classList.add("has-gl");
+      container.insertBefore(canvas, container.firstChild);
+      if (sky !== mode) {
+        mode = sky;
+        w = 0; h = 0; /* force a refit + reseed for the new look */
+      }
+      if (!raf) raf = requestAnimationFrame(tick);
+      return true;
+    }
+
+    return { attach: attach, load: load };
+  })();
 
   /* ---------- game state (ephemeral, per screen) ---------- */
 
@@ -573,8 +742,7 @@ const BibleGame = (function () {
     anyone.addEventListener("click", function () { startGame("", false); });
     players.push(anyone);
 
-    root.appendChild(
-      UI.h(
+    const intro = UI.h(
         "div",
         { class: "card bg-intro bg-sky", "data-sky": story.sky },
         UI.h("div", { class: "bg-scene", "aria-hidden": "true" }, sceneBits(story.sky)),
@@ -584,8 +752,9 @@ const BibleGame = (function () {
         UI.h("div", { class: "bg-intro-text", text: "Five quick rounds. Everything is read out loud, so just listen and tap." }),
         UI.h("div", { class: "eyebrow", text: "Who's playing?" }),
         UI.h("div", { class: "bg-kids", "data-n": String(players.length) }, players)
-      )
     );
+    root.appendChild(intro);
+    Backdrop.attach(intro, story.sky);
 
     root.appendChild(
       UI.h(
@@ -902,6 +1071,7 @@ const BibleGame = (function () {
     );
     st.enter = false;
     root.appendChild(card);
+    Backdrop.attach(card, st.story.sky);
   }
 
   function renderDone(root) {
@@ -916,8 +1086,7 @@ const BibleGame = (function () {
     read.addEventListener("click", function () { say(st.story.verse + ". " + st.story.ref); });
 
     const confetti = ["⭐", "✨", "\u{1F31F}", "\u{1F49B}", "⭐", "✨", "\u{1F31F}", "\u{1F49B}", "⭐", "✨", "\u{1F31F}", "\u{1F49B}"];
-    root.appendChild(
-      UI.h(
+    const done = UI.h(
         "div",
         { class: "card bg-done bg-sky", "data-sky": st.story.sky },
         UI.h("div", { class: "bg-confetti", "aria-hidden": "true" }, confetti.map(function (g, i) {
@@ -930,12 +1099,14 @@ const BibleGame = (function () {
         read,
         UI.h("div", { class: "stack bg-done-actions" }, again, other),
         UI.h("div", { class: "bg-tomorrow" }, UI.h("span", { text: tomorrow.icon }), UI.h("span", { text: "Tomorrow: " + tomorrow.name }))
-      )
     );
+    root.appendChild(done);
+    Backdrop.attach(done, "party");
   }
 
   function renderBible(root) {
     root.classList.add("bg-view");
+    Backdrop.load();
     const st = S();
     if (st.phase === "play") return renderPlay(root);
     if (st.phase === "done") return renderDone(root);

@@ -16,20 +16,24 @@
 .bg-sky[data-sky="sea"]    { background: linear-gradient(180deg, var(--surface) 0%, color-mix(in oklab, var(--delft) 14%, var(--surface)) 60%, color-mix(in oklab, var(--delft) 26%, var(--surface)) 100%); }
 .bg-sky[data-sky="rain"]   { background: linear-gradient(180deg, color-mix(in oklab, var(--ink-3) 18%, var(--surface)) 0%, var(--surface) 60%, color-mix(in oklab, var(--delft) 14%, var(--surface)) 100%); }
 .bg-sky[data-sky="night"]  { background: linear-gradient(180deg, color-mix(in oklab, var(--delft) 32%, var(--surface)) 0%, color-mix(in oklab, var(--delft) 16%, var(--surface)) 70%, var(--surface) 100%); }
-.bg-scene { position: absolute; inset: 0; pointer-events: none; z-index: 0; opacity: 0.55; }
+.bg-scene { position: absolute; inset: 0; pointer-events: none; z-index: 0; opacity: 0.32; }
 .bg-scene-bit {
   position: absolute;
-  font-size: 1.6rem;
+  font-size: 1.5rem;
   animation: bg-drift 14s ease-in-out infinite alternate;
   animation-delay: calc(var(--i) * -2.8s);
 }
-.bg-scene-bit:nth-child(1) { left: 6%; top: 8%; }
-.bg-scene-bit:nth-child(2) { right: 8%; top: 6%; font-size: 2rem; }
-.bg-scene-bit:nth-child(3) { left: 4%; bottom: 8%; }
-.bg-scene-bit:nth-child(4) { right: 6%; bottom: 12%; }
-.bg-scene-bit:nth-child(5) { left: 48%; bottom: 4%; font-size: 1.2rem; }
+/* Kept to the edges so nothing sits behind the prompt or the tiles. */
+.bg-scene-bit:nth-child(1) { left: 2%; top: 2%; }
+.bg-scene-bit:nth-child(2) { right: 2%; top: 30%; font-size: 1.8rem; }
+.bg-scene-bit:nth-child(3) { left: 2%; bottom: 3%; }
+.bg-scene-bit:nth-child(4) { right: 3%; bottom: 3%; }
+.bg-scene-bit:nth-child(5) { left: 46%; bottom: 1%; font-size: 1.1rem; }
 @keyframes bg-drift { from { transform: translate(0, 0) rotate(-3deg); } to { transform: translate(10px, -8px) rotate(4deg); } }
-.bg-sky > *:not(.bg-scene) { position: relative; z-index: 1; }
+.bg-sky > *:not(.bg-scene):not(.bg-gl) { position: relative; z-index: 1; }
+/* The WebGL sky sits under everything; once it is up the emoji scene steps aside. */
+.bg-gl { position: absolute; inset: 0; width: 100% !important; height: 100% !important; z-index: 0; pointer-events: none; }
+.bg-sky.has-gl .bg-scene { display: none; }
 
 /* Start screen */
 .bg-intro { padding: 22px 16px 18px; display: flex; flex-direction: column; gap: 10px; align-items: center; text-align: center; }
@@ -194,13 +198,9 @@
   .bg-hint { border-color: var(--amber); }
 }
 
-/* Six tabs now; keep them legible on a phone. */
+/* Six tabs now; drop the tracking so the labels still fit on a phone. */
 @media (max-width: 899px) {
   .tabbar button { font-size: 0.64rem; letter-spacing: 0; }
-}
-@media (max-width: 380px) {
-  .tabbar button { font-size: 0.58rem; }
-  .tabbar button svg { width: 19px; height: 19px; }
 }
 
 /* On the wall the tiles can be bigger still. */

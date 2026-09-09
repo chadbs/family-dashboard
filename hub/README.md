@@ -1,15 +1,18 @@
 # The Solanyk House — the family app
 
 One web app for the whole household. On a phone it has tabs: **Today, Meals,
-Recipes, House, Stars**. Stars holds the kids' chore chart (tap a chore, earn
-a star, streak bonus every third day) and the reward shop, carried over from
-the wall. Recipes imports straight from a link. The grocery list prices every
-item at Meijer and ALDI, files it under the cheaper store, and can order the
-carts filled. On the wall Surface in the kitchen it opens at
-`/display` and becomes the always-on display — clock, backyard weather, and a
-slow rotation through the day's cleaning, tonight's dinner, the star jars,
-what needs doing, the week ahead. Kenzie's morning note pops on whichever
-screen she is looking at.
+Recipes, House, Stars, Bible**. Stars holds the kids' chore chart (tap a chore,
+earn a star, streak bonus every third day) and the reward shop, carried over
+from the wall. Recipes imports straight from a link. The grocery list prices
+every item at Meijer and ALDI, files it under the cheaper store, and can order
+the carts filled. Today opens with the morning word: one KJV verse a day with
+a line from a Reformed voice under it (`data/scripture.js`, `js/15-word.js`),
+chosen by arithmetic on the date so every screen agrees. Bible is a touch-only
+game for the girls (`js/55-bible.js`): a story a day in a ten-day rotation,
+five short rounds read aloud, no stars, no score — finishing is the prize.
+On the wall Surface in the kitchen it opens at `/display` and becomes the
+always-on display: the same app with a clock-and-weather bar. Kenzie's
+morning note pops on whichever screen she is looking at.
 
 **It is hosted.** The data and the page live on Deno Deploy (see
 [`../cloud/README.md`](../cloud/README.md)), so nothing depends on the Surface
@@ -65,9 +68,11 @@ hub/
     index.html   the shell, with {{STYLES}} {{DATA}} {{APP}} markers
     styles.css   the whole design system
     css/*.css    module-local additions, appended in name order
-    data/        almanac, love (generated from public/config.js), recipes, seed
-    js/          00-core, 05-weather, 10-today, 20-meals, 30-recipes,
-                 40-house, 50-rewards, 60-display, 70-love, 99-boot
+    data/        almanac, love (generated from public/config.js), recipes,
+                 scripture (KJV verses + Reformed quotes), seed
+    js/          00-core, 05-weather, 10-today, 15-word, 20-meals, 30-recipes,
+                 40-house, 45-chores, 50-rewards, 55-bible, 60-display,
+                 70-love, 99-boot
 ```
 
 Files are concatenated in name order into one script scope. **No modules, no
@@ -148,7 +153,10 @@ short lease so two phones opening at once do not both write.
 
 ## Conventions
 
-1. Zero dependencies. Plain DOM. No frameworks, no CDN scripts.
+1. Zero dependencies. Plain DOM. No frameworks, no CDN scripts — with one
+   deliberate exception: the Bible game fetches three.js r128 from cdnjs
+   *after* the tab opens, for the particle sky behind the board. If it never
+   arrives the CSS scene stands in and nothing else changes.
 2. Every colour comes from a token in `styles.css`. Never a hex literal in a
    component, or one of the two themes breaks.
 3. Never `innerHTML` with stored or pasted content. Build nodes, set `text`.
