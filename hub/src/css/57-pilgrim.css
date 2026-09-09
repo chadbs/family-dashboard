@@ -1,0 +1,167 @@
+/* ============================================================
+   The Pilgrim's Walk. Full-bleed inside the Bible tab: the canvas fills
+   the view and everything else floats over it.
+   ============================================================ */
+
+.bg-walk-host {
+  position: relative;
+  width: 100%;
+  height: min(72vh, 620px);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  background: #2c3a34;
+  box-shadow: var(--shadow-lift);
+  touch-action: none;            /* swiping steers, it must not scroll */
+  user-select: none;
+  -webkit-user-select: none;
+}
+.pw-canvas { position: absolute; inset: 0; width: 100% !important; height: 100% !important; display: block; }
+
+.pw-hud { position: absolute; inset: 0; pointer-events: none; display: flex; flex-direction: column; }
+.pw-hud > * { pointer-events: auto; }
+
+.pw-top { display: flex; align-items: center; gap: 8px; padding: 10px 10px 6px; }
+.pw-icon {
+  width: 38px; height: 38px; flex: 0 0 auto;
+  display: grid; place-items: center;
+  border-radius: 50%;
+  border: 0;
+  background: rgba(0, 0, 0, 0.34);
+  color: #fff;
+  cursor: pointer;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+.pw-icon svg { width: 19px; height: 19px; }
+.pw-stage {
+  flex: 1; min-width: 0;
+  text-align: center;
+  font-family: var(--serif);
+  font-size: 1.02rem;
+  color: #fff;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.6);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+.pw-bar { height: 6px; margin: 0 12px; border-radius: 3px; background: rgba(255, 255, 255, 0.22); overflow: hidden; }
+.pw-bar i { display: block; height: 100%; width: 0; background: #ffd76a; border-radius: 3px; transition: width 0.12s linear; }
+
+.pw-count {
+  align-self: flex-start;
+  margin: 8px 0 0 12px;
+  padding: 5px 11px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.34);
+  color: #fff;
+  font-weight: 700; font-size: 0.86rem;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+.pw-burden { color: #ffc9c0; }
+
+.pw-hint {
+  margin-top: auto;
+  margin-bottom: 18px;
+  align-self: center;
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.42);
+  color: #fff;
+  font-weight: 650; font-size: 0.9rem;
+  transition: opacity 0.6s ease;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+.pw-hint.is-gone { opacity: 0; }
+
+/* A wash of colour on a pickup or a stumble. */
+.pw-flash { position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity 0.3s ease; }
+.pw-flash.is-good { background: radial-gradient(circle at 50% 60%, rgba(255, 236, 150, 0.5), transparent 62%); opacity: 1; }
+.pw-flash.is-trip { background: radial-gradient(circle at 50% 60%, rgba(200, 60, 40, 0.42), transparent 66%); opacity: 1; }
+
+/* The stations, the cross, the questions, the city. */
+/* An author `display` beats the browser's own [hidden] rule, so say it
+   here or the scrim stays over the road with the game running behind it. */
+.pw-overlay[hidden] { display: none; }
+.pw-overlay {
+  position: absolute; inset: 0;
+  display: grid; place-items: center;
+  padding: 14px;
+  background: rgba(12, 20, 26, 0.72);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  overflow-y: auto;
+  animation: pw-fade 0.3s ease;
+}
+@keyframes pw-fade { from { opacity: 0; } }
+.pw-card {
+  width: 100%; max-width: 460px;
+  background: var(--surface);
+  border-radius: var(--r-lg);
+  padding: 20px 18px 18px;
+  display: flex; flex-direction: column; gap: 10px; align-items: center;
+  text-align: center;
+  box-shadow: var(--shadow-lift);
+  animation: pw-rise 0.34s cubic-bezier(0.2, 0.8, 0.3, 1.15);
+}
+@keyframes pw-rise { from { opacity: 0; transform: translateY(18px) scale(0.97); } }
+.pw-eyebrow {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  font-size: 0.7rem; font-weight: 700; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--ink-3);
+}
+.pw-eyebrow .pw-icon { width: 30px; height: 30px; background: var(--surface-2); color: var(--delft); }
+.pw-eyebrow .pw-icon svg { width: 15px; height: 15px; }
+.pw-title { font-family: var(--serif); font-size: 1.6rem; line-height: 1.15; }
+.pw-q { font-size: 1.4rem; }
+.pw-line { font-size: 1rem; line-height: 1.5; color: var(--ink-2); max-width: 36ch; text-wrap: pretty; }
+.pw-teach { font-family: var(--serif); font-size: 1.15rem; line-height: 1.42; color: var(--ink); }
+.pw-verse { font-family: var(--serif); font-size: 1.15rem; line-height: 1.4; margin-top: 4px; }
+.pw-go { margin-top: 8px; min-height: 52px; font-size: 1.02rem; }
+.pw-truth { width: 100%; }
+.pw-card .bg-answers { width: 100%; }
+
+.pw-cross { font-size: 3.4rem; line-height: 1; animation: pw-glow 2.4s ease-in-out infinite; }
+@keyframes pw-glow { 50% { transform: scale(1.08); filter: drop-shadow(0 0 14px rgba(255, 215, 106, 0.75)); } }
+.pw-city { font-size: 3.8rem; line-height: 1; animation: pw-rise 0.6s cubic-bezier(0.2, 0.8, 0.3, 1.4); }
+.pw-tally { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; font-size: 0.84rem; font-weight: 650; color: var(--ink-2); margin-top: 6px; }
+.pw-actions { width: 100%; margin-top: 8px; }
+
+.pw-loading {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px;
+  padding: 20px; text-align: center;
+  color: #fff;
+}
+.pw-loading-mark { font-size: 2.6rem; animation: pw-glow 1.8s ease-in-out infinite; }
+
+/* The doors on Addison's menu. */
+.bg-doors { display: flex; flex-direction: column; gap: 12px; }
+.bg-door {
+  display: flex; align-items: center; gap: 14px;
+  padding: 16px;
+  border-radius: var(--r-lg);
+  border: 2px solid var(--line);
+  background: var(--surface);
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+  box-shadow: var(--shadow-card);
+  transition: transform 0.14s cubic-bezier(0.2, 0.8, 0.3, 1.3), border-color 0.15s ease, box-shadow 0.15s ease;
+  touch-action: manipulation;
+}
+.bg-door:hover { border-color: var(--delft); box-shadow: var(--shadow-lift); transform: translateY(-2px); }
+.bg-door:active { transform: scale(0.98); }
+.bg-door > svg { width: 20px; height: 20px; color: var(--ink-3); flex: 0 0 auto; }
+.bg-door-icon { font-size: 2.6rem; line-height: 1; flex: 0 0 auto; }
+.bg-door-body { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
+.bg-door-title { font-family: var(--serif); font-size: 1.28rem; line-height: 1.2; }
+.bg-door-sub { font-size: 0.84rem; color: var(--ink-3); }
+.bg-door-hero { border-color: var(--amber); background: linear-gradient(135deg, var(--amber-soft), var(--surface) 70%); }
+
+@media (prefers-reduced-motion: reduce) {
+  .pw-cross, .pw-city, .pw-loading-mark, .pw-card, .pw-overlay { animation: none; }
+}
+
+/* On the wall there is room for a taller road. */
+body.display-mode .bg-walk-host { height: min(66vh, 700px); }

@@ -46,20 +46,6 @@
 .bg-kids[data-n="2"] { grid-template-columns: 1fr 1fr; }
 .bg-kid-wrap { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
 .bg-kid-wrap .bg-kid { flex: 1; }
-/* The difficulty chip under each child. Tap to swap Little <-> Big. */
-.bg-level {
-  display: flex; align-items: center; justify-content: center; gap: 3px;
-  padding: 5px 8px;
-  border-radius: 999px;
-  border: 1.5px solid var(--line);
-  background: var(--surface);
-  color: var(--ink-3);
-  font-size: 0.7rem; font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase;
-  cursor: pointer;
-  touch-action: manipulation;
-}
-.bg-level svg { width: 13px; height: 13px; }
-.bg-level[data-level="big"] { color: var(--delft); border-color: var(--delft); background: var(--delft-soft); }
 .bg-kid {
   display: flex; flex-direction: column; align-items: center; gap: 3px;
   padding: 16px 8px 12px;
@@ -280,18 +266,6 @@
 
 /* ---- the Journey ---- */
 
-.bg-journey {
-  display: flex; align-items: center; justify-content: center; gap: 5px;
-  padding: 7px 8px;
-  border-radius: 999px;
-  border: 1.5px solid var(--amber);
-  background: var(--amber-soft);
-  color: var(--ink);
-  font-size: 0.72rem; font-weight: 700; letter-spacing: 0.02em;
-  cursor: pointer;
-  touch-action: manipulation;
-}
-.bg-journey:active { transform: scale(0.95); }
 .bg-progress-wrap { display: flex; flex-direction: column; align-items: center; gap: 5px; }
 .bg-chapter {
   display: flex; flex-direction: column; align-items: center; gap: 12px;

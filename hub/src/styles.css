@@ -107,6 +107,9 @@
 /* ---------- base ---------- */
 
 * { box-sizing: border-box; }
+/* The browser's own [hidden] rule loses to any author `display`, which is a
+   nasty way to lose an afternoon. Settle it once, for everything. */
+[hidden] { display: none !important; }
 
 body {
   margin: 0;

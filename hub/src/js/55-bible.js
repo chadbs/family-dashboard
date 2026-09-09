@@ -1332,8 +1332,8 @@ const BibleGame = (function () {
       )
     );
 
-    /* One card per kid: tap the picture to play, tap the level chip to
-       change how hard it is. */
+    /* One card per child. The little one goes straight into her game; the
+       big one gets to choose what she is in the mood for. */
     const players = kids.map(function (k) {
       const level = levelFor(k.name);
       const card = UI.h("div", { class: "bg-kid-wrap" });
@@ -1342,32 +1342,21 @@ const BibleGame = (function () {
         { class: "bg-kid", type: "button" },
         UI.h("span", { class: "bg-kid-emoji", text: k.emoji || "⭐" }),
         UI.h("span", { class: "bg-kid-name", text: k.name }),
-        UI.h("span", { class: "bg-kid-sub", text: "Tap to play" })
+        UI.h("span", { class: "bg-kid-sub", text: level.key === "big" ? "Choose a game" : "Tap to play" })
       );
-      b.addEventListener("click", function () { startGame(k.name, levelFor(k.name), false, "quick"); });
-      const chip = UI.h(
-        "button",
-        { class: "bg-level", type: "button", "data-level": level.key, "aria-label": "Difficulty for " + k.name + ": " + level.label },
-        UI.h("span", { text: level.label }),
-        UI.icon("chevron")
-      );
-      chip.addEventListener("click", function () {
-        setLevel(k.name, level.key === "big" ? "little" : "big");
-        SFX.tap();
+      b.addEventListener("click", function () {
+        Voice.unlock();
+        if (level.key === "big") {
+          st.phase = "menu";
+          st.kid = k.name;
+          st.level = level;
+          SFX.tap();
+          Router.refresh();
+        } else {
+          startGame(k.name, level, false, "quick");
+        }
       });
       card.appendChild(b);
-      card.appendChild(chip);
-      /* The long version, for when there is time for the whole story. */
-      if (level.key === "big") {
-        const j = UI.h(
-          "button",
-          { class: "bg-journey", type: "button", "aria-label": "Play the long journey with " + k.name },
-          UI.h("span", { text: "\u{1F5FA}️" }),
-          UI.h("span", { text: "Journey" })
-        );
-        j.addEventListener("click", function () { startGame(k.name, levelFor(k.name), false, "journey"); });
-        card.appendChild(j);
-      }
       return card;
     });
 
@@ -2045,10 +2034,85 @@ const BibleGame = (function () {
     Backdrop.attach(card, st.story.sky);
   }
 
+  /* What Addison feels like playing. Three doors, one tap each. */
+  function renderMenu(root) {
+    const st = S();
+    const story = offered();
+
+    const back = UI.h("button", { class: "ibtn", type: "button", "aria-label": "Back" }, UI.icon("back"));
+    back.addEventListener("click", function () { st.phase = "kid"; Router.refresh(); });
+
+    root.appendChild(
+      UI.h(
+        "div",
+        { class: "bg-top" },
+        UI.h("div", { class: "bg-who" }, UI.h("span", { class: "bg-story-icon", text: "\u{1F31F}" }), UI.h("span", { text: "What shall we play, " + st.kid + "?" })),
+        UI.h("div", { class: "bg-top-actions" }, muteButton(), back)
+      )
+    );
+
+    function door(icon, title, sub, onGo, cls) {
+      const b = UI.h(
+        "button",
+        { class: "bg-door" + (cls ? " " + cls : ""), type: "button" },
+        UI.h("span", { class: "bg-door-icon", text: icon }),
+        UI.h(
+          "span",
+          { class: "bg-door-body" },
+          UI.h("span", { class: "bg-door-title", text: title }),
+          UI.h("span", { class: "bg-door-sub", text: sub })
+        ),
+        UI.icon("chevron")
+      );
+      b.addEventListener("click", function () { SFX.tap(); onGo(); });
+      return b;
+    }
+
+    root.appendChild(
+      UI.h(
+        "div",
+        { class: "bg-doors" },
+        door("\u{1F6E4}️", "The Pilgrim's Walk", "Walk the whole road to the Celestial City", function () {
+          st.phase = "pilgrim";
+          Router.refresh();
+        }, "bg-door-hero"),
+        door(story.icon, "Today's story", "Six quick rounds — " + story.name, function () {
+          startGame(st.kid, st.level, false, "quick");
+        }),
+        door("\u{1F5FA}️", "The long journey", "Twelve rounds, told in three parts", function () {
+          startGame(st.kid, st.level, false, "journey");
+        })
+      )
+    );
+  }
+
+  /* The first-person walk lives in its own module and owns its canvas, so
+     this only has to give it somewhere to sit. Re-mounting is safe: it
+     hands back the same nodes rather than starting over. */
+  function renderPilgrimWalk(root) {
+    const st = S();
+    if (typeof Pilgrim === "undefined") {
+      st.phase = "menu";
+      return renderMenu(root);
+    }
+    const host = UI.h("div", { class: "bg-walk-host" });
+    root.appendChild(host);
+    Pilgrim.mount(host, {
+      kid: st.kid,
+      muted: muted,
+      onExit: function () {
+        st.phase = "menu";
+        Router.refresh();
+      },
+    });
+  }
+
   function renderBible(root) {
     root.classList.add("bg-view");
-    Backdrop.load();
     const st = S();
+    if (st.phase === "pilgrim") return renderPilgrimWalk(root);
+    Backdrop.load();
+    if (st.phase === "menu") return renderMenu(root);
     if (st.phase === "chapter") return renderChapter(root);
     if (st.phase === "play") return renderPlay(root);
     if (st.phase === "done") return renderDone(root);
@@ -2062,7 +2126,9 @@ const BibleGame = (function () {
     stories: STORIES,
     levels: LEVELS,
     chooseRounds: chooseRounds,
+    doctrine: DOCTRINE_BIG,
     rng: rng,
     hashStr: hashStr,
+    tone: tone,
   };
 })();
