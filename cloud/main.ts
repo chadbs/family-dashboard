@@ -442,56 +442,67 @@ const VOICE_WANTED = [
   "rachel", "sarah", "lily", "alice", "jessica", "matilda", "bella",
   "aria", "charlotte", "dorothy", "elli", "freya", "grace",
 ];
-/* Rachel, the long-standing stock voice. Used when the key is scoped too
-   narrowly to list the account's own voices — a key only needs text-to-
-   speech permission to read to the girls, and asking for more than that
-   would be asking for trouble. */
-const VOICE_FALLBACK = "21m00Tcm4TlvDq8ikWAM";
+/* The stock voices, which are the ones a free account is allowed to use
+   over the API. Community "library" voices answer 402 unless the account
+   pays, so they are never candidates. */
+const VOICE_DEFAULTS: Array<[string, string]> = [
+  ["21m00Tcm4TlvDq8ikWAM", "Rachel"],
+  ["EXAVITQu4vr4xnSDxMaL", "Sarah"],
+  ["FGY2WhTYpPnrIDTdsKH5", "Laura"],
+  ["pFZP5JQG7iQjIQuC4Bku", "Lily"],
+  ["Xb7hH8MSUJpSbSDYk0k2", "Alice"],
+];
 let voiceIdCache = "";
 let voiceNameCache = "";
 let voiceError = "";
+let candidateCache: Array<[string, string]> | null = null;
 
-async function resolveVoice(): Promise<string> {
+/* Every voice worth trying, best first. An explicit ELEVENLABS_VOICE_ID is
+   the only candidate; otherwise the account's own premade voices, ranked by
+   how well they read to a small child, then the known stock ids as a
+   backstop for a key that cannot list anything. */
+async function candidateVoices(): Promise<Array<[string, string]>> {
   const forced = Deno.env.get("ELEVENLABS_VOICE_ID");
-  if (forced) return forced;
-  if (voiceIdCache) return voiceIdCache;
+  if (forced) return [[forced, "configured"]];
+  if (candidateCache) return candidateCache;
+
+  const out: Array<[string, string]> = [];
   const key = VOICE_KEY();
-  if (!key) return "";
-  try {
-    const res = await fetch("https://api.elevenlabs.io/v2/voices?page_size=100", {
-      headers: { "xi-api-key": key },
-    });
-    if (!res.ok) {
-      voiceError = "voices " + res.status + ": " + (await res.text()).slice(0, 160);
-      voiceIdCache = VOICE_FALLBACK;
-      voiceNameCache = "Rachel (default)";
-      return voiceIdCache;
+  if (key) {
+    try {
+      const res = await fetch("https://api.elevenlabs.io/v2/voices?page_size=100", {
+        headers: { "xi-api-key": key },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const list: Array<{ voice_id?: string; name?: string; category?: string }> =
+          Array.isArray(data?.voices) ? data.voices : [];
+        list
+          .filter((v) => v.voice_id && v.category === "premade")
+          .sort((a, b) => {
+            const ra = VOICE_WANTED.indexOf((a.name || "").toLowerCase());
+            const rb = VOICE_WANTED.indexOf((b.name || "").toLowerCase());
+            return (ra < 0 ? 99 : ra) - (rb < 0 ? 99 : rb);
+          })
+          .forEach((v) => out.push([v.voice_id as string, v.name || "?"]));
+      } else {
+        voiceError = "voices " + res.status + ": " + (await res.text()).slice(0, 160);
+      }
+    } catch (e) {
+      voiceError = "voices: " + String((e as Error)?.message || e);
     }
-    const data = await res.json();
-    const list: Array<{ voice_id?: string; name?: string; labels?: Record<string, string> }> =
-      Array.isArray(data?.voices) ? data.voices : [];
-    if (!list.length) {
-      voiceError = "the account has no voices";
-      voiceIdCache = VOICE_FALLBACK;
-      voiceNameCache = "Rachel (default)";
-      return voiceIdCache;
-    }
-    let best = list[0];
-    let bestRank = 1e6;
-    for (const v of list) {
-      const n = (v.name || "").toLowerCase();
-      const rank = VOICE_WANTED.indexOf(n);
-      if (rank >= 0 && rank < bestRank) { bestRank = rank; best = v; }
-    }
-    voiceIdCache = best.voice_id || "";
-    voiceNameCache = best.name || "";
-    return voiceIdCache;
-  } catch (e) {
-    voiceError = "voices: " + String((e as Error)?.message || e);
-    voiceIdCache = VOICE_FALLBACK;
-    voiceNameCache = "Rachel (default)";
-    return voiceIdCache;
   }
+  VOICE_DEFAULTS.forEach((d) => {
+    if (!out.some((v) => v[0] === d[0])) out.push(d);
+  });
+  candidateCache = out;
+  return out;
+}
+
+/* What the clip cache is keyed on. Stable across restarts, so a redeploy
+   never re-synthesises what it already has. */
+function voiceTag() {
+  return Deno.env.get("ELEVENLABS_VOICE_ID") || "auto";
 }
 /* flash v2.5 bills at half a credit per character, so a 10,000-credit free
    month is ~20,000 characters. We stop well short of that and never spend a
@@ -531,9 +542,9 @@ async function voiceStatus(probe: boolean) {
     model: modelCache || VOICE_MODELS[0],
   };
   if (probe) {
-    const id = await resolveVoice();
-    out.voiceId = id ? id.slice(0, 6) + "…" : "";
-    out.voiceName = voiceNameCache;
+    const list = await candidateVoices();
+    out.voiceName = voiceNameCache || (list[0] ? list[0][1] : "");
+    out.candidates = list.slice(0, 6).map((v) => v[1]);
     out.lastError = voiceError;
   }
   return out;
@@ -592,37 +603,42 @@ async function synthesise(text: string, hash: string): Promise<Uint8Array | null
   if (!key) return null;
   const used = await voiceUsed();
   if (used + text.length > VOICE_MONTHLY_CHARS) return null;
-  const voice = await resolveVoice();
-  if (!voice) return null;
-
+  const voices = voiceIdCache ? [[voiceIdCache, voiceNameCache] as [string, string]] : await candidateVoices();
   const models = modelCache ? [modelCache] : VOICE_MODELS;
-  for (const model of models) {
-    const res = await fetch(
-      "https://api.elevenlabs.io/v1/text-to-speech/" + voice + "?output_format=mp3_22050_32",
-      {
-        method: "POST",
-        headers: { "xi-api-key": key, "content-type": "application/json" },
-        body: JSON.stringify({
-          text,
-          model_id: model,
-          voice_settings: { stability: 0.4, similarity_boost: 0.75, use_speaker_boost: true },
-        }),
+
+  for (const [voice, vName] of voices) {
+    for (const model of models) {
+      const res = await fetch(
+        "https://api.elevenlabs.io/v1/text-to-speech/" + voice + "?output_format=mp3_22050_32",
+        {
+          method: "POST",
+          headers: { "xi-api-key": key, "content-type": "application/json" },
+          body: JSON.stringify({
+            text,
+            model_id: model,
+            voice_settings: { stability: 0.4, similarity_boost: 0.75, use_speaker_boost: true },
+          }),
+        }
+      );
+      if (res.ok) {
+        const bytes = new Uint8Array(await res.arrayBuffer());
+        if (!bytes.length) continue;
+        voiceIdCache = voice;
+        voiceNameCache = vName;
+        modelCache = model;
+        voiceError = "";
+        await kv.set(["voice", "used", monthKey()], used + text.length);
+        await storeClip(hash, bytes);
+        return bytes;
       }
-    );
-    if (!res.ok) {
-      voiceError = model + " " + res.status + ": " + (await res.text()).slice(0, 160);
+      const body = (await res.text()).slice(0, 160);
+      voiceError = vName + "/" + model + " " + res.status + ": " + body;
       console.warn("elevenlabs " + voiceError);
-      /* A permissions problem will not fix itself by trying another model. */
+      /* A bad key will not fix itself by trying more combinations. */
       if (res.status === 401 || res.status === 403) return null;
-      continue;
+      /* This voice needs a paid plan; the model is not the problem. */
+      if (res.status === 402) break;
     }
-    const bytes = new Uint8Array(await res.arrayBuffer());
-    if (!bytes.length) continue;
-    modelCache = model;
-    voiceError = "";
-    await kv.set(["voice", "used", monthKey()], used + text.length);
-    await storeClip(hash, bytes);
-    return bytes;
   }
   return null;
 }
@@ -633,7 +649,7 @@ async function say(raw: string): Promise<Response> {
   /* The cache key names the voice, so changing voices does not serve the
      old one back. It deliberately does not name the model: the same words
      in the same voice are the same clip whichever engine produced them. */
-  const hash = await sha256((await resolveVoice()) + "|" + text);
+  const hash = await sha256(voiceTag() + "|" + text);
 
   const hit = await cachedClip(hash);
   if (hit) return new Response(audioBody(hit), { headers: { ...AUDIO_HEADERS, "x-clip": "hit" } });
