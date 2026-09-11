@@ -104,9 +104,22 @@
 
 /* ---------- the end of every picture ---------- */
 
+/* Making room for the card: the finished game slides up (phone) or left
+   (wall) so the picture stays in view. */
+.pk-making-room { transform-origin: 50% 0; transition: transform 0.55s cubic-bezier(0.2, 0.8, 0.3, 1.1); }
+.pk-stage.is-wide .pk-finale {
+  left: auto; top: 0;
+  width: min(460px, 46%);
+  max-height: none;
+  border-radius: var(--r-lg);
+  box-shadow: -12px 0 36px -10px rgba(20, 33, 43, 0.4);
+  animation-name: pk-slide;
+}
+@keyframes pk-slide { from { transform: translateX(40px); opacity: 0; } }
+
 .pk-finale {
   position: absolute; left: 0; right: 0; bottom: 0;
-  max-height: 78%;
+  max-height: var(--pk-card-max, 70%);
   overflow-y: auto;
   overscroll-behavior: contain;
   z-index: 20;

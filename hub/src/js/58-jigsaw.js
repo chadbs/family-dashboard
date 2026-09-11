@@ -25,6 +25,10 @@
   function Jigsaw(opts) {
     const big = opts.big;
     const order = PlayKit.rotation(PICTURES, 5);
+    /* Don't open on the picture the dot-to-dot or the maze is showing
+       today; three games, three different stories. */
+    const taken = [PlayKit.rotation(PICTURES, 0)[0].id, PlayKit.rotation(MAZE_THEMES, 1)[0].pic];
+    for (let i = 0; i < order.length && taken.indexOf(order[0].id) >= 0; i++) order.push(order.shift());
     const f = PlayKit.frame({ title: "Jigsaws", kind: "jigsaw", onBack: opts.onExit });
     const id = "jz" + ++uid;
 
@@ -42,7 +46,7 @@
       rows = g[1];
       done = false;
       f.caption((big ? "Puzzle " + (lvl + 1) + " · " : "") + cols * rows + " pieces");
-      f.stage.textContent = "";
+      f.clear();
       build();
       PlayKit.say(big ? "Put the picture back together!" : "Drag the pieces into the picture!");
       PlayKit.prefetch([pic.said, pic.truth, pic.q ? pic.q.teach : ""]);
@@ -223,6 +227,8 @@
         PlayKit.celebrate(f.stage, {
           pic: pic,
           big: big,
+          content: area,
+          peek: geo.by + geo.S,
           nextLabel: "Next puzzle",
           onNext: function () { lvl++; level(); },
           onMenu: opts.onExit,
@@ -246,9 +252,11 @@
     return {
       mount: function (host) {
         host.appendChild(f.root);
-        f.fit();
-        if (!started) { started = true; level(); }
-        else relayout();
+        PlayKit.afterAttach(f.root, function () {
+          f.fit();
+          if (!started) { started = true; level(); }
+          else relayout();
+        });
       },
       destroy: function () {
         window.removeEventListener("resize", onResize);

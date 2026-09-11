@@ -352,6 +352,25 @@ const PlayKit = (function () {
     })(t0);
   }
 
+  /* A view is built off-screen and only put on the page once its render
+     returns, so anything measured during render reads as zero. Games lay
+     themselves out through this instead: on the next frame, or the timer
+     if frames are paused (a hidden tab), whichever comes first. */
+  function afterAttach(el, fn) {
+    let ran = false, tries = 0;
+    const go = function () {
+      if (ran) return;
+      if (!el.isConnected) {
+        if (++tries < 40) setTimeout(go, 25);
+        return;
+      }
+      ran = true;
+      fn();
+    };
+    requestAnimationFrame(go);
+    setTimeout(go, 60);
+  }
+
   /* ---------- the frame every game sits in ---------- */
 
   function muteButton() {
@@ -408,7 +427,32 @@ const PlayKit = (function () {
       stage: stage,
       caption: function (t) { caption.textContent = t || ""; },
       fit: fit,
+      /* Empty the stage for the next picture, and undo any room made for
+         the last one's card. */
+      clear: function () {
+        stage.textContent = "";
+        stage.classList.remove("is-wide");
+        stage.style.removeProperty("--pk-card-max");
+      },
     };
+  }
+
+  /* The finished picture is the prize, so the card must not bury it. On a
+     phone the game shrinks up into the top of the screen and the card
+     takes the rest; on the wide wall the game slides left and the card
+     docks on the right. `peek` is how tall the part worth seeing is. */
+  function makeRoom(stage, content, peek) {
+    if (!content) return;
+    const W = stage.clientWidth, H = stage.clientHeight;
+    content.classList.add("pk-making-room");
+    if (W > H * 1.1) {
+      stage.classList.add("is-wide");
+      content.style.transform = "translateX(" + -Math.round(Math.min(460, W * 0.46) / 2) + "px)";
+      return;
+    }
+    const s = Math.min(1, (H * 0.36) / Math.max(1, peek));
+    content.style.transform = "scale(" + s.toFixed(3) + ")";
+    stage.style.setProperty("--pk-card-max", Math.round(H - peek * s - 8) + "px");
   }
 
   /* ---------- the end of every picture ---------- */
@@ -421,6 +465,8 @@ const PlayKit = (function () {
     confetti(stage);
     let card = null;
     say(o.pic.said, function () {
+      if (!stage.isConnected) return;
+      makeRoom(stage, o.content, o.peek);
       card = finale(stage, o);
       say(o.pic.truth, function () {
         if (card && card.isConnected && card._ask) card._ask();
@@ -506,7 +552,24 @@ const PlayKit = (function () {
     });
     block.appendChild(answers);
 
-    return { el: block, ask: function () { say(spoken); } };
+    /* By the time the question is asked, the name and verse have been
+       said; roll the card up so every answer is in reach without her
+       having to know that a card can scroll. */
+    return {
+      el: block,
+      ask: function () {
+        const card = block.closest(".pk-finale");
+        if (card) {
+          card.scrollTo({ top: card.scrollHeight, behavior: reduceMotion ? "auto" : "smooth" });
+          /* A smooth scroll can be cut short (a hidden tab never animates
+             it at all); make sure it arrives. */
+          setTimeout(function () {
+            if (card.scrollTop < card.scrollHeight - card.clientHeight - 2) card.scrollTop = card.scrollHeight;
+          }, 700);
+        }
+        say(spoken);
+      },
+    };
   }
 
   return {
@@ -530,6 +593,7 @@ const PlayKit = (function () {
     maze: { gen: mazeGen, next: mazeNeighbour, distances: mazeDistances, road: mazeRoad, N: N, E: E, S: S, W: W },
     jigsaw: { path: piecePath, edges: jigsawEdges },
     confetti: confetti,
+    afterAttach: afterAttach,
     frame: frame,
     celebrate: celebrate,
     reduceMotion: reduceMotion,

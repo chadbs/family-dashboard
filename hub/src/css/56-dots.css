@@ -1,6 +1,8 @@
 /* Dot to dot: a sheet of paper, numbers, and a crayon line. */
 
-.dz-wrap { width: 100%; height: 100%; display: grid; place-items: center; }
+/* Sits at the top of the stage: the thumb's end of a phone is left clear,
+   and the board has somewhere to shrink up to when the card arrives. */
+.dz-wrap { width: 100%; display: flex; justify-content: center; padding-top: 2px; }
 .dz-board {
   display: block;
   border-radius: 18px;

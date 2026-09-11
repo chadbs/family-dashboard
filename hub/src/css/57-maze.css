@@ -1,6 +1,6 @@
 /* Mazes: a road, a traveller, a trail. */
 
-.mz-wrap { width: 100%; height: 100%; display: grid; place-items: center; }
+.mz-wrap { width: 100%; display: flex; justify-content: center; padding-top: 2px; }
 .mz-board {
   display: block;
   border-radius: 14px;

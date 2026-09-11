@@ -61,7 +61,7 @@
       won = false;
       steps = 0;
       f.caption(big ? "Level " + (lvl + 1) : theme.little);
-      f.stage.textContent = "";
+      f.clear();
       build();
       size();
       PlayKit.say(big ? theme.prompt : theme.little);
@@ -274,6 +274,8 @@
         PlayKit.celebrate(f.stage, {
           pic: PICTURE_BY_ID[theme.pic],
           big: big,
+          content: svg.parentNode,
+          peek: svg.getBoundingClientRect().height,
           nextLabel: "Next maze",
           onNext: function () { lvl++; level(); },
           onMenu: opts.onExit,
@@ -291,9 +293,11 @@
     return {
       mount: function (host) {
         host.appendChild(f.root);
-        f.fit();
-        if (!started) { started = true; level(); }
-        else size();
+        PlayKit.afterAttach(f.root, function () {
+          f.fit();
+          if (!started) { started = true; level(); }
+          else size();
+        });
       },
       destroy: function () {
         stopLoop();

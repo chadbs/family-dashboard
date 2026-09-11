@@ -59,7 +59,7 @@
       next = 0;
       dots = big ? pic.outline.map(function (p) { return [p[0], p[1]]; }) : sample(pic.outline, 5);
       f.caption(big ? "Picture " + (idx + 1) + " · " + dots.length + " dots" : "Touch the shining dot");
-      f.stage.textContent = "";
+      f.clear();
       build();
       size();
       PlayKit.say(big
@@ -249,6 +249,8 @@
         PlayKit.celebrate(f.stage, {
           pic: pic,
           big: big,
+          content: svg.parentNode,
+          peek: svg.getBoundingClientRect().height,
           onNext: function () { idx++; level(); },
           onMenu: opts.onExit,
         });
@@ -265,9 +267,11 @@
     return {
       mount: function (host) {
         host.appendChild(f.root);
-        f.fit();
-        if (!started) { started = true; level(); }
-        else size();
+        PlayKit.afterAttach(f.root, function () {
+          f.fit();
+          if (!started) { started = true; level(); }
+          else size();
+        });
       },
       destroy: function () {
         clearTimeout(hintTimer);
