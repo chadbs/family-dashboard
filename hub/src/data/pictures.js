@@ -492,7 +492,7 @@ const MAZE_THEMES = [
     id: "dove", mover: "dove", goal: "ark", pic: "dove",
     prompt: "Help the dove fly home to the ark!",
     little: "Take the dove to the ark!",
-    colors: { bg: "#bfe3f7", fleck: "#aed9f2", edge: "#dff0fa", road: "#ffffff", trail: "#f6a24b" },
+    colors: { bg: "#86c3ea", fleck: "#9fd1f1", edge: "#d6ecf9", road: "#ffffff", trail: "#f39a3d" },
   },
   {
     id: "moses", mover: "basket", goal: "crown", pic: "basket",

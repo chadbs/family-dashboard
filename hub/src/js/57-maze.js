@@ -74,17 +74,23 @@
       return [(i % maze.cols) * CELL + CELL / 2, ((i / maze.cols) | 0) * CELL + CELL / 2];
     }
 
+    /* A margin round the maze, so the traveller and the goal can stand
+       in an edge cell without being cut off by the board's edge. */
+    const PAD = 1.8;
+
     function build() {
       const N = PlayKit.node;
       const W = maze.cols * CELL, H = maze.rows * CELL;
       const col = theme.colors;
-      const roadW = big ? 6.4 : 7.4;
+      /* Roads a little over half a cell wide: wide enough for a finger to
+         follow, narrow enough that the hedges between them read clearly. */
+      const roadW = big ? 5.6 : 7;
       const wrap = UI.h("div", { class: "mz-wrap" });
-      svg = PlayKit.svg("0 0 " + W + " " + H, "", "mz-board mz-" + theme.id);
+      svg = PlayKit.svg((-PAD) + " " + (-PAD) + " " + (W + 2 * PAD) + " " + (H + 2 * PAD), "", "mz-board mz-" + theme.id);
 
-      N("defs", {}, svg).innerHTML = '<clipPath id="' + id + '-c"><rect width="' + W + '" height="' + H + '" rx="4"/></clipPath>';
+      N("defs", {}, svg).innerHTML = '<clipPath id="' + id + '-c"><rect x="' + -PAD + '" y="' + -PAD + '" width="' + (W + 2 * PAD) + '" height="' + (H + 2 * PAD) + '" rx="4"/></clipPath>';
       const g = N("g", { "clip-path": "url(#" + id + "-c)" }, svg);
-      N("rect", { width: W, height: H, fill: col.bg }, g);
+      N("rect", { x: -PAD, y: -PAD, width: W + 2 * PAD, height: H + 2 * PAD, fill: col.bg }, g);
 
       /* A little texture across the ground: grass, cloud wisps, stars. */
       const fr = PlayKit.rng(maze.open.length * 7919 + lvl);
@@ -99,7 +105,7 @@
       g.insertAdjacentHTML("beforeend", flecks);
 
       const road = M.road(maze, CELL);
-      N("path", { d: road, fill: "none", stroke: col.edge, "stroke-width": roadW + 1.8, "stroke-linecap": "round", "stroke-linejoin": "round" }, g);
+      N("path", { d: road, fill: "none", stroke: col.edge, "stroke-width": roadW + 1.6, "stroke-linecap": "round", "stroke-linejoin": "round" }, g);
       N("path", { d: road, fill: "none", stroke: col.road, "stroke-width": roadW, "stroke-linecap": "round", "stroke-linejoin": "round" }, g);
 
       hintPath = N("path", { class: "mz-hint", d: "", fill: "none", stroke: col.trail, "stroke-width": 1.6, "stroke-linecap": "round", "stroke-linejoin": "round", "stroke-dasharray": "0.1 3.2" }, g);
@@ -143,7 +149,7 @@
 
     function size() {
       if (!svg || !maze) return;
-      const ratio = maze.cols / maze.rows;
+      const ratio = (maze.cols * CELL + 2 * PAD) / (maze.rows * CELL + 2 * PAD);
       const aw = f.stage.clientWidth - 4, ah = f.stage.clientHeight - 10;
       let w = Math.min(aw, ah * ratio, 900);
       svg.style.width = Math.round(w) + "px";
@@ -152,6 +158,10 @@
 
     function place(cell, animate) {
       const c = centre(cell);
+      /* Settle the last position before starting the next move, so the
+         walk always animates from the cell it is leaving — even on a
+         device that has been skipping frames. */
+      void getComputedStyle(mover).transform;
       mover.style.transition = animate && !PlayKit.reduceMotion ? "transform 110ms ease-out" : "none";
       mover.style.transform = "translate(" + c[0] + "px," + c[1] + "px)";
     }

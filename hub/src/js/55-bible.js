@@ -513,7 +513,11 @@ const PlayKit = (function () {
      answers are plainly wrong on purpose; a near miss would teach the
      error. Getting it right is followed by the truth said in full. */
   function question(spec, onDone) {
-    const opts = shuffle(spec.options.map(function (x) { return { text: x[0], ok: !!x[1] }; }));
+    /* Shuffled, but the same way every time for a given question: the
+       right answer still moves about between questions, the voice and the
+       buttons always agree, and each question is one voice clip rather
+       than six (each distinct wording is synthesised, and paid for, once). */
+    const opts = shuffle(spec.options.map(function (x) { return { text: x[0], ok: !!x[1] }; }), rng(hashStr(spec.q)));
     const block = h("div", { class: "pk-q" });
     const spoken = spec.q + " Is it: " + opts.map(function (x) { return x.text; }).join("? Or: ") + "?";
 

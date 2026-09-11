@@ -7,9 +7,12 @@ from the wall. Recipes imports straight from a link. The grocery list prices
 every item at Meijer and ALDI, files it under the cheaper store, and can order
 the carts filled. Today opens with the morning word: one KJV verse a day with
 a line from a Reformed voice under it (`data/scripture.js`, `js/15-word.js`),
-chosen by arithmetic on the date so every screen agrees. Bible is a touch-only
-game for the girls (`js/55-bible.js`): a story a day in a ten-day rotation,
-five short rounds read aloud, no stars, no score — finishing is the prize.
+chosen by arithmetic on the date so every screen agrees. Bible is play-and-learn
+for the girls: three touch games — dot to dot, mazes and jigsaws
+(`js/55-bible.js` is the shell, `56`–`58` the games) — all built on eleven
+hand-drawn storybook pictures (`data/pictures.js`), each a Bible story with its
+KJV verse, a truth said aloud, and a catechism question for Addison. Each
+child simply has her own version (`config.gameLevel`); no stars, no score.
 On the wall Surface in the kitchen it opens at `/display` and becomes the
 always-on display: the same app with a clock-and-weather bar. Kenzie's
 morning note pops on whichever screen she is looking at.
@@ -68,11 +71,12 @@ hub/
     index.html   the shell, with {{STYLES}} {{DATA}} {{APP}} markers
     styles.css   the whole design system
     css/*.css    module-local additions, appended in name order
-    data/        almanac, love (generated from public/config.js), recipes,
-                 scripture (KJV verses + Reformed quotes), seed
+    data/        almanac, love (generated from public/config.js), pictures
+                 (the Bible tab's storybook art), recipes, scripture (KJV
+                 verses + Reformed quotes), seed
     js/          00-core, 05-weather, 10-today, 15-word, 20-meals, 30-recipes,
-                 40-house, 45-chores, 50-rewards, 55-bible, 60-display,
-                 70-love, 99-boot
+                 40-house, 45-chores, 50-rewards, 55-bible, 56-dots, 57-maze,
+                 58-jigsaw, 60-display, 70-love, 99-boot
 ```
 
 Files are concatenated in name order into one script scope. **No modules, no
@@ -153,10 +157,8 @@ short lease so two phones opening at once do not both write.
 
 ## Conventions
 
-1. Zero dependencies. Plain DOM. No frameworks, no CDN scripts — with one
-   deliberate exception: the Bible game fetches three.js r128 from cdnjs
-   *after* the tab opens, for the particle sky behind the board. If it never
-   arrives the CSS scene stands in and nothing else changes.
+1. Zero dependencies. Plain DOM. No frameworks, no CDN scripts. The Bible
+   tab's art is hand-written SVG, so it needs nothing from anywhere.
 2. Every colour comes from a token in `styles.css`. Never a hex literal in a
    component, or one of the two themes breaks.
 3. Never `innerHTML` with stored or pasted content. Build nodes, set `text`.

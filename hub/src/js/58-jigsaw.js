@@ -63,12 +63,30 @@
         by = (H - S) / 2;
         tray = { x: bx + S + 18, y: 10, w: W - (bx + S + 18) - 10, h: H - 20 };
       } else {
-        S = Math.min(W - 16, (H - 20) * 0.58);
+        S = Math.min(W - 16, (H - 20) * 0.6);
         bx = (W - S) / 2;
         by = 8;
         tray = { x: 8, y: by + S + 14, w: W - 16, h: H - (by + S + 14) - 8 };
       }
-      geo = { S: S, bx: bx, by: by, scale: S / 100, W: W, H: H, tray: tray };
+      geo = { S: S, bx: bx, by: by, scale: S / 100, W: W, H: H, tray: tray, k: 1, c: 1 };
+      trayFit();
+    }
+
+    /* Full-size pieces never fit beside a board of their own size, so they
+       wait in the heap smaller and grow to full size the moment a finger
+       picks one up. This finds the largest heap size that fits them all,
+       and how many to a row. */
+    function trayFit() {
+      const t = geo.tray, n = cols * rows;
+      const bw = geo.S / cols, bh = geo.S / rows;
+      let best = { k: 0.25, c: 1 };
+      for (let c = 1; c <= n; c++) {
+        const r = Math.ceil(n / c);
+        const k = Math.min(t.w / (c * bw * 1.32), t.h / (r * bh * 1.32));
+        if (k > best.k) best = { k: k, c: c };
+      }
+      geo.k = Math.min(1, best.k);
+      geo.c = best.c;
     }
 
     function build() {
@@ -101,7 +119,7 @@
             '<path class="jz-hit" d="' + d + '" fill="transparent"/>');
           el.appendChild(s);
           area.appendChild(el);
-          const p = { el: el, x: x, y: y, x0: x0, y0: y0, pw: pw, ph: ph, T: T, locked: false, nx: 0, ny: 0, left: 0, top: 0 };
+          const p = { el: el, x: x, y: y, x0: x0, y0: y0, pw: pw, ph: ph, T: T, locked: false, full: false, cx: 0, cy: 0, left: 0, top: 0 };
           pieces.push(p);
           bind(p, s.querySelector(".jz-hit"));
         }
@@ -115,16 +133,14 @@
        askew from its slot, so they read as a pile and not a list. */
     function scatter() {
       const t = geo.tray;
-      const n = pieces.length;
-      const c = Math.max(1, Math.round(Math.sqrt(n * (t.w / Math.max(1, t.h)))));
-      const r = Math.ceil(n / c);
+      const c = geo.c, r = Math.ceil(pieces.length / c);
       const cw = t.w / c, ch = t.h / r;
       PlayKit.shuffle(pieces).forEach(function (p, i) {
-        const pwPx = (p.pw + 2 * p.T) * geo.scale, phPx = (p.ph + 2 * p.T) * geo.scale;
-        const cx = t.x + (i % c) * cw + cw / 2 + (Math.random() - 0.5) * cw * 0.25;
-        const cy = t.y + Math.floor(i / c) * ch + ch / 2 + (Math.random() - 0.5) * ch * 0.25;
-        p.nx = (cx - pwPx / 2) / geo.W;
-        p.ny = (cy - phPx / 2) / geo.H;
+        const cx = t.x + (i % c) * cw + cw / 2 + (Math.random() - 0.5) * cw * 0.18;
+        const cy = t.y + Math.floor(i / c) * ch + ch / 2 + (Math.random() - 0.5) * ch * 0.18;
+        p.cx = cx / geo.W;
+        p.cy = cy / geo.H;
+        p.full = false;
       });
     }
 
@@ -149,8 +165,8 @@
           p.left = hp[0];
           p.top = hp[1];
         } else {
-          p.left = clamp(p.nx * geo.W, -w * 0.25, geo.W - w * 0.75);
-          p.top = clamp(p.ny * geo.H, -hh * 0.25, geo.H - hh * 0.75);
+          p.left = p.cx * geo.W - w / 2;
+          p.top = p.cy * geo.H - hh / 2;
         }
         paint(p);
       });
@@ -161,6 +177,12 @@
     function paint(p) {
       p.el.style.left = p.left + "px";
       p.el.style.top = p.top + "px";
+      p.el.style.transform = p.locked || p.full ? "" : "scale(" + geo.k.toFixed(3) + ")";
+    }
+
+    function overBoard(p) {
+      const cx = p.left + p.el.offsetWidth / 2, cy = p.top + p.el.offsetHeight / 2;
+      return cx > geo.bx && cx < geo.bx + geo.S && cy > geo.by && cy < geo.by + geo.S;
     }
 
     function bind(p, hit) {
@@ -169,19 +191,29 @@
         e.preventDefault();
         e.stopPropagation();
         const ar = area.getBoundingClientRect();
-        drag = { p: p, ox: e.clientX - ar.left - p.left, oy: e.clientY - ar.top - p.top };
+        const fx = e.clientX - ar.left, fy = e.clientY - ar.top;
+        const w = p.el.offsetWidth, hh = p.el.offsetHeight;
+        /* The piece grows to full size under the finger; keep the exact
+           spot she grabbed under her finger as it does. */
+        const sc = p.full ? 1 : geo.k;
+        const gx = (fx - (p.left + w / 2)) / sc, gy = (fy - (p.top + hh / 2)) / sc;
+        p.full = true;
+        p.left = fx - w / 2 - gx;
+        p.top = fy - hh / 2 - gy;
+        drag = { p: p, ox: fx - p.left, oy: fy - p.top };
         try { hit.setPointerCapture(e.pointerId); } catch (x) { /* fine */ }
-        p.el.style.transition = "none";
+        p.el.style.transition = PlayKit.reduceMotion ? "none" : "transform 130ms ease-out";
         p.el.style.zIndex = String(++zTop);
         p.el.classList.add("is-drag");
+        paint(p);
         PlayKit.SFX.tap();
       });
       hit.addEventListener("pointermove", function (e) {
         if (!drag || drag.p !== p) return;
         const ar = area.getBoundingClientRect();
         const w = p.el.offsetWidth, hh = p.el.offsetHeight;
-        p.left = clamp(e.clientX - ar.left - drag.ox, -w * 0.3, geo.W - w * 0.7);
-        p.top = clamp(e.clientY - ar.top - drag.oy, -hh * 0.3, geo.H - hh * 0.7);
+        p.left = clamp(e.clientX - ar.left - drag.ox, -w * 0.4, geo.W - w * 0.6);
+        p.top = clamp(e.clientY - ar.top - drag.oy, -hh * 0.4, geo.H - hh * 0.6);
         paint(p);
       });
       const end = function () {
@@ -200,10 +232,15 @@
       const reach = Math.min(bodyW, bodyH) * (big ? 0.34 : 0.55);
       if (Math.hypot(p.left - hp[0], p.top - hp[1]) <= reach) {
         snap(p);
-      } else {
-        p.nx = p.left / geo.W;
-        p.ny = p.top / geo.H;
+        return;
       }
+      /* Left on the board, it stays full size so it is easy to nudge into
+         place; put back in the heap, it shrinks to wait with the others. */
+      p.full = overBoard(p);
+      p.cx = (p.left + p.el.offsetWidth / 2) / geo.W;
+      p.cy = (p.top + p.el.offsetHeight / 2) / geo.H;
+      p.el.style.transition = PlayKit.reduceMotion ? "none" : "transform 160ms ease-out";
+      paint(p);
     }
 
     function snap(p) {
@@ -211,7 +248,7 @@
       p.locked = true;
       p.left = hp[0];
       p.top = hp[1];
-      p.el.style.transition = PlayKit.reduceMotion ? "none" : "left 140ms ease-out, top 140ms ease-out";
+      p.el.style.transition = PlayKit.reduceMotion ? "none" : "left 140ms ease-out, top 140ms ease-out, transform 140ms ease-out";
       p.el.style.zIndex = "2";
       p.el.classList.add("is-locked");
       paint(p);
