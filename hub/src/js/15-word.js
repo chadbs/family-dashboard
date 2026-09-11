@@ -58,7 +58,7 @@ const Voice = (function () {
     } catch (e) { /* fine */ }
   }
 
-  function browserSpeak(text, opts) {
+  function browserSpeak(text, opts, done) {
     if (!supported) return false;
     const o = opts || {};
     try {
@@ -69,6 +69,7 @@ const Voice = (function () {
       u.rate = o.rate || 0.95;
       u.pitch = o.pitch || 1.05;
       u.volume = 1;
+      if (done) { u.onend = done; u.onerror = done; }
       window.speechSynthesis.speak(u);
       return true;
     } catch (e) {
@@ -143,26 +144,49 @@ const Voice = (function () {
     );
   }
 
+  /* Every line gets a turn number; saying something new, or hushing,
+     starts a new turn. A line only reports that it finished if it is still
+     the current turn, so a follow-on never fires after being talked over. */
+  let turn = 0;
+
+  /* opts.onEnd runs once, when the line has been said. It always runs —
+     if the audio is blocked or the device has no voice at all, a timer
+     sized to the length of the line stands in for it — so a sequence of
+     lines can never stall halfway. */
   function speak(text, opts) {
     const t = String(text || "").trim();
     if (!t) return false;
     hush();
-    if (server === false) return browserSpeak(t, opts);
+    const my = turn;
+    const o = opts || {};
+    let fired = false;
+    const done = function () {
+      if (fired || my !== turn) return;
+      fired = true;
+      if (o.onEnd) o.onEnd();
+    };
+    if (o.onEnd) setTimeout(done, 1400 + t.length * 90);
+
+    if (server === false) {
+      if (!browserSpeak(t, o, done)) setTimeout(done, 600);
+      return true;
+    }
 
     prefetch(t);
     const want = t;
     clips.get(t).then(function (src) {
       /* Something else started talking while this was loading. */
-      if (want !== lastAsked) return;
+      if (want !== lastAsked || my !== turn) return;
       const a = audio();
-      if (!src || !a) return void browserSpeak(t, opts);
+      if (!src || !a) return void browserSpeak(t, o, done);
       try {
+        a.onended = done;
         a.src = src;
-        a.playbackRate = (opts && opts.rate) || 1;
+        a.playbackRate = o.rate || 1;
         const p = a.play();
-        if (p && p.catch) p.catch(function () { browserSpeak(t, opts); });
+        if (p && p.catch) p.catch(function () { browserSpeak(t, o, done); });
       } catch (e) {
-        browserSpeak(t, opts);
+        browserSpeak(t, o, done);
       }
     });
     lastAsked = t;
@@ -170,9 +194,10 @@ const Voice = (function () {
   }
 
   function hush() {
+    turn++;
     lastAsked = "";
     try { window.speechSynthesis.cancel(); } catch (e) { /* fine */ }
-    try { if (el) { el.pause(); el.currentTime = 0; } } catch (e) { /* fine */ }
+    try { if (el) { el.onended = null; el.pause(); el.currentTime = 0; } } catch (e) { /* fine */ }
   }
 
   return {

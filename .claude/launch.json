@@ -13,6 +13,12 @@
       "runtimeExecutable": "cmd",
       "runtimeArgs": ["/c", "set HOUSE_KV_PATH=%TEMP%\\house-dev.kv&& deno run -A --unstable-kv cloud/main.ts"],
       "port": 8000
+    },
+    {
+      "name": "scratch",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["C:\\Users\\chads\\AppData\\Local\\Temp\\claude\\C--Users-chads-code-Cowork-family-weather-dashboard-project-weather-dashboard\\e729c677-db2d-4311-acce-5116df737197\\scratchpad\\serve.js"],
+      "port": 8123
     }
   ]
 }
