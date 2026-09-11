@@ -1,0 +1,36 @@
+/* Jigsaws: a board, a faint copy of the picture, and real pieces. */
+
+.pk-jigsaw .pk-stage { background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--line); }
+.jz-area { position: absolute; inset: 0; }
+.jz-board {
+  position: absolute;
+  border-radius: 10px;
+  background: #f1e6d3;
+  box-shadow: inset 0 0 0 2px rgba(59, 47, 42, 0.14), 0 6px 18px -8px rgba(20, 33, 43, 0.3);
+  transition: box-shadow 0.5s ease;
+}
+.jz-ghost { width: 100%; height: 100%; display: block; border-radius: 10px; }
+.jz-slots.is-off { display: none; }
+
+/* A piece is only as grabbable as its shape: the box around it lets
+   touches through, and only the outline itself catches them. */
+.jz-piece { position: absolute; pointer-events: none; filter: drop-shadow(0 3px 3px rgba(20, 33, 43, 0.3)); }
+.jz-piece svg { width: 100%; height: 100%; display: block; overflow: visible; pointer-events: none; transition: transform 0.12s ease; }
+.jz-hit { pointer-events: all; cursor: grab; }
+.jz-piece.is-drag { filter: drop-shadow(0 12px 12px rgba(20, 33, 43, 0.38)); }
+.jz-piece.is-drag svg { transform: scale(1.05); }
+.jz-piece.is-drag .jz-hit { cursor: grabbing; }
+.jz-piece.is-locked { filter: none; }
+.jz-piece.is-locked .jz-hit { pointer-events: none; cursor: default; }
+.jz-piece.is-locked svg { animation: jz-settle 0.28s ease-out; }
+@keyframes jz-settle { 40% { transform: scale(1.04); } }
+
+/* Whole again: the seams fade and the picture glows. */
+.jz-area.is-done .jz-edge,
+.jz-area.is-done .jz-shine { opacity: 0; transition: opacity 0.6s ease; }
+.jz-area.is-done .jz-board { box-shadow: 0 0 0 4px #ffd166, 0 10px 30px -6px rgba(255, 190, 60, 0.65); }
+
+@media (prefers-reduced-motion: reduce) {
+  .jz-piece.is-locked svg { animation: none; }
+  .jz-piece svg { transition: none; }
+}

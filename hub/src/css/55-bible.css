@@ -1,348 +1,172 @@
 /* ============================================================
-   Bible game — big, bouncy, touch-first. Toddler fingers, no keyboard.
-
-   Everything is built from the house palette: the "sky" behind the board
-   is delft or leaf or amber mixed into the surface, so it reads as the
-   same app in light and dark. Motion is short and springy; every tile
-   answers a touch within one frame.
+   Bible — play & learn. The shell around the three games: who's playing,
+   which game, the frame each game sits in, and the card at the end of
+   every picture. The pictures carry their own colours (they are picture
+   book pages); everything around them uses the house tokens.
    ============================================================ */
 
-.bg-head { flex-direction: row; align-items: flex-start; justify-content: space-between; gap: 10px; }
+/* ---------- today's picture ---------- */
 
-/* The scene: a soft gradient wash plus a few drifting glyphs. */
-.bg-sky { position: relative; overflow: hidden; isolation: isolate; }
-.bg-sky[data-sky="day"]    { background: linear-gradient(180deg, color-mix(in oklab, var(--delft) 14%, var(--surface)) 0%, var(--surface) 55%, color-mix(in oklab, var(--leaf) 12%, var(--surface)) 100%); }
-.bg-sky[data-sky="meadow"] { background: linear-gradient(180deg, color-mix(in oklab, var(--amber) 10%, var(--surface)) 0%, var(--surface) 45%, color-mix(in oklab, var(--leaf) 18%, var(--surface)) 100%); }
-.bg-sky[data-sky="sea"]    { background: linear-gradient(180deg, var(--surface) 0%, color-mix(in oklab, var(--delft) 14%, var(--surface)) 60%, color-mix(in oklab, var(--delft) 26%, var(--surface)) 100%); }
-.bg-sky[data-sky="rain"]   { background: linear-gradient(180deg, color-mix(in oklab, var(--ink-3) 18%, var(--surface)) 0%, var(--surface) 60%, color-mix(in oklab, var(--delft) 14%, var(--surface)) 100%); }
-.bg-sky[data-sky="night"]  { background: linear-gradient(180deg, color-mix(in oklab, var(--delft) 32%, var(--surface)) 0%, color-mix(in oklab, var(--delft) 16%, var(--surface)) 70%, var(--surface) 100%); }
-.bg-scene { position: absolute; inset: 0; pointer-events: none; z-index: 0; opacity: 0.32; }
-.bg-scene-bit {
-  position: absolute;
-  font-size: 1.5rem;
-  animation: bg-drift 14s ease-in-out infinite alternate;
-  animation-delay: calc(var(--i) * -2.8s);
+.pk-hero { display: flex; align-items: center; gap: 16px; padding: 14px; }
+.pk-hero-frame {
+  flex: 0 0 38%;
+  max-width: 230px;
+  aspect-ratio: 1;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 14px -6px rgba(20, 33, 43, 0.35);
 }
-/* Kept to the edges so nothing sits behind the prompt or the tiles. */
-.bg-scene-bit:nth-child(1) { left: 2%; top: 2%; }
-.bg-scene-bit:nth-child(2) { right: 2%; top: 30%; font-size: 1.8rem; }
-.bg-scene-bit:nth-child(3) { left: 2%; bottom: 3%; }
-.bg-scene-bit:nth-child(4) { right: 3%; bottom: 3%; }
-.bg-scene-bit:nth-child(5) { left: 46%; bottom: 1%; font-size: 1.1rem; }
-@keyframes bg-drift { from { transform: translate(0, 0) rotate(-3deg); } to { transform: translate(10px, -8px) rotate(4deg); } }
-.bg-sky > *:not(.bg-scene):not(.bg-gl) { position: relative; z-index: 1; }
-/* The WebGL sky sits under everything; once it is up the emoji scene steps aside. */
-.bg-gl { position: absolute; inset: 0; width: 100% !important; height: 100% !important; z-index: 0; pointer-events: none; }
-.bg-sky.has-gl .bg-scene { display: none; }
+.pk-hero-art { width: 100%; height: 100%; display: block; }
+.pk-hero-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.pk-hero-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.pk-hero-name { font-family: var(--serif); font-size: 1.45rem; line-height: 1.15; }
+.pk-hero-verse { font-family: var(--serif); font-size: 1rem; line-height: 1.4; color: var(--ink-2); text-wrap: pretty; }
+.pk-hear { color: var(--delft); flex-shrink: 0; }
 
-/* Start screen */
-.bg-intro { padding: 22px 16px 18px; display: flex; flex-direction: column; gap: 10px; align-items: center; text-align: center; }
-.bg-intro-icon { font-size: 4rem; line-height: 1; filter: drop-shadow(0 6px 10px rgba(20, 33, 43, 0.18)); animation: bg-breathe 3.2s ease-in-out infinite; }
-@keyframes bg-breathe { 50% { transform: translateY(-5px) scale(1.04); } }
-.bg-intro-verse { font-family: var(--serif); font-size: 1.18rem; line-height: 1.35; max-width: 30ch; text-wrap: pretty; }
-.bg-intro-text { color: var(--ink-2); font-size: 0.9rem; max-width: 32ch; margin-top: 4px; }
-.bg-kids { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; width: 100%; margin-top: 4px; }
-.bg-kids[data-n="1"] { grid-template-columns: minmax(0, 220px); justify-content: center; }
-.bg-kids[data-n="2"] { grid-template-columns: 1fr 1fr; }
-.bg-kid-wrap { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
-.bg-kid-wrap .bg-kid { flex: 1; }
-.bg-kid {
-  display: flex; flex-direction: column; align-items: center; gap: 3px;
-  padding: 16px 8px 12px;
+/* ---------- who's playing ---------- */
+
+.pk-kids { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.pk-kids[data-n="1"] { grid-template-columns: minmax(0, 260px); justify-content: center; }
+.pk-kid {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  padding: 22px 10px 16px;
   border-radius: var(--r-lg);
   border: 2px solid var(--line);
   background: var(--surface);
   color: var(--ink);
-  cursor: pointer;
   box-shadow: var(--shadow-card);
+  cursor: pointer;
+  touch-action: manipulation;
   transition: transform 0.14s cubic-bezier(0.2, 0.8, 0.3, 1.3), border-color 0.15s ease, box-shadow 0.15s ease;
-  touch-action: manipulation;
 }
-.bg-kid:hover { border-color: var(--delft); box-shadow: var(--shadow-lift); transform: translateY(-2px); }
-.bg-kid:active { transform: scale(0.95); }
-.bg-kid-anyone { border-style: dashed; }
-.bg-kid-emoji { font-size: 2.9rem; line-height: 1; }
-.bg-kid-name { font-family: var(--serif); font-size: 1.25rem; }
-.bg-kid-sub { font-size: 0.7rem; color: var(--ink-3); font-weight: 650; letter-spacing: 0.02em; text-transform: uppercase; }
+.pk-kid:hover { border-color: var(--delft); box-shadow: var(--shadow-lift); transform: translateY(-2px); }
+.pk-kid:active { transform: scale(0.96); }
+.pk-kid-face { font-size: 3.4rem; line-height: 1; }
+.pk-kid-name { font-family: var(--serif); font-size: 1.5rem; }
+.pk-kid-sub { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink-3); }
 
-/* Story trail: the ten stories in rotation. Today is lit, and any of them
-   can be tapped to play it now. */
-.bg-trail { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
-.bg-trail-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-.bg-trail-row { display: flex; gap: 6px; overflow-x: auto; padding: 4px 2px 8px; scrollbar-width: none; }
-.bg-trail-row::-webkit-scrollbar { display: none; }
-.bg-trail-stop {
-  flex: 0 0 auto;
-  display: flex; flex-direction: column; align-items: center; gap: 3px;
-  width: 62px; padding: 8px 2px 6px;
-  border-radius: 14px;
-  border: 1.5px solid var(--line);
-  background: var(--surface);
-  color: var(--ink-3);
-  opacity: 0.62;
-  cursor: pointer;
-  touch-action: manipulation;
-  transition: transform 0.14s cubic-bezier(0.2, 0.8, 0.3, 1.3), opacity 0.15s ease, border-color 0.15s ease;
-}
-.bg-trail-stop:hover { opacity: 1; border-color: var(--delft); }
-.bg-trail-stop:active { transform: scale(0.94); }
-.bg-trail-stop.is-today { opacity: 0.95; border-style: dashed; }
-.bg-trail-stop.is-now { opacity: 1; border-color: var(--delft); border-style: solid; background: var(--delft-soft); color: var(--delft); transform: scale(1.06); }
-.bg-trail-icon { font-size: 1.5rem; line-height: 1; }
-.bg-trail-tag {
-  font-size: 0.55rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em;
-  max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-}
+/* ---------- which game ---------- */
 
-/* In play */
-.bg-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-.bg-top-actions { display: flex; gap: 4px; }
-.bg-who { display: flex; align-items: center; gap: 8px; font-weight: 600; color: var(--ink-2); font-size: 0.9rem; }
-.bg-story-icon { font-size: 1.4rem; line-height: 1; }
-
-.bg-progress { display: flex; gap: 8px; justify-content: center; padding: 2px 0 6px; }
-.bg-dot {
-  width: 22px; height: 22px; border-radius: 50%;
-  background: var(--surface-2); border: 2px solid var(--line-2);
-  display: grid; place-items: center;
-  color: var(--surface);
-  transition: transform 0.2s cubic-bezier(0.2, 0.8, 0.3, 1.4), background 0.2s ease;
-}
-.bg-dot svg { width: 13px; height: 13px; stroke-width: 3; }
-.bg-dot[data-on="done"] { background: var(--leaf); border-color: var(--leaf); }
-.bg-dot[data-on="now"] { background: var(--delft); border-color: var(--delft); transform: scale(1.25); box-shadow: 0 0 0 5px color-mix(in oklab, var(--delft) 22%, transparent); }
-
-.bg-board { padding: 16px 14px 14px; display: flex; flex-direction: column; gap: 12px; }
-.bg-enter { animation: bg-slidein 0.38s cubic-bezier(0.2, 0.8, 0.3, 1.15); }
-@keyframes bg-slidein { from { opacity: 0; transform: translateX(28px) scale(0.98); } }
-.bg-prompt-row { display: flex; align-items: flex-start; gap: 8px; }
-.bg-prompt-text {
-  flex: 1;
-  font-family: var(--serif);
-  font-size: 1.4rem;
-  line-height: 1.25;
-  text-wrap: balance;
-}
-.bg-say { color: var(--delft); flex-shrink: 0; background: var(--surface); border-radius: 50%; box-shadow: var(--shadow-card); }
-
-.bg-stack { display: flex; flex-direction: column; gap: 12px; align-items: stretch; }
-.bg-grid { display: grid; gap: 10px; }
-.bg-grid-2 { grid-template-columns: 1fr 1fr; }
-.bg-grid-3 { grid-template-columns: 1fr 1fr 1fr; }
-.bg-grid-4 { grid-template-columns: repeat(4, 1fr); gap: 8px; }
-.bg-grid-4 .bg-tile { min-height: 78px; border-bottom-width: 4px; }
-.bg-grid-4 .bg-glyph { font-size: 2.2rem; }
-
-.bg-tile {
-  min-height: 104px;
-  border-radius: 20px;
+.pk-menu-head { display: flex; align-items: center; gap: 10px; }
+.pk-menu-head .title { font-family: var(--serif); font-size: 1.9rem; line-height: 1.1; }
+.pk-doors { display: flex; flex-direction: column; gap: 12px; }
+.pk-door {
+  display: flex; align-items: center; gap: 14px;
+  padding: 12px 14px 12px 12px;
+  border-radius: var(--r-lg);
   border: 2px solid var(--line);
-  border-bottom-width: 5px;
   background: var(--surface);
-  display: grid; place-items: center;
-  cursor: pointer;
-  padding: 0;
-  box-shadow: var(--shadow-card);
-  transition: transform 0.12s cubic-bezier(0.2, 0.8, 0.3, 1.3), background 0.15s ease, border-color 0.15s ease, opacity 0.25s ease, box-shadow 0.15s ease;
-  touch-action: manipulation;
-  -webkit-tap-highlight-color: transparent;
-  animation: bg-deal 0.32s cubic-bezier(0.2, 0.8, 0.3, 1.25) both;
-  animation-delay: calc(var(--i, 0) * 40ms);
-}
-@keyframes bg-deal { from { opacity: 0; transform: translateY(12px) scale(0.92); } }
-.bg-grid-2 .bg-tile { min-height: 136px; }
-.bg-tile:not([disabled]):hover { box-shadow: var(--shadow-lift); transform: translateY(-2px); }
-.bg-tile:not([disabled]):active { transform: scale(0.93) translateY(2px); border-bottom-width: 2px; }
-.bg-tile[disabled] { cursor: default; }
-.bg-glyph { font-size: 3.1rem; line-height: 1; filter: drop-shadow(0 3px 4px rgba(20, 33, 43, 0.12)); }
-.bg-grid-2 .bg-glyph { font-size: 3.8rem; }
-
-.bg-hit { background: var(--leaf-soft); border-color: var(--leaf); animation: bg-pop 0.55s cubic-bezier(0.2, 0.8, 0.3, 1.5); }
-.bg-hit .bg-glyph { animation: bg-spin 0.55s cubic-bezier(0.2, 0.8, 0.3, 1.3); }
-.bg-miss { animation: bg-wobble 0.45s ease; border-color: var(--tulip); background: var(--tulip-soft); }
-.bg-gone { opacity: 0.16; transform: scale(0.8); border-bottom-width: 2px; }
-.bg-counted { background: var(--amber-soft); border-color: var(--amber); }
-.bg-counted .bg-glyph { transform: scale(0.9); }
-.bg-down { background: color-mix(in oklab, var(--delft) 22%, var(--surface)); border-color: color-mix(in oklab, var(--delft) 40%, var(--surface)); }
-.bg-down .bg-glyph { font-size: 2.2rem; opacity: 0.55; }
-.bg-up { background: var(--surface); border-color: var(--delft); animation: bg-flip 0.3s ease; }
-.bg-hint { animation: bg-nudge 0.9s ease-in-out infinite; border-color: var(--amber); box-shadow: 0 0 0 4px color-mix(in oklab, var(--amber) 28%, transparent); }
-
-@keyframes bg-pop { 40% { transform: scale(1.14); } }
-@keyframes bg-spin { 50% { transform: rotate(-12deg) scale(1.2); } }
-@keyframes bg-flip { from { transform: rotateY(90deg); } }
-@keyframes bg-wobble { 20% { transform: translateX(-7px) rotate(-2deg); } 40% { transform: translateX(7px) rotate(2deg); } 60% { transform: translateX(-4px); } 80% { transform: translateX(4px); } }
-@keyframes bg-nudge { 50% { transform: translateY(-7px) rotate(2deg); } }
-
-/* Sparks that fly out of a tile on a hit. Fixed to the viewport. */
-.bg-burst { position: fixed; z-index: 90; pointer-events: none; width: 0; height: 0; }
-.bg-spark {
-  position: absolute; left: 0; top: 0;
-  font-size: 1.3rem; line-height: 1;
-  transform: translate(-50%, -50%);
-  animation: bg-fly 0.75s cubic-bezier(0.1, 0.7, 0.3, 1) forwards;
-}
-@keyframes bg-fly { to { transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(0.4); opacity: 0; } }
-
-.bg-counter, .bg-bignum { text-align: center; font-family: var(--serif); color: var(--delft); line-height: 1; }
-.bg-counter { font-size: 1.6rem; }
-.bg-counter-of { font-size: 1rem; color: var(--ink-3); }
-.bg-bignum { font-size: 4rem; animation: bg-pop 0.35s ease; }
-
-/* ---- the thinking rounds (the big level) ---- */
-
-/* A wrong tile at the big level is taken off the board. */
-.bg-dead { opacity: 0.3; filter: grayscale(1); border-bottom-width: 2px; }
-.bg-dead .bg-glyph { transform: scale(0.86); }
-
-/* Smallest to biggest: the rungs fill in as she gets them right. */
-.bg-ladder { display: flex; align-items: flex-end; justify-content: center; gap: 10px; padding: 2px 0 6px; }
-.bg-rung {
-  display: grid; place-items: center;
-  width: 52px; border-radius: 14px;
-  border: 2px dashed var(--line-2);
-  background: var(--surface-2);
-  color: var(--ink-3);
-  font-weight: 700;
-}
-.bg-rung:nth-child(1) { height: 44px; }
-.bg-rung:nth-child(2) { height: 56px; }
-.bg-rung:nth-child(3) { height: 70px; }
-.bg-rung.is-on { border-style: solid; border-color: var(--leaf); background: var(--leaf-soft); animation: bg-pop 0.4s cubic-bezier(0.2, 0.8, 0.3, 1.4); }
-.bg-rung-glyph { font-size: 1.7rem; line-height: 1; }
-.bg-rung:not(.is-on) .bg-rung-glyph { font-size: 1.1rem; font-family: var(--serif); }
-
-/* Which side has more: two clusters, counted by eye. */
-.bg-many { min-height: 150px; padding: 12px 8px; }
-.bg-many-wrap { display: flex; flex-wrap: wrap; align-content: center; justify-content: center; gap: 4px; max-width: 100%; }
-.bg-many-glyph { font-size: 1.9rem; line-height: 1; }
-
-/* Remember what was there. */
-.bg-peeking { animation: bg-look 0.5s ease; }
-@keyframes bg-look { from { transform: scale(0.94); opacity: 0.5; } }
-.bg-quiet { opacity: 0.45; }
-.bg-hole { border-style: dashed; border-color: var(--amber); animation: bg-breathe 1.6s ease-in-out infinite; }
-.bg-choices { display: flex; gap: 10px; justify-content: center; padding-top: 4px; border-top: 1px dashed var(--line); margin-top: 4px; }
-.bg-answer { flex: 1; min-height: 96px; max-width: 130px; }
-
-/* ---- the catechism round ---- */
-
-.bg-answers { display: flex; flex-direction: column; gap: 10px; }
-.bg-truth {
-  min-height: 0;
-  display: flex; flex-direction: row; align-items: center; gap: 14px;
-  padding: 14px 16px;
-  text-align: left;
-}
-.bg-truth-glyph { font-size: 2.4rem; line-height: 1; flex-shrink: 0; }
-.bg-truth-text {
-  font-family: var(--serif);
-  font-size: 1.18rem;
-  line-height: 1.25;
   color: var(--ink);
-  text-wrap: pretty;
+  text-align: left;
+  box-shadow: var(--shadow-card);
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: transform 0.14s cubic-bezier(0.2, 0.8, 0.3, 1.3), border-color 0.15s ease, box-shadow 0.15s ease;
 }
-
-/* The answer said back. This is the part that matters. */
-.bg-teach {
-  display: flex; flex-direction: column; align-items: center; gap: 10px;
-  text-align: center;
-  padding: 18px 6px 6px;
-  animation: bg-rise 0.45s cubic-bezier(0.2, 0.8, 0.3, 1.15);
-}
-@keyframes bg-rise { from { opacity: 0; transform: translateY(14px); } }
-.bg-teach-mark { font-size: 2.4rem; line-height: 1; }
-.bg-teach-text {
-  font-family: var(--serif);
-  font-size: 1.28rem;
-  line-height: 1.42;
-  max-width: 30ch;
-  text-wrap: pretty;
-}
-.bg-teach-go { margin-top: 8px; min-height: 50px; }
-
-/* The catechism round is marked on the progress bar. */
-.bg-dot.is-truth { border-radius: 4px; }
-
-/* ---- the Journey ---- */
-
-.bg-progress-wrap { display: flex; flex-direction: column; align-items: center; gap: 5px; }
-.bg-chapter {
-  display: flex; flex-direction: column; align-items: center; gap: 12px;
-  text-align: center;
-  padding: 22px 18px 18px;
-}
-.bg-chapter-head { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; }
-.bg-chapter-icon { font-size: 3.6rem; line-height: 1; animation: bg-breathe 3.2s ease-in-out infinite; }
-.bg-chapter-text {
-  font-family: var(--serif);
-  font-size: 1.3rem;
-  line-height: 1.4;
-  max-width: 32ch;
-  text-wrap: pretty;
-}
-.bg-chapter-pips { display: flex; gap: 8px; }
-.bg-pip { width: 26px; height: 5px; border-radius: 3px; background: var(--line-2); }
-.bg-pip.is-on { background: var(--amber); }
-.bg-journey-badge { background: var(--amber-soft); color: var(--ink-2); }
-
-/* What the questions taught, listed at the end and tappable to hear again. */
-.bg-learned {
-  width: 100%; margin-top: 14px; padding-top: 12px;
-  border-top: 1px dashed var(--line);
-  display: flex; flex-direction: column; gap: 8px;
-}
-.bg-learned-row {
-  display: flex; flex-direction: column; gap: 3px;
-  padding: 10px 12px;
-  border-radius: 14px;
-  border: 1px solid var(--line);
+.pk-door:hover { border-color: var(--delft); box-shadow: var(--shadow-lift); transform: translateY(-2px); }
+.pk-door:active { transform: scale(0.98); }
+.pk-door-art {
+  flex: 0 0 auto;
+  width: 96px; height: 96px;
+  border-radius: 16px;
+  overflow: hidden;
+  display: grid; place-items: center;
   background: var(--surface-2);
+}
+.pk-door-svg { width: 100%; height: 100%; display: block; }
+.pk-door-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.pk-door-title { font-family: var(--serif); font-size: 1.42rem; line-height: 1.15; }
+.pk-door-sub { font-size: 0.88rem; line-height: 1.35; color: var(--ink-3); }
+.pk-door > svg { width: 20px; height: 20px; color: var(--ink-3); flex: 0 0 auto; }
+
+/* ---------- the frame a game sits in ---------- */
+
+.view.pk-view-game { gap: 8px; padding-top: 10px; padding-bottom: 0; }
+.pk-host { width: 100%; }
+.pk-game { display: flex; flex-direction: column; gap: 8px; }
+.pk-top { display: flex; align-items: center; gap: 8px; }
+.pk-titles { flex: 1; min-width: 0; text-align: center; }
+.pk-title { font-family: var(--serif); font-size: 1.28rem; line-height: 1.1; }
+.pk-caption { font-size: 0.78rem; font-weight: 600; color: var(--ink-3); min-height: 1.1em; }
+.pk-mute[aria-pressed="true"] { color: var(--tulip); }
+.pk-stage {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  border-radius: var(--r-lg);
+  touch-action: none;            /* a drag must never scroll the page */
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+.pk-confetti { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 30; }
+
+/* ---------- the end of every picture ---------- */
+
+.pk-finale {
+  position: absolute; left: 0; right: 0; bottom: 0;
+  max-height: 78%;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  z-index: 20;
+  background: var(--surface);
+  border-radius: 22px 22px var(--r-lg) var(--r-lg);
+  box-shadow: 0 -12px 36px -10px rgba(20, 33, 43, 0.4);
+  touch-action: pan-y;
+  animation: pk-rise 0.42s cubic-bezier(0.2, 0.8, 0.3, 1.1);
+}
+@keyframes pk-rise { from { transform: translateY(40px); opacity: 0; } }
+.pk-fin-body { padding: 16px 18px 18px; display: flex; flex-direction: column; gap: 6px; }
+.pk-fin-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.pk-fin-name { font-family: var(--serif); font-size: 1.62rem; line-height: 1.1; }
+.pk-fin-verse { font-family: var(--serif); font-size: 1.06rem; line-height: 1.42; color: var(--ink-2); text-wrap: pretty; }
+.pk-fin-truth { font-size: 1rem; line-height: 1.45; font-weight: 600; color: var(--ink); margin-top: 4px; text-wrap: pretty; }
+.pk-fin-actions { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; animation: pk-fade 0.3s ease; }
+@keyframes pk-fade { from { opacity: 0; } }
+.pk-next { min-height: 52px; font-size: 1.05rem; }
+
+/* Addison's question */
+.pk-q { margin-top: 10px; padding-top: 12px; border-top: 1px dashed var(--line); display: flex; flex-direction: column; gap: 8px; }
+.pk-q-head { display: flex; align-items: center; justify-content: space-between; }
+.pk-q-label { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--delft); }
+.pk-q-text { font-family: var(--serif); font-size: 1.3rem; line-height: 1.25; text-wrap: balance; }
+.pk-q-answers { display: flex; flex-direction: column; gap: 8px; }
+.pk-q-answer {
+  padding: 14px 16px;
+  border-radius: 16px;
+  border: 2px solid var(--line);
+  background: var(--surface-2);
+  color: var(--ink);
+  font: inherit;
+  font-size: 1.05rem;
+  font-weight: 650;
   text-align: left;
   cursor: pointer;
   touch-action: manipulation;
+  transition: border-color 0.15s ease, background 0.15s ease, opacity 0.2s ease;
 }
-.bg-learned-text { font-family: var(--serif); font-size: 0.98rem; line-height: 1.35; color: var(--ink); }
-.bg-learned-ref { font-size: 0.72rem; font-weight: 650; color: var(--delft); }
-
-.bg-sort-item { text-align: center; font-size: 4.6rem; line-height: 1; padding: 6px 0 2px; transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.3, 1.2); }
-.bg-sort-go[data-to="sea"] { transform: translateX(-30%) scale(0.9); }
-.bg-sort-go[data-to="land"] { transform: translateX(30%) scale(0.9); }
-.bg-choice { min-height: 96px; }
-.bg-choice-text { font-size: 1.5rem; font-weight: 650; }
-
-/* Finish */
-.bg-done { padding: 28px 18px 18px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 8px; }
-.bg-confetti { position: absolute; inset: 0; pointer-events: none; z-index: 2; }
-.bg-conf { position: absolute; top: -24px; font-size: 1.4rem; animation: bg-fall 2.4s ease-in forwards; }
-@keyframes bg-fall { to { transform: translateY(520px) rotate(220deg); opacity: 0; } }
-.bg-done-icon { font-size: 4.4rem; line-height: 1; animation: bg-pop 0.6s cubic-bezier(0.2, 0.8, 0.3, 1.5); filter: drop-shadow(0 8px 12px rgba(20, 33, 43, 0.2)); }
-.bg-done-title { font-family: var(--serif); font-size: 2rem; line-height: 1.1; }
-.bg-perfect {
-  display: inline-flex; align-items: center; gap: 6px;
-  padding: 4px 12px; border-radius: 999px;
-  background: var(--leaf-soft); color: var(--leaf);
-  font-size: 0.78rem; font-weight: 700; letter-spacing: 0.02em;
-}
-.bg-done-verse { font-family: var(--serif); font-size: 1.12rem; line-height: 1.4; color: var(--ink-2); margin-top: 6px; max-width: 34ch; text-wrap: pretty; }
-.bg-done-actions { width: 100%; margin-top: 10px; }
-.bg-big-btn { min-height: 54px; font-size: 1.05rem; }
-.bg-tomorrow { display: flex; align-items: center; gap: 8px; margin-top: 8px; font-size: 0.85rem; color: var(--ink-2); font-weight: 600; }
-.bg-tomorrow span:first-child { font-size: 1.3rem; }
+.pk-q-answer:hover:not(:disabled) { border-color: var(--delft); }
+.pk-q-answer.is-right { border-color: var(--leaf); background: var(--leaf-soft); }
+.pk-q-answer.is-wrong { opacity: 0.45; animation: pk-shake 0.4s ease; }
+.pk-q-answer:disabled { cursor: default; }
+@keyframes pk-shake { 20% { transform: translateX(-6px); } 40% { transform: translateX(6px); } 60% { transform: translateX(-4px); } 80% { transform: translateX(3px); } }
+.pk-q-teach { padding: 12px 14px; border-radius: 14px; background: var(--delft-soft); display: flex; flex-direction: column; gap: 4px; animation: pk-fade 0.3s ease; }
+.pk-q-teach p { font-family: var(--serif); font-size: 1.08rem; line-height: 1.42; }
 
 @media (prefers-reduced-motion: reduce) {
-  .bg-hit, .bg-miss, .bg-done-icon, .bg-conf, .bg-tile, .bg-hint, .bg-scene-bit, .bg-intro-icon, .bg-enter, .bg-hit .bg-glyph { animation: none; }
-  .bg-conf, .bg-burst { display: none; }
-  .bg-hint { border-color: var(--amber); }
+  .pk-finale, .pk-fin-actions, .pk-q-teach, .pk-q-answer.is-wrong { animation: none; }
 }
 
-/* Six tabs now; drop the tracking so the labels still fit on a phone. */
+/* Six tabs; drop the tracking so the labels still fit on a phone. */
 @media (max-width: 899px) {
   .tabbar button { font-size: 0.64rem; letter-spacing: 0; }
 }
 
-/* On the wall the tiles can be bigger still. */
-body.display-mode .bg-tile { min-height: 130px; }
-body.display-mode .bg-grid-2 .bg-tile { min-height: 165px; }
-body.display-mode .bg-glyph { font-size: 3.8rem; }
-body.display-mode .bg-grid-2 .bg-glyph { font-size: 4.4rem; }
+/* A short phone screen: the hero picture gets smaller, not the kids. */
+@media (max-width: 380px) {
+  .pk-hero { gap: 12px; padding: 12px; }
+  .pk-hero-name { font-size: 1.24rem; }
+  .pk-hero-verse { font-size: 0.92rem; }
+  .pk-door-art { width: 80px; height: 80px; }
+}

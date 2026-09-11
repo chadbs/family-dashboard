@@ -1,0 +1,32 @@
+/* Mazes: a road, a traveller, a trail. */
+
+.mz-wrap { width: 100%; height: 100%; display: grid; place-items: center; }
+.mz-board {
+  display: block;
+  border-radius: 14px;
+  box-shadow: 0 6px 18px -6px rgba(20, 33, 43, 0.38);
+  cursor: grab;
+}
+.mz-board:active { cursor: grabbing; }
+
+.mz-mover { will-change: transform; }
+.mz-mover-in, .mz-goal-in, .mz-spark-in { transform-box: fill-box; transform-origin: center; }
+.mz-mover.is-home .mz-mover-in { animation: mz-hop 0.45s cubic-bezier(0.2, 0.8, 0.3, 1.4) 2; }
+@keyframes mz-hop { 50% { transform: translateY(-14px) scale(1.12); } }
+
+.mz-goal-in { animation: mz-bob 2.4s ease-in-out infinite; }
+@keyframes mz-bob { 50% { transform: translateY(-4px) scale(1.04); } }
+
+.mz-spark-in { animation: mz-twinkle 1.7s ease-in-out infinite; }
+@keyframes mz-twinkle { 50% { transform: scale(1.3) rotate(20deg); opacity: 0.7; } }
+.mz-spark.is-taken .mz-spark-in { animation: mz-pop 0.45s ease-out forwards; }
+@keyframes mz-pop { to { transform: scale(2.4); opacity: 0; } }
+
+.mz-trail { opacity: 0.92; }
+.mz-hint { opacity: 0; transition: opacity 0.4s ease; }
+.mz-hint.is-on { opacity: 1; animation: mz-march 0.7s linear infinite; }
+@keyframes mz-march { to { stroke-dashoffset: -3.3; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .mz-goal-in, .mz-spark-in, .mz-hint.is-on, .mz-mover.is-home .mz-mover-in { animation: none; }
+}
