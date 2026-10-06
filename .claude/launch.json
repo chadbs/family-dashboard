@@ -13,6 +13,12 @@
       "runtimeExecutable": "cmd",
       "runtimeArgs": ["/c", "set HOUSE_KV_PATH=%TEMP%\\house-dev.kv&& deno run -A --unstable-kv cloud/main.ts"],
       "port": 8000
+    },
+    {
+      "name": "hub-test",
+      "runtimeExecutable": "cmd",
+      "runtimeArgs": ["/c", "set HOUSE_KV_PATH=%TEMP%\\house-dev.kv&& set HOUSE_PAGE=%TEMP%\\house-test\\hub.html&& deno run -A --unstable-kv cloud/main.ts"],
+      "port": 8000
     }
   ]
 }

@@ -6,7 +6,9 @@ const fs = require("fs");
 const path = require("path");
 
 const SRC = path.join(__dirname, "src");
-const DIST = path.join(__dirname, "dist");
+/* `node build.js <dir>` writes somewhere else — for testing locally without
+   touching hub/dist, which the auto-push ships. */
+const DIST = process.argv[2] ? path.resolve(process.argv[2]) : path.join(__dirname, "dist");
 
 function readDir(rel) {
   const dir = path.join(SRC, rel);

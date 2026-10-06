@@ -674,14 +674,46 @@ async function say(raw: string): Promise<Response> {
   return new Response(audioBody(bytes), { headers: { ...AUDIO_HEADERS, "x-clip": "new" } });
 }
 
+/* ---------- vendored libraries ----------
+
+   The Bible tab's games run on Phaser, which is far too big to inline into
+   the page every phone loads. It lives in hub/vendor, is fetched only when
+   a game is opened, and is served gzipped and cached for a year — the file
+   name carries the version, so a new version is a new URL. */
+
+const VENDOR = new Set(["phaser-4.2.1.min.js"]);
+const vendorCache = new Map<string, { raw: Uint8Array; gz: Uint8Array }>();
+
+async function vendor(name: string, req: Request): Promise<Response> {
+  if (!VENDOR.has(name)) return new Response("Not found", { status: 404 });
+  let hit = vendorCache.get(name);
+  if (!hit) {
+    const raw = await Deno.readFile(new URL("../hub/vendor/" + name, import.meta.url));
+    const gz = new Uint8Array(
+      await new Response(new Blob([raw]).stream().pipeThrough(new CompressionStream("gzip"))).arrayBuffer()
+    );
+    hit = { raw, gz };
+    vendorCache.set(name, hit);
+  }
+  const gzip = /\bgzip\b/.test(req.headers.get("accept-encoding") || "");
+  const headers: Record<string, string> = {
+    "content-type": "application/javascript; charset=utf-8",
+    "cache-control": "public, max-age=31536000, immutable",
+    "vary": "accept-encoding",
+  };
+  if (gzip) headers["content-encoding"] = "gzip";
+  return new Response(audioBody(gzip ? hit.gz : hit.raw), { headers });
+}
+
 /* ---------- the page ---------- */
 
 let pageCache: string | null = null;
 
 async function page() {
   if (pageCache) return pageCache;
-  const url = new URL("../hub/dist/hub.html", import.meta.url);
-  pageCache = await Deno.readTextFile(url);
+  /* HOUSE_PAGE points a local dev server at a test build. */
+  const local = Deno.env.get("HOUSE_PAGE");
+  pageCache = await Deno.readTextFile(local || new URL("../hub/dist/hub.html", import.meta.url));
   return pageCache;
 }
 
@@ -778,6 +810,10 @@ async function handler(req: Request): Promise<Response> {
   }
   if (p === "/api/say") {
     return await say(url.searchParams.get("t") || "");
+  }
+
+  if (p.startsWith("/vendor/")) {
+    return await vendor(p.slice("/vendor/".length), req);
   }
 
   if (p === "/manifest.webmanifest") {
