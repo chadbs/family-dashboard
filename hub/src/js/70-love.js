@@ -157,6 +157,9 @@ const Love = (function () {
     ticking = true;
     function tick() {
       try {
+        /* Not over a child's game: the note stays due, and lands within a
+           minute of the game being closed. */
+        if (typeof Engine !== "undefined" && Engine.current()) return;
         if (surpriseDue()) showSurprise();
         else if (due()) show();
       } catch (e) {
