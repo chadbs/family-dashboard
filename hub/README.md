@@ -5,9 +5,12 @@ Recipes, House, Stars, Bible**. Stars holds the kids' chore chart (tap a chore,
 earn a star, streak bonus every third day) and the reward shop, carried over
 from the wall. Recipes imports straight from a link. The grocery list prices
 every item at Meijer and ALDI, files it under the cheaper store, and can order
-the carts filled. Today opens with the morning word: one KJV verse a day with
-a line from a Reformed voice under it (`data/scripture.js`, `js/15-word.js`),
-chosen by arithmetic on the date so every screen agrees. Bible is play-and-learn
+the carts filled. Today opens with the morning word: one KJV verse a day,
+following the church year (Advent, Christmas, Holy Week, Easter, Thanksgiving,
+the Lord's Day), with a Reformed quote, a hymn or a Shorter Catechism question
+under it and a weekly children's-catechism question for the girls
+(`data/scripture.js`, `data/scripture-more.js`, `js/15-word.js`), chosen by
+arithmetic on the date so every screen agrees. Bible is play-and-learn
 for the girls: four full-screen touch games on the Phaser 4 game engine —
 Two by Two (Noah's ark, the flood, the rainbow), Join the Dots, Mazes and
 Jigsaws. `js/55-bible.js` is the tab and the shared kit, `56-engine.js` the

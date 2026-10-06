@@ -21,3 +21,66 @@
 .word-quote-text { font-size: 0.92rem; line-height: 1.45; color: var(--ink-2); font-style: italic; }
 .word-quote-who { font-size: 0.76rem; color: var(--ink-3); font-weight: 600; letter-spacing: 0.02em; }
 body.display-mode .word-verse { font-size: 1.35rem; }
+
+/* The church year tints the card: a wash of the season's colour at the top
+   and the eyebrow in it. Ordinary days stay plain. */
+.word-card[data-season] { --season: var(--delft); --season-soft: var(--delft-soft); }
+.word-card[data-season="advent"] { --season: var(--delft); --season-soft: var(--delft-soft); }
+.word-card[data-season="christmas"],
+.word-card[data-season="newyear"] { --season: var(--tulip); --season-soft: var(--tulip-soft); }
+.word-card[data-season="passion"] { --season: var(--ink-2); --season-soft: var(--surface-3); }
+.word-card[data-season="risen"],
+.word-card[data-season="thanksgiving"] { --season: var(--amber); --season-soft: var(--amber-soft); }
+.word-card[data-season="lordsDay"] { --season: var(--leaf); --season-soft: var(--leaf-soft); }
+.word-card:not([data-season="plain"]) {
+  background: linear-gradient(180deg, var(--season-soft), var(--surface) 140px);
+  border-top: 3px solid var(--season);
+}
+.word-card:not([data-season="plain"]) .word-eyebrow { color: var(--season); }
+.word-eyebrow { text-transform: none; letter-spacing: 0.02em; font-size: 0.8rem; }
+
+.word-extra-tag {
+  font-size: 0.7rem;
+  font-weight: 650;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-3);
+  margin-bottom: 2px;
+}
+.word-hymn-lines {
+  font-family: var(--serif);
+  font-size: 1rem;
+  line-height: 1.45;
+  color: var(--ink-2);
+  font-style: italic;
+  display: flex;
+  flex-direction: column;
+}
+.word-hymn-lines span:nth-child(even) { padding-left: 1.1em; }
+.word-cat-q { font-size: 0.9rem; font-weight: 650; line-height: 1.4; }
+.word-cat-a { font-size: 0.92rem; line-height: 1.45; color: var(--ink-2); }
+
+/* This week's question for the girls. The answer waits for a tap. */
+.word-little {
+  margin-top: 4px;
+  width: 100%;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  cursor: pointer;
+}
+.word-little-tag { font-size: 0.72rem; font-weight: 650; color: var(--ink-3); letter-spacing: 0.02em; }
+.word-little-q { font-size: 1rem; font-weight: 650; }
+.word-little-hint { font-size: 0.78rem; color: var(--delft); }
+.word-little-a { display: none; font-family: var(--serif); font-size: 1.05rem; color: var(--leaf); }
+.word-little.open .word-little-hint { display: none; }
+.word-little.open .word-little-a { display: block; animation: word-pop 0.28s ease-out; }
+@keyframes word-pop { from { opacity: 0; transform: translateY(3px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .word-little.open .word-little-a { animation: none; } }
