@@ -78,9 +78,10 @@
         doorX: doorX, doorY: doorY, doorH: doorH, doorW: doorW,
         ang: ang, plankL: plankL, footX: footX, footY: footY,
         size: size,
+        /* the meadow in front of the ark, edge to edge */
         meadow: portrait
           ? { x0: W * 0.06 + size * 0.4, x1: W * 0.94 - size * 0.4, y0: groundY + size * 1.15, y1: H - size * 0.25 }
-          : { x0: W * 0.05 + size * 0.4, x1: footX - size * 0.9, y0: groundY + size * 0.75, y1: H - size * 0.25 },
+          : { x0: W * 0.05 + size * 0.5, x1: W * 0.95 - size * 0.5, y0: groundY + size * 1.05, y1: H - size * 0.22 },
       };
     }
 
@@ -147,7 +148,7 @@
       ctx.kinds.forEach(function (k) { kinds.push(k, k); });
       total = kinds.length;
       const m = L.meadow;
-      const cols = L.portrait ? 3 : 4;
+      const cols = L.portrait ? 3 : Math.min(total, 6);
       const rows = Math.ceil(total / cols);
       const slots = [];
       for (let r = 0; r < rows; r++) {

@@ -8,11 +8,14 @@ every item at Meijer and ALDI, files it under the cheaper store, and can order
 the carts filled. Today opens with the morning word: one KJV verse a day with
 a line from a Reformed voice under it (`data/scripture.js`, `js/15-word.js`),
 chosen by arithmetic on the date so every screen agrees. Bible is play-and-learn
-for the girls: three touch games — dot to dot, mazes and jigsaws
-(`js/55-bible.js` is the shell, `56`–`58` the games) — all built on eleven
-hand-drawn storybook pictures (`data/pictures.js`), each a Bible story with its
-KJV verse, a truth said aloud, and a catechism question for Addison. Each
-child simply has her own version (`config.gameLevel`); no stars, no score.
+for the girls: four full-screen touch games on the Phaser 4 game engine —
+Two by Two (Noah's ark, the flood, the rainbow), Join the Dots, Mazes and
+Jigsaws. `js/55-bible.js` is the tab and the shared kit, `56-engine.js` the
+game shell, sound and effects, `57`–`59` the games. The art is hand-drawn SVG
+(`data/pictures.js` — eleven Bible pictures; `data/zoo.js` — the animals,
+shepherd and ark). Every game ends on a picture with its KJV verse, a truth
+said aloud, and a catechism question for Addison. Each child simply has her
+own version (`config.gameLevel`); no stars, no score.
 On the wall Surface in the kitchen it opens at `/display` and becomes the
 always-on display: the same app with a clock-and-weather bar. Kenzie's
 morning note pops on whichever screen she is looking at.
@@ -72,11 +75,14 @@ hub/
     styles.css   the whole design system
     css/*.css    module-local additions, appended in name order
     data/        almanac, love (generated from public/config.js), pictures
-                 (the Bible tab's storybook art), recipes, scripture (KJV
+                 and zoo (the Bible tab's art), recipes, scripture (KJV
                  verses + Reformed quotes), seed
     js/          00-core, 05-weather, 10-today, 15-word, 20-meals, 30-recipes,
-                 40-house, 45-chores, 50-rewards, 55-bible, 56-dots, 57-maze,
-                 58-jigsaw, 60-display, 70-love, 99-boot
+                 40-house, 45-chores, 50-rewards, 55-bible, 56-engine,
+                 57-ark, 58-dots, 59-jigsaw, 59-maze, 60-display, 70-love,
+                 99-boot
+  vendor/        phaser-<version>.min.js — served by the app at /vendor/,
+                 gzipped, cached a year, loaded only when a game opens
 ```
 
 Files are concatenated in name order into one script scope. **No modules, no
@@ -157,14 +163,22 @@ short lease so two phones opening at once do not both write.
 
 ## Conventions
 
-1. Zero dependencies. Plain DOM. No frameworks, no CDN scripts. The Bible
-   tab's art is hand-written SVG, so it needs nothing from anywhere.
-2. Every colour comes from a token in `styles.css`. Never a hex literal in a
+1. Zero dependencies. Plain DOM. No frameworks, no CDN scripts — with one
+   deliberate exception: the Bible games run on Phaser 4, vendored in
+   `hub/vendor` (so it works without a CDN) and loaded only when a game
+   opens, so nothing else pays for it. Under Phaser 4, never start a Text or
+   Shape at scale or alpha 0 and tween it up — it stays undrawn; pop its
+   parent container instead (Images are fine). To upgrade Phaser, add the new
+   file, update `VENDOR` in `cloud/main.ts` and `PHASER` in `56-engine.js`.
+2. To try a build locally without touching `hub/dist` (which the auto-push
+   ships), `node hub/build.js "%TEMP%/house-test"` and run the `hub-test`
+   launch config.
+3. Every colour comes from a token in `styles.css`. Never a hex literal in a
    component, or one of the two themes breaks.
-3. Never `innerHTML` with stored or pasted content. Build nodes, set `text`.
-4. Render functions never write to the store. Handlers write; the store emits;
+4. Never `innerHTML` with stored or pasted content. Build nodes, set `text`.
+5. Render functions never write to the store. Handlers write; the store emits;
    the router repaints.
-5. A text input that must survive a repaint carries `data-keep="<id>"`.
-6. Recipes are attributed and linked, never reproduced. Steps are written in
+6. A text input that must survive a repaint carries `data-keep="<id>"`.
+7. Recipes are attributed and linked, never reproduced. Steps are written in
    our own words. This matches the rule the wall dashboard already follows.
-7. `node --check` every file, then `node build.js`, before publishing.
+8. `node --check` every file, then `node build.js`, before publishing.

@@ -81,24 +81,23 @@
       const coreR = bu(big ? 7 : 11), glowD = bu(big ? 46 : 70), font = bu(big ? 17 : 24);
       dots.forEach(function (d, i) {
         const x = d[0] * 10, y = d[1] * 10;
-        const g = S.add.image(x, y, "fx-glow").setTint(0xffd36b).setAlpha(0.45).setBlendMode("ADD").setScale(glowD / 128);
-        const c = S.add.circle(x, y, coreR, 0xffffff).setStrokeStyle(bu(2.4), 0xffc94a);
+        /* Each star is its own little group, and it is the group that pops
+           in. Under Phaser 4 a Text or Shape whose own scale or alpha starts
+           at zero stays undrawn when tweened back up; a container doesn't. */
+        const star = S.add.container(x, y);
+        const g = S.add.image(0, 0, "fx-glow").setTint(0xffd36b).setAlpha(0.45).setBlendMode("ADD").setScale(glowD / 128);
+        const c = S.add.circle(0, 0, coreR, 0xffffff).setStrokeStyle(bu(2.4), 0xffc94a);
         const vx = d[0] - cx, vy = d[1] - cy, len = Math.hypot(vx, vy) || 1;
         const off = bu(big ? 18 : 26);
-        const t = S.add.text(x + (vx / len) * off, y + (vy / len) * off, String(i + 1), {
+        const t = S.add.text((vx / len) * off, (vy / len) * off, String(i + 1), {
           fontFamily: "Public Sans, system-ui, sans-serif", fontSize: font + "px", fontStyle: "800",
           color: "#ffffff", stroke: "#1b1f4a", strokeThickness: bu(5),
         }).setOrigin(0.5);
-        board.add([g, c, t]);
+        star.add([g, c, t]);
+        board.add(star);
         glows.push(g); cores.push(c); labels.push(t);
-        /* The stars come out one after another. They pop in by scale, not
-           by fading: under Phaser 4 a Text or Shape that starts at alpha 0
-           can stay undrawn after its alpha is tweened back up. */
-        [g, c, t].forEach(function (o) {
-          const s = o.scale;
-          o.setScale(0);
-          S.tweens.add({ targets: o, scale: s, duration: 380, delay: 200 + i * 70, ease: "Back.easeOut" });
-        });
+        star.setScale(0);
+        S.tweens.add({ targets: star, scale: 1, duration: 380, delay: 200 + i * 70, ease: "Back.easeOut" });
       });
       target();
     }
