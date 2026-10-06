@@ -131,6 +131,12 @@ const LOVE_FRESH = {
       "Gray sky outside, but you're all the sunshine this house needs. ☀️💚",
       "Winter means early nights and slow mornings — more time with you. Best trade there is. 🌙💚",
       "They say every snowflake is one of a kind. So are you. ❄️💚",
+      "Three layers, two little girls, one front door, and somehow you get everyone out of it before nine. Hero of the Midwest. 🧤💚",
+      "The furnace kicked on at five this morning and I thought: the only thing in this house warmer than that is you. 🔥💚",
+      "Ice on the windshield, snow on the roof, and a wife I'd scrape a hundred windshields for. ❄️🚗💚",
+      "“He giveth snow like wool” — Psalm 147:16. And He gave me you, which is even softer and far more beautiful. ❄️💚",
+      "January resolution, February check-in: still on track to love you more than yesterday. 📋💚",
+      "Short days, long nights, and green eyes across the table. Michigan winter, I forgive you. 🌙💚",
     ],
 
     /* March, April, May */
@@ -151,6 +157,12 @@ const LOVE_FRESH = {
       "Little green shoots in the garden, two little girls growing like weeds, and a wife who gets more beautiful every year. 🌱🌷💚",
       "Every day is Mother's Day in my book. You're the best mom I've ever seen. 💐💚",
       "Spring in West Michigan: a little sun, a little rain, a lot of mud, and a whole lot of me loving you. 🌦️💚",
+      "Forty-five degrees and sunny — in Michigan that's practically a beach day. Let's take the girls out and pretend. 😎🌤️💚",
+      "The first bike ride of the year is coming, wobbly training wheels and all. Thanks for being the mom who runs alongside. 🚲🐰💚",
+      "“Consider the lilies of the field, how they grow” — Matthew 6:28. They're lovely. You're lovelier. 🌸💚",
+      "The magnolias are opening up, and I can't stop thinking how you bloom more every year too. 🌸💚",
+      "Little rain boots by the back door again. My favorite sign of spring, after you. 🌧️👢💚",
+      "The grass is greener this morning. Still not as green as your eyes. Never will be. 🌱💚",
     ],
 
     /* June, July, August */
@@ -171,6 +183,12 @@ const LOVE_FRESH = {
       "Fireworks have nothing on the way my heart still lights up when you walk in the room. 🎆💚",
       "Hot days, warm nights, cold lemonade, and the coolest mom in Michigan. 🍋💚",
       "Every summer with you is the best summer yet. Here's to this one. ☀️💚",
+      "Sand in the van, sand in the shoes, sand in the girls' hair — worth every grain for a day at the lake with you. 🏖️💚",
+      "Strawberry picking, sticky red fingers, and a wife who somehow looks good in a sunhat AND bug spray. 🍓💚",
+      "The porch light, the crickets, and you curled up next to me. Summer nights don't get better than that. 🌙🦗💚",
+      "It's barely seven and already warm. Just like how I feel when I see you first thing. ☀️💚",
+      "Watermelon on the steps, juice down two little chins, and you laughing so hard you can't take the picture. 🍉💚",
+      "“While the earth remaineth, seedtime and harvest, and cold and heat, and summer and winter… shall not cease” — Genesis 8:22. Neither will my love for you. ☀️💚",
     ],
   },
 
@@ -186,6 +204,21 @@ const LOVE_FRESH = {
       "Happy Monday! New week, same husband, still completely in love with you. Let's do this. 💪💚",
       "Mondays are hard. You're not. You're the best thing about every one of them. ☕💚",
       "Fresh week, fresh coffee, and the same old guy who thinks you're amazing. 💚",
+    ],
+    2: [
+      "Happy Tuesday — the most underrated day of the week, a lot like the woman who quietly runs this whole house. 💚",
+      "Tuesday's got nothing special on the calendar, except another day married to you. That's plenty. 📅💚",
+      "Just a regular Tuesday, love. I'm regularly crazy about you. ☕💚",
+    ],
+    3: [
+      "Halfway through the week and I already miss our weekend. Hump day hug waiting for you tonight. 🐫💚",
+      "It's Wednesday, the middle of the week — and you're the middle of everything good in my life. 💚",
+      "Midweek check-in: still thinking about you way too much. No plans to stop. ☕💚",
+    ],
+    4: [
+      "Thursday — almost there. Hang in there, beautiful. The weekend and I are both coming for you. 😄💚",
+      "Thursdays are for counting down to the weekend. I'm counting down to tonight with you. ⏳💚",
+      "Happy Thursday, Kenzie. You've carried this whole week on your shoulders. Let me take some of it tonight. 💪💚",
     ],
     5: [
       "It's Friday! Which means two whole days of you, me, and the girls. Best weekend plan there is. 🎉💚",
