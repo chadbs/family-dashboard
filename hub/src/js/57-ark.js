@@ -453,6 +453,8 @@
         }).setDepth(700);
         Engine.Sfx.rain(true);
         waterTarget = L.H - (L.groundY - L.arkH * 0.18);
+        /* the blocks the ark sat on are gone under the water */
+        S.tweens.add({ targets: blocks, alpha: 0, duration: 2500, delay: 1200 });
       });
 
       /* then it stops, and the dove, and the rainbow */

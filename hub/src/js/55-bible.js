@@ -112,6 +112,8 @@ const PlayKit = (function () {
   function svg(viewBox, inner, cls) {
     const s = document.createElementNS("http://www.w3.org/2000/svg", "svg");
     s.setAttribute("viewBox", viewBox);
+    /* game art fills its tile edge to edge */
+    if (cls === "pk-tile-svg") s.setAttribute("preserveAspectRatio", "xMidYMid slice");
     if (cls) s.setAttribute("class", cls);
     if (inner) s.innerHTML = inner;
     return s;
