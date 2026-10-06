@@ -63,9 +63,10 @@
       }
       const n = cols * rows, bw = s / cols, bh = s / rows;
       let best = { k: 0.2, c: 1 };
+      /* a piece is ~1.5x its body with the knobs, more when tilted */
       for (let c = 1; c <= n; c++) {
         const r = Math.ceil(n / c);
-        const k = Math.min(heap.w / (c * bw * 1.4), heap.h / (r * bh * 1.4));
+        const k = Math.min(heap.w / (c * bw * 1.75), heap.h / (r * bh * 1.75));
         if (k > best.k) best = { k: k, c: c };
       }
       G = { s: s, bx: bx, by: by, heap: heap, k: Math.min(1, best.k), c: best.c, scale: s / RES };
@@ -81,8 +82,8 @@
         const y = r() * H;
         tableG.lineStyle((0.6 + r() * 1.6) * u, 0x7a4f2c, 0.06 + r() * 0.06);
         tableG.beginPath();
-        tableG.moveTo(0, y);
-        for (let x = 0; x <= W; x += 40 * u) tableG.lineTo(x, y + Math.sin(x / (120 * u) + i) * 6 * u);
+        tableG.moveTo(-W, y);
+        for (let x = -W; x <= W * 2; x += 40 * u) tableG.lineTo(x, y + Math.sin(x / (120 * u) + i) * 6 * u);
         tableG.strokePath();
       }
       trayG.clear();
@@ -224,6 +225,9 @@
       if (!p || p.locked || done) return;
       p.held = true;
       p.full = true;
+      /* hold the piece by exactly the point she touched */
+      p.gx = pointer.downX - p.x;
+      p.gy = pointer.downY - p.y;
       p.tx = p.x; p.ty = p.y;
       p.vx = 0;
       obj.setDepth(++z);
@@ -237,8 +241,8 @@
     function onDrag(pointer, obj, dragX, dragY) {
       const p = obj.piece;
       if (!p || !p.held) return;
-      p.tx = Math.max(0, Math.min(K.W(), dragX));
-      p.ty = Math.max(K.top() * 0.6, Math.min(K.H(), dragY));
+      p.tx = Math.max(0, Math.min(K.W(), pointer.x - p.gx));
+      p.ty = Math.max(K.top() * 0.6, Math.min(K.H(), pointer.y - p.gy));
     }
     function onDragEnd(pointer, obj) {
       const p = obj.piece;

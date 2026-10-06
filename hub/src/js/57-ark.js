@@ -95,7 +95,9 @@
       hills.fillEllipse(W * 0.78, L.groundY + 8 * u, W * 1.0, H * 0.12);
       ground.clear();
       ground.fillGradientStyle(0x8cc964, 0x8cc964, 0x6fb24e, 0x6fb24e, 1);
-      ground.fillRect(0, L.groundY, W, H - L.groundY);
+      ground.fillRect(-W, L.groundY, W * 3, H - L.groundY);
+      ground.fillStyle(0x6fb24e, 1);
+      ground.fillRect(-W, H, W * 3, H);
       /* tufts and little flowers, scattered the same way every time */
       const r = PlayKit.rng(4242);
       for (let i = 0; i < 70; i++) {
@@ -538,18 +540,20 @@
       const top = L.H - waterLevel;
       const t = S.time.now / 1000;
       water.clear();
+      /* drawn a screen-width past each side, for when the camera pulls back */
+      const x0 = -L.W, x1 = L.W * 2;
       water.fillStyle(0x3f86bd, 0.92);
       water.beginPath();
-      water.moveTo(0, L.H);
-      for (let x = 0; x <= L.W + 20; x += 20 * u) water.lineTo(x, top + Math.sin(x / (60 * u) + t * 2) * 5 * u);
-      water.lineTo(L.W, L.H);
+      water.moveTo(x0, L.H * 2);
+      for (let x = x0; x <= x1; x += 20 * u) water.lineTo(x, top + Math.sin(x / (60 * u) + t * 2) * 5 * u);
+      water.lineTo(x1, L.H * 2);
       water.closePath();
       water.fillPath();
       water.fillStyle(0x6fb6e8, 0.9);
       water.beginPath();
-      water.moveTo(0, top + 14 * u);
-      for (let x = 0; x <= L.W + 20; x += 20 * u) water.lineTo(x, top + Math.sin(x / (60 * u) + t * 2) * 5 * u);
-      for (let x = L.W + 20; x >= 0; x -= 20 * u) water.lineTo(x, top + 12 * u + Math.sin(x / (50 * u) + t * 2.4) * 3 * u);
+      water.moveTo(x0, top + 14 * u);
+      for (let x = x0; x <= x1; x += 20 * u) water.lineTo(x, top + Math.sin(x / (60 * u) + t * 2) * 5 * u);
+      for (let x = x1; x >= x0; x -= 20 * u) water.lineTo(x, top + 12 * u + Math.sin(x / (50 * u) + t * 2.4) * 3 * u);
       water.closePath();
       water.fillPath();
     }

@@ -27,11 +27,11 @@
   const LOOK = {
     sheep: { bg: 0x86c76a, bg2: 0x6fb256, floor: 0xf3e3bb, wall: 0x4f9a45, hi: 0x76bf60, shade: 0x2c6629, trail: 0xef7d57, dust: 0xd8c08a,
       mover: "cast-shepherd", goal: "zoo-sheep" },
-    dove: { bg: 0x8fcdf3, bg2: 0x6db7e8, floor: 0xeaf6fd, wall: 0xffffff, hi: 0xffffff, shade: 0x9cc7e4, trail: 0xf39a3d, dust: 0xffffff,
+    dove: { bg: 0x6fb8ea, bg2: 0x4a9ad8, floor: 0xbfe1f7, wall: 0xffffff, hi: 0xffffff, shade: 0x7aaed6, trail: 0xf39a3d, dust: 0xffffff,
       mover: "subj-dove", goal: "cast-ark" },
     moses: { bg: 0x7fb85e, bg2: 0x6aa64c, floor: 0x74bde6, wall: 0x5d9e45, hi: 0x86c56a, shade: 0x356b2b, trail: 0xffffff, dust: 0xc8ecff,
       mover: "subj-basket", goal: "subj-crown" },
-    star: { bg: 0x1d2452, bg2: 0x2c2f6b, floor: 0xe7c992, wall: 0xb38a52, hi: 0xd2ab73, shade: 0x5c4423, trail: 0xffd166, dust: 0xf3dcae,
+    star: { bg: 0x1d2452, bg2: 0x2c2f6b, floor: 0xe7c992, wall: 0x8b6a3e, hi: 0xb38d5a, shade: 0x4a3519, trail: 0xffd166, dust: 0xf3dcae,
       mover: "cast-gift", goal: "cast-stable" },
   };
 
@@ -160,7 +160,9 @@
       mover = S.add.container(m.x, m.y).setDepth(70);
       const shadow = S.add.image(0, c * 0.3, "fx-shadow").setScale((c * 0.7) / 128, (c * 0.22) / 48);
       moverBody = S.add.container(0, 0);
-      const ms = S.add.image(0, c * 0.32, look.mover).setOrigin(0.5, 0.92).setScale((c * 0.92) / 320);
+      /* Drawn standing, feet just below the middle of the cell, head just
+         under the wall above: tall enough to read, never through a wall. */
+      const ms = S.add.image(0, c * 0.3, look.mover).setOrigin(0.5, 0.92).setScale((c * 0.8) / 320);
       moverBody.add(ms);
       mover.add([shadow, moverBody]);
       mover.sprite = ms;
@@ -303,6 +305,8 @@
         goalCell = dist.indexOf(Math.max.apply(null, dist));
         path = [start];
         layout();
+        /* for automated play-testing */
+        ctx.debug = { maze: maze, goal: goalCell, centre: function (i) { return centre(i); } };
 
         K.sky(look.bg, look.bg2);
         if (theme.id === "star") {

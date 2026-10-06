@@ -692,14 +692,22 @@ const Engine = (function () {
 
     function hex(c) { return typeof c === "number" ? c : parseInt(String(c).replace("#", ""), 16); }
 
-    /* A vertical gradient filling the screen, redrawn on resize. */
+    /* A vertical gradient filling the screen, redrawn on resize. It runs on
+       well past every edge in its end colours, so when the camera pulls
+       back to frame the finished picture there is never an edge to see. */
     function sky(topColor, bottomColor, depth) {
       const g = scene.add.graphics().setDepth(depth || -100);
       let a = hex(topColor), b = hex(bottomColor);
       function draw() {
+        const w = W(), h = H();
         g.clear();
+        g.fillStyle(a, 1);
+        g.fillRect(-w * 2, -h * 2, w * 5, h * 2);
         g.fillGradientStyle(a, a, b, b, 1);
-        g.fillRect(0, 0, W(), H());
+        g.fillRect(-w * 2, 0, w * 5, h);
+        g.fillStyle(b, 1);
+        g.fillRect(-w * 2, h, w * 5, h * 2);
+        scene.cameras.main.setBackgroundColor(b);
       }
       draw();
       return {
@@ -965,7 +973,7 @@ const Engine = (function () {
   function frame(scene, ctx, region, free) {
     const cam = scene.cameras.main;
     const pad = 0.9;
-    const z = Math.min(1.25, Math.min((free.w * pad) / region.w, (free.h * pad) / region.h));
+    const z = Math.max(0.3, Math.min(1.25, Math.min((free.w * pad) / region.w, (free.h * pad) / region.h)));
     const rcx = region.x + region.w / 2, rcy = region.y + region.h / 2;
     const fcx = free.x + free.w / 2, fcy = free.y + free.h / 2;
     const W = scene.scale.width, H = scene.scale.height;

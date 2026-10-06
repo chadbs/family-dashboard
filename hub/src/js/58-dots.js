@@ -91,10 +91,14 @@
         }).setOrigin(0.5);
         board.add([g, c, t]);
         glows.push(g); cores.push(c); labels.push(t);
-        /* the stars come out one after another */
-        [g, c, t].forEach(function (o) { o.setAlpha(0); });
-        S.tweens.add({ targets: [c, t], alpha: 1, duration: 300, delay: 200 + i * 60 });
-        S.tweens.add({ targets: g, alpha: 0.45, duration: 300, delay: 200 + i * 60 });
+        /* The stars come out one after another. They pop in by scale, not
+           by fading: under Phaser 4 a Text or Shape that starts at alpha 0
+           can stay undrawn after its alpha is tweened back up. */
+        [g, c, t].forEach(function (o) {
+          const s = o.scale;
+          o.setScale(0);
+          S.tweens.add({ targets: o, scale: s, duration: 380, delay: 200 + i * 70, ease: "Back.easeOut" });
+        });
       });
       target();
     }
