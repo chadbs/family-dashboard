@@ -100,12 +100,12 @@
     justify-content: flex-end;
     align-items: center;
     gap: 1.6vh;
-    margin-top: 2.6vh;
+    margin-top: .6vh;
   }
-  #wx-icon { width: 7.5vh; height: 7.5vh; color: var(--fg2); }
+  #wx-icon { width: 7vh; height: 7vh; color: var(--fg2); }
   #wx-icon.warm { color: var(--sun); }
   #wx-temp {
-    font-size: 10.5vh;
+    font-size: 9.6vh;
     font-weight: 100;
     line-height: 1;
     color: #d9d9dd;
@@ -117,7 +117,7 @@
     display: flex;
     justify-content: flex-end;
     gap: 2.6vw;
-    margin-top: 1.8vh;
+    margin-top: 1.1vh;
     color: var(--fg3);
     font-size: 2.2vh;
   }
@@ -129,7 +129,7 @@
   #family {
     display: flex;
     align-items: stretch;
-    margin-top: 4.2vh;
+    margin-top: 3.2vh;
     transition: transform 4s ease-in-out;
   }
   .fam {
@@ -190,8 +190,8 @@
   .tile {
     flex: none;
     position: relative;
-    width: 19vw;
-    height: 10.6875vw; /* 16:9 */
+    width: 17vw;
+    height: 9.5625vw; /* 16:9 */
     border-radius: 1.1vh;
     background: var(--tile);
     opacity: .5;
@@ -214,7 +214,7 @@
     align-items: center;
     justify-content: center;
   }
-  .tile.icon img { width: 5.2vw; height: 5.2vw; object-fit: contain; }
+  .tile.icon img { width: 4.6vw; height: 4.6vw; object-fit: contain; }
   .tile.icon .lbl {
     font-size: 2.1vh;
     color: var(--fg2);
@@ -242,7 +242,7 @@
   body.idle .tile.focus { box-shadow: none; }
 
   #caption {
-    height: 3.4vh;
+    height: 3vh;
     font-size: 2.5vh;
     color: var(--fg);
     white-space: nowrap;
@@ -283,7 +283,10 @@
   @keyframes pbumpD { 40% { transform: scale(1.06) translateY(.6vh); } }
 
   /* ── Games row (only when there are games) ───────────────────── */
-  #games-sec .k { margin: .2vh 0 0; }
+  #games-sec .k { margin: 1.4vh 0 0; }
+  /* With a games row below, the focused-app caption would crowd it; the
+     banners carry their own names. */
+  body.has-games #caption { display: none; }
   #games-wrap {
     overflow: hidden;
     margin: 0 -5vw;
@@ -356,6 +359,104 @@
   .tile.focus + .glabel { opacity: 1; }
   #all-empty { font-size: 2.6vh; color: var(--fg3); }
 
+  /* ── Ambient glow behind the focused tile, tinted by its banner ──── */
+  @property --glow { syntax: '<color>'; inherits: false; initial-value: rgba(0, 0, 0, 0); }
+  #glow {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 70vw;
+    height: 60vh;
+    margin: -30vh 0 0 -35vw;
+    pointer-events: none;
+    background: radial-gradient(closest-side, var(--glow), rgba(0, 0, 0, 0));
+    transition: --glow .9s ease, transform .5s var(--ease), opacity 1.2s ease;
+  }
+  #glow.off, body.idle #glow { opacity: 0; }
+  #top, #family, #apps-sec, #games-sec, #util { position: relative; z-index: 1; }
+
+  /* ── Top-right: connection + Settings chip ───────────────────── */
+  #chips {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 1.6vw;
+    height: 4.6vh;
+  }
+  #net { display: flex; align-items: center; gap: .8vh; color: var(--fg3); font-size: 2vh; }
+  #net svg { width: 2.6vh; height: 2.6vh; }
+  #net.offline { color: #a8854a; }
+  .pill.chip { height: 4.6vh; padding: 0 1.3vh; border-radius: 2.3vh; gap: 0; font-size: 2.2vh; }
+  .pill.chip svg { width: 2.5vh; height: 2.5vh; }
+  .chip span {
+    max-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    transition: max-width .3s var(--ease), margin .3s var(--ease);
+  }
+  .chip.focus span { max-width: 14vw; margin-left: 1vh; }
+  .pill.bump-u { animation: pbumpU .28s var(--ease); }
+  @keyframes pbumpU { 40% { transform: scale(1.06) translateY(-.6vh); } }
+
+  /* ── Countdown, between the clock and the weather ────────────── */
+  #cd { text-align: center; margin-top: 4.6vh; }
+  #cd .k { margin-bottom: 1.1vh; }
+  #cd-title { font-size: 2.9vh; color: #c6c6cb; white-space: nowrap; }
+  #cd-title .em { margin-right: .9vh; }
+  #cd-n {
+    margin-top: .8vh;
+    font-size: 8vh;
+    font-weight: 100;
+    line-height: 1;
+    color: #d9d9dd;
+    white-space: nowrap;
+  }
+  #cd-n small { font-size: 2.8vh; font-weight: 300; color: var(--fg2); margin-left: 1vh; letter-spacing: .04em; }
+  #cd.today #cd-n { color: var(--gold); }
+
+  /* ── Move mode (hold OK on an app) ───────────────────────────── */
+  .tile { transition: transform .26s var(--ease), opacity .26s, box-shadow .26s, translate .24s var(--ease); }
+  .tile.flip-now { transition: none !important; }
+  .tile.moving {
+    opacity: 1;
+    z-index: 3;
+    transform: scale(1.15);
+    box-shadow: 0 0 0 .4vh rgba(255, 255, 255, .95), 0 1.4vh 5vh rgba(130, 160, 255, .3);
+  }
+  .tile.moving::before, .tile.moving::after {
+    position: absolute;
+    top: 50%;
+    margin-top: -3vh;
+    font-size: 4.4vh;
+    line-height: 6vh;
+    color: #fff;
+    font-weight: 200;
+  }
+  .tile.moving::before { content: '\2039'; left: -2.6vh; }
+  .tile.moving::after { content: '\203A'; right: -2.6vh; }
+  body.moving #util, body.moving #chips { opacity: .15; transition: opacity .3s; }
+  #movehint {
+    position: absolute;
+    left: 50%;
+    bottom: 2.4vh;
+    transform: translate(-50%, 1vh);
+    padding: 1.2vh 2.4vw;
+    border-radius: 3vh;
+    background: #121214;
+    color: var(--fg);
+    font-size: 2.3vh;
+    opacity: 0;
+    transition: opacity .3s, transform .3s var(--ease);
+    pointer-events: none;
+    white-space: nowrap;
+    z-index: 5;
+  }
+  #movehint b { font-weight: 400; color: #fff; }
+  body.moving #movehint { opacity: 1; transform: translate(-50%, 0); }
+
+  /* "Reset app order" at the end of All apps */
+  .grid-foot { margin-top: 3vh; display: flex; }
+
   svg.i { fill: none; stroke: currentColor; stroke-width: 1.3; stroke-linecap: round; stroke-linejoin: round; }
 
   #toast {
@@ -378,13 +479,20 @@
 </head>
 <body>
 <div id="stage">
+  <div id="glow" class="off"></div>
   <header id="top">
     <div id="time">
       <div id="greet">&nbsp;</div>
       <div id="clock"><span id="hm">&nbsp;</span><span id="ampm"></span></div>
       <div id="date">&nbsp;</div>
     </div>
+    <div id="cd" style="display:none">
+      <div class="k">Countdown</div>
+      <div id="cd-title"></div>
+      <div id="cd-n"></div>
+    </div>
     <div id="wx">
+      <div id="chips"><span id="net"></span></div>
       <div id="wx-now"><svg id="wx-icon" class="i" viewBox="0 0 24 24"></svg><span id="wx-temp"></span></div>
       <div id="wx-cond"></div>
       <div id="wx-hilo"></div>
@@ -416,8 +524,10 @@
   <div id="all-head"><div id="all-title">All apps</div><div id="all-count"></div></div>
 </div>
 <div id="toast"></div>
+<div id="movehint"><b>&lsaquo; &rsaquo;</b> to move &nbsp;&middot;&nbsp; <b>OK</b> to drop it here</div>
 
 <script src="scripture.js"></script>
+<script src="countdowns.js"></script>
 <script>
 (function () {
   'use strict';
@@ -501,6 +611,8 @@
     rain: '<path transform="translate(0 -3)" d="' + CLOUD + '"/><path d="M8.5 17.5l-1 2.5M12.5 17.5l-1 2.5M16.5 17.5l-1 2.5"/>',
     snow: '<path transform="translate(0 -3)" d="' + CLOUD + '"/><path d="M8 18.6h.01M12 20h.01M16 18.6h.01M10 21.2h.01M14 21.2h.01" stroke-width="2"/>',
     storm: '<path transform="translate(0 -3)" d="' + CLOUD + '"/><path d="M12.8 15.5l-2 3.2h2.6l-1.6 3"/>',
+    wifi: '<path d="M2.8 9.2a13.5 13.5 0 0 1 18.4 0M5.8 12.4a9 9 0 0 1 12.4 0M8.9 15.6a4.6 4.6 0 0 1 6.2 0"/><path d="M12 19.2h.01" stroke-width="2.4"/>',
+    wifiOff: '<path d="M2.8 9.2a13.5 13.5 0 0 1 18.4 0M5.8 12.4a9 9 0 0 1 12.4 0M8.9 15.6a4.6 4.6 0 0 1 6.2 0"/><path d="M12 19.2h.01" stroke-width="2.4"/><path d="M4 3.5l16 17"/>',
     grid: '<rect x="4" y="4" width="6.5" height="6.5" rx="1.4"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.4"/>' +
       '<rect x="4" y="13.5" width="6.5" height="6.5" rx="1.4"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.4"/>',
     peaks: '<path d="M2.5 19l6.5-11 4 6.5 2.5-3.5 6 8z"/><path d="M7.2 11l1.8 1.6 1.6-1.4"/>',
@@ -577,6 +689,32 @@
     $('date').textContent = DAY_NAMES[now.getDay()] + ', ' + MONTHS[now.getMonth()] + ' ' + now.getDate();
     $('greet').textContent = h < 5 ? 'Good night' : h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' :
       h < 21 ? 'Good evening' : 'Good night';
+    renderCountdown();
+  }
+
+  /* The family's next big day (countdowns.js, shared with the screensaver). */
+  function renderCountdown() {
+    var box = $('cd'), n = null;
+    try { n = typeof Countdowns !== 'undefined' ? Countdowns.next(new Date()) : null; } catch (e) { n = null; }
+    if (!n) { box.style.display = 'none'; return; }
+    box.style.display = '';
+    var t = $('cd-title');
+    t.textContent = '';
+    if (n.emoji) t.appendChild(el('span', 'em', n.emoji));
+    t.appendChild(document.createTextNode(n.title));
+    var ms = n.at - Date.now(), big, unit = '';
+    if (n.today && ms <= 0) big = 'Today!';
+    else if (ms > 0 && ms < 864e5) {
+      var h = Math.round(ms / 36e5);
+      if (ms < 36e5) { big = String(Math.max(1, Math.ceil(ms / 6e4))); unit = 'min'; }
+      else { big = String(h); unit = h === 1 ? 'hour' : 'hours'; }
+    }
+    else if (n.sleeps === 1) big = 'Tomorrow';
+    else { big = String(n.sleeps); unit = 'days'; }
+    var nEl = $('cd-n');
+    nEl.textContent = big;
+    if (unit) nEl.appendChild(el('small', '', unit));
+    box.classList.toggle('today', n.today && ms <= 0);
   }
 
   /* Burn-in care: everything wanders a few px along a slow Lissajous path,
@@ -792,13 +930,20 @@
     store.set('usage', use);
   }
 
+  /* Once the order has been arranged by hand (hold OK on a tile), that
+     order wins; apps installed later follow it, most-used first. */
   function loadApps() {
     var list = [];
     try { list = JSON.parse(bridge.apps() || '[]') || []; } catch (e) { list = []; }
     var use = store.get('usage', {}), now = Date.now();
-    list.forEach(function (a) { a.score = usageScore(use, a.pkg, now); });
+    var order = store.get('order', null), pos = {};
+    if (order && order.forEach) order.forEach(function (p, i) { pos[p] = i; });
+    list.forEach(function (a) {
+      a.score = usageScore(use, a.pkg, now);
+      a.pin = a.pkg in pos ? pos[a.pkg] : 1e9;
+    });
     list.sort(function (a, b) {
-      return (b.score - a.score) || String(a.label).localeCompare(String(b.label));
+      return (a.pin - b.pin) || (b.score - a.score) || String(a.label).localeCompare(String(b.label));
     });
     var sig = list.map(function (a) {
       return a.pkg + (a.game ? ':g:' : ':') + (a.img ? a.img.length : 0);
@@ -814,9 +959,16 @@
     fillRow(0, apps, keepApp, true);
     fillRow(1, games, keepGame, false);
     $('games-sec').style.display = games.length ? '' : 'none';
+    document.body.classList.toggle('has-games', games.length > 0);
     if (!rows[rowI].items.length) rowI = firstRow();
     paint();
     if (grid.open) buildGrid();
+  }
+
+  /* Re-sort and redraw now, e.g. after the order was changed by hand. */
+  function reloadApps() {
+    appsSig = '';
+    loadApps();
   }
 
   function makeTile(a) {
@@ -864,12 +1016,15 @@
     return ok;
   }
 
-  /* ── Focus on the home screen: apps row, games row, utility pills ─── */
+  /* ── Focus on the home screen ─────────────────────────────────────── */
   var rows = [
     { el: $('apps'), wrap: $('apps-wrap'), cap: $('caption'), items: [], idx: 0, x: 0 },
     { el: $('games'), wrap: $('games-wrap'), items: [], idx: 0, x: 0 },
-    { el: $('util'), items: [], idx: 0 }
+    { el: $('util'), items: [], idx: 0 },
+    { el: $('chips'), items: [], idx: 0 }
   ];
+  /* Top to bottom: the Settings chip, apps, games, pills. */
+  var ORDER = [3, 0, 1, 2];
   var rowI = 0;
 
   function firstRow() {
@@ -893,6 +1048,7 @@
     });
     scrollRow(rows[0]);
     scrollRow(rows[1]);
+    updateGlow();
   }
 
   /* Keep the focused tile inside its row with half a tile of the neighbour
@@ -919,6 +1075,64 @@
     cap.classList.toggle('off', rows[rowI] !== r);
   }
 
+  /* ── Ambient glow ─────────────────────────────────────────────────── */
+  var NEUTRAL = [120, 140, 180], tints = {};
+
+  /* The banner's dominant colour: saturated, lit pixels count most; near
+     black is ignored. Scaled to full brightness — the glow's own alpha
+     keeps it dim. null if the image can't be read. */
+  function tintOf(img) {
+    try {
+      var c = document.createElement('canvas');
+      c.width = 32;
+      c.height = 18;
+      var x = c.getContext('2d');
+      x.drawImage(img, 0, 0, 32, 18);
+      var d = x.getImageData(0, 0, 32, 18).data, r = 0, g = 0, b = 0, w = 0;
+      for (var i = 0; i < d.length; i += 4) {
+        var R = d[i], G = d[i + 1], B = d[i + 2], A = d[i + 3] / 255;
+        var mx = Math.max(R, G, B), mn = Math.min(R, G, B);
+        if (A < 0.5 || mx < 36) continue;
+        var s = (mx - mn) / mx, wt = A * (0.08 + s * s) * (mx / 255);
+        r += R * wt; g += G * wt; b += B * wt; w += wt;
+      }
+      if (!w) return null;
+      r /= w; g /= w; b /= w;
+      var k = 255 / Math.max(r, g, b, 1);
+      return [Math.round(r * k), Math.round(g * k), Math.round(b * k)];
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function tintFor(t) {
+    var pkg = t.dataset.pkg;
+    if (!pkg) return NEUTRAL;
+    if (tints[pkg]) return tints[pkg];
+    var img = t.querySelector('img');
+    if (!img) return NEUTRAL;
+    if (!img.complete || !img.naturalWidth) {
+      img.addEventListener('load', updateGlow, { once: true });
+      return null;
+    }
+    return (tints[pkg] = tintOf(img) || NEUTRAL);
+  }
+
+  function updateGlow() {
+    var g = $('glow'), r = rows[rowI], t = r && r.items[r.idx];
+    if (!t || !r.wrap || grid.open) { g.classList.add('off'); return; }
+    var c = tintFor(t);
+    /* Where the tile will be once the row has scrolled, not where it is
+       mid-animation. */
+    var st = $('stage').getBoundingClientRect(), wr = r.wrap.getBoundingClientRect();
+    var cs = getComputedStyle(r.wrap);
+    var x = wr.left - st.left + parseFloat(cs.paddingLeft) + t.offsetLeft - r.x + t.offsetWidth / 2;
+    var y = wr.top - st.top + parseFloat(cs.paddingTop) + t.offsetTop + t.offsetHeight / 2;
+    g.style.transform = 'translate(' + Math.round(x) + 'px,' + Math.round(y) + 'px)';
+    if (c) g.style.setProperty('--glow', 'rgba(' + c.join(',') + ',.17)');
+    g.classList.remove('off');
+  }
+
   function bumpEl(t, dir) {
     if (!t) return;
     var cls = 'bump-' + dir;
@@ -936,9 +1150,10 @@
       r.idx = n;
       return paint();
     }
-    var to = rowI + dy;
-    while (to >= 0 && to < rows.length && !rows[to].items.length) to += dy;
-    if (to < 0 || to >= rows.length) return bumpEl(current(), dy < 0 ? 'u' : 'd');
+    var pos = ORDER.indexOf(rowI) + dy;
+    while (pos >= 0 && pos < ORDER.length && !rows[ORDER[pos]].items.length) pos += dy;
+    if (pos < 0 || pos >= ORDER.length) return bumpEl(current(), dy < 0 ? 'u' : 'd');
+    var to = ORDER[pos];
     if (to === 2) {
       /* Down into the pills: the one nearest under the focused tile. */
       var from = current(), fx = from ? from.getBoundingClientRect().left : 0, best = 0, bd = 1e9;
@@ -988,6 +1203,96 @@
       u.appendChild(b);
     });
     rows[2].items = Array.prototype.slice.call(u.children);
+
+    /* Settings, one press up from the app row; its name opens out on focus. */
+    var chip = el('div', 'pill chip');
+    chip.dataset.act = 'settings';
+    chip.insertAdjacentHTML('beforeend', iconSvg('gear'));
+    chip.appendChild(el('span', '', 'Settings'));
+    $('chips').appendChild(chip);
+    rows[3].items = [chip];
+  }
+
+  function renderNet() {
+    var on = navigator.onLine !== false, n = $('net');
+    n.innerHTML = iconSvg(on ? 'wifi' : 'wifiOff');
+    if (!on) n.appendChild(el('span', '', 'Offline'));
+    n.classList.toggle('offline', !on);
+  }
+
+  /* ── Rearranging: hold OK on an app, slide it with Left/Right ─────── */
+  var HOLD_MS = 600;
+  var hold = null;    /* an OK press that may turn into a hold */
+  var moving = null;  /* {ri, pkg, had: saved order} while a tile is lifted */
+
+  function rowPkgs(ri) {
+    return rows[ri].items.map(function (t) { return t.dataset.pkg; }).filter(Boolean);
+  }
+
+  function saveOrder() {
+    store.set('order', rowPkgs(0).concat(rowPkgs(1)));
+  }
+
+  function startMove() {
+    var t = current();
+    if (!t || !t.dataset.pkg || (rowI !== 0 && rowI !== 1)) return;
+    moving = { ri: rowI, pkg: t.dataset.pkg, had: store.get('order', null) };
+    t.classList.add('moving');
+    document.body.classList.add('moving');
+    updateGlow();
+  }
+
+  function moveStep(dx) {
+    var r = rows[moving.ri], i = r.idx, n = i + dx, t = r.items[i];
+    var count = rowPkgs(moving.ri).length; /* the "All apps" tile stays last */
+    if (n < 0 || n >= count) return bumpEl(t, dx < 0 ? 'l' : 'r');
+    var o = r.items[n];
+    /* FLIP: swap in the DOM, then slide both tiles from where they were. */
+    var tl = t.offsetLeft, ol = o.offsetLeft;
+    if (dx > 0) r.el.insertBefore(o, t); else r.el.insertBefore(t, o);
+    r.items[i] = o;
+    r.items[n] = t;
+    r.idx = n;
+    [[t, tl], [o, ol]].forEach(function (p) {
+      p[0].classList.add('flip-now');
+      p[0].style.translate = (p[1] - p[0].offsetLeft) + 'px 0';
+    });
+    void r.el.offsetWidth;
+    [t, o].forEach(function (e) { e.classList.remove('flip-now'); e.style.translate = ''; });
+    paint();
+  }
+
+  function endMove(keep) {
+    if (!moving) return;
+    var m = moving;
+    moving = null;
+    document.body.classList.remove('moving');
+    rows[m.ri].items.forEach(function (t) { t.classList.remove('moving'); });
+    /* Dropped: this order wins from now on. Cancelled: back as it was. */
+    if (keep) saveOrder();
+    else store.set('order', m.had);
+    reloadApps();
+  }
+
+  /* In All apps (A to Z) a hold sends the app to the front of the home row. */
+  function gridHold() {
+    var it = grid.items[grid.idx], pkg = it && it.tile.dataset.pkg;
+    if (!pkg) return;
+    var a = byPkg[pkg], list = rowPkgs(0).concat(rowPkgs(1)).filter(function (p) { return p !== pkg; });
+    list.splice(a && a.game ? rowPkgs(0).length : 0, 0, pkg);
+    store.set('order', list);
+    reloadApps();
+    buildGrid();
+    rows[a && a.game ? 1 : 0].idx = 0;
+    paint();
+    toast((a ? a.label : 'App') + ' moved to the front');
+  }
+
+  function resetOrder() {
+    store.set('order', null);
+    reloadApps();
+    buildGrid();
+    toast('App order reset to most-used');
   }
 
   /* ── All apps: a full-screen grid, Apps then Games, A to Z ────────── */
@@ -1019,11 +1324,23 @@
       });
     });
     if (!grid.items.length) body.appendChild(el('div', '', 'No apps found')).id = 'all-empty';
+    var order = store.get('order', null);
+    if (order && order.length) {
+      var foot = body.appendChild(el('div', 'grid-foot'));
+      var reset = el('div', 'pill');
+      reset.dataset.act = 'reset';
+      reset.insertAdjacentHTML('beforeend', iconSvg('grid'));
+      reset.appendChild(el('span', '', 'Reset app order'));
+      foot.appendChild(reset);
+      grid.rows.push([grid.items.length]);
+      grid.items.push({ tile: reset, cell: foot, head: null, row: grid.rows.length - 1, col: 0 });
+    }
     $('all-count').textContent = apps.length + (apps.length === 1 ? ' app' : ' apps') +
-      (games.length ? '  ·  ' + games.length + (games.length === 1 ? ' game' : ' games') : '');
+      (games.length ? '  ·  ' + games.length + (games.length === 1 ? ' game' : ' games') : '') +
+      '  ·  hold OK to move one to the front';
     var at = 0;
     grid.items.forEach(function (it, i) { if (keep && it.tile.dataset.pkg === keep) at = i; });
-    grid.idx = at;
+    grid.idx = Math.min(at, Math.max(0, grid.items.length - 1));
     paintGrid();
   }
 
@@ -1065,6 +1382,7 @@
     var it = grid.items[grid.idx];
     if (!it) return;
     press(it.tile);
+    if (it.tile.dataset.act === 'reset') return resetOrder();
     /* Coming back from the app lands on home, not back in the grid. */
     if (launch(it.tile.dataset.pkg)) setTimeout(closeAll, 350);
   }
@@ -1079,12 +1397,14 @@
     body.style.transition = '';
     grid.open = true;
     $('all').classList.add('open');
+    updateGlow();
   }
 
   function closeAll() {
     if (!grid.open) return false;
     grid.open = false;
     $('all').classList.remove('open');
+    updateGlow();
     return true;
   }
 
@@ -1097,19 +1417,67 @@
     return true;
   }
 
+  /* ── Keys ─────────────────────────────────────────────────────────── */
+  function isSelectKey(e) { return e.key === 'Enter' || e.keyCode === 13 || e.keyCode === 23; }
+
+  /* OK on an app waits to see whether it is a tap (launch on release) or
+     a hold (lift it to rearrange). The remote repeats keydown while OK is
+     held, which is how a hold shows itself; if the release never arrives
+     and nothing repeats, it counts as a tap. */
+  function beginPress(onTap, onHold) {
+    var h = { at: Date.now(), tap: onTap, hold: onHold, long: false, repeats: false };
+    h.timer = setTimeout(function () {
+      if (hold === h && !h.long && !h.repeats) { hold = null; h.tap(); }
+    }, 1200);
+    hold = h;
+  }
+
+  function selectDown(e) {
+    if (e.repeat) {
+      if (hold && !hold.long) {
+        hold.repeats = true;
+        if (Date.now() - hold.at >= HOLD_MS) { hold.long = true; clearTimeout(hold.timer); hold.hold(); }
+      }
+      return;
+    }
+    if (moving) { hold = null; return endMove(true); }
+    if (grid.open) {
+      var it = grid.items[grid.idx];
+      if (it && it.tile.dataset.pkg) beginPress(gridActivate, gridHold);
+      else gridActivate();
+      return;
+    }
+    var t = current();
+    if (t && t.dataset.pkg) beginPress(activate, startMove);
+    else activate();
+  }
+
   document.addEventListener('keydown', function (e) {
-    var k = e.key, c = e.keyCode;
-    var isSelect = k === 'Enter' || c === 13 || c === 23;
+    var c = e.keyCode;
+    var isSelect = isSelectKey(e);
     var isArrow = c >= 37 && c <= 40;
-    var isBack = k === 'Escape' || k === 'Backspace';
+    var isBack = e.key === 'Escape' || e.key === 'Backspace';
     if (!isSelect && !isArrow && !isBack) return;
     e.preventDefault();
     /* The first press after the page dimmed only wakes it. */
     if (wake()) return;
     var dx = c === 37 ? -1 : c === 39 ? 1 : 0, dy = c === 38 ? -1 : c === 40 ? 1 : 0;
-    if (isArrow) (grid.open ? gridMove : move)(dx, dy);
-    else if (isSelect) { if (!e.repeat) (grid.open ? gridActivate : activate)(); }
-    else if (!NATIVE) window.onBack(); /* Escape/Backspace stand in for Back on desktop */
+    if (isSelect) selectDown(e);
+    else if (isArrow) {
+      if (moving) { if (dx) moveStep(dx); }
+      else (grid.open ? gridMove : move)(dx, dy);
+    }
+    else if (!NATIVE && !e.repeat) window.onBack(); /* Escape/Backspace stand in for Back on desktop */
+  });
+
+  document.addEventListener('keyup', function (e) {
+    if (!isSelectKey(e)) return;
+    e.preventDefault();
+    var h = hold;
+    hold = null;
+    if (!h) return;
+    clearTimeout(h.timer);
+    if (!h.long) h.tap();
   });
 
   /* ── Native hooks ──────────────────────────────────────────────────── */
@@ -1119,17 +1487,28 @@
     renderClock();
     renderWeather();
     renderFamily();
+    renderNet();
     if (Date.now() - lastRefresh > 60 * 1000) refresh();
   };
-  window.onHidden = function () { closeAll(); };
-  window.onHome = home;
+  window.onHidden = function () {
+    hold = null;
+    endMove(true);
+    closeAll();
+  };
+  window.onHome = function () {
+    hold = null;
+    endMove(false);
+    home();
+  };
   window.onBack = function () {
     wake();
+    if (moving) return endMove(true);
     if (!closeAll()) home();
   };
 
   /* ── Start ─────────────────────────────────────────────────────────── */
   buildUtil();
+  renderNet();
   renderClock();
   drift();
   renderWeather();
@@ -1148,9 +1527,11 @@
       renderFamily();
       renderWeather();
     }
-    if (Date.now() - lastInput > IDLE_MS) document.body.classList.add('idle');
+    if (!moving && Date.now() - lastInput > IDLE_MS) document.body.classList.add('idle');
   }, 1000);
   setInterval(refresh, REFRESH_MS);
+  window.addEventListener('online', renderNet);
+  window.addEventListener('offline', renderNet);
   window.addEventListener('resize', function () {
     paint();
     if (grid.open) paintGrid();

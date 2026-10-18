@@ -35,6 +35,7 @@ done
 # house.solanyk.tv could be the default home, and the screensaver was changed from Aerial Dream.
 # To go back, uncomment:
 # sh pm enable com.google.android.tvlauncher
+# sh pm enable com.spocky.projengmenu   # Projectivy; its accessibility service grabbed the Home button
 # sh settings put secure screensaver_components com.codingbuffalo.aerialdream/com.codingbuffalo.aerialdream.AerialDream
 
 echo "--- still disabled (should be just com.nvidia.benchmarkblocker):"; sh pm list packages -d

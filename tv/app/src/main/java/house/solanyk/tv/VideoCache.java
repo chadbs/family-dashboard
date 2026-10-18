@@ -27,13 +27,14 @@ import java.util.concurrent.atomic.AtomicBoolean;
    CAP and streams the rest; a clip downloads once and plays from disk after. */
 final class VideoCache {
     static final class Clip {
-        final String id, url, title;
+        final String id, url, title, cat;
         final long bytes;
 
-        Clip(String id, String url, String title, long bytes) {
+        Clip(String id, String url, String title, String cat, long bytes) {
             this.id = id;
             this.url = url;
             this.title = title;
+            this.cat = cat;
             this.bytes = bytes;
         }
     }
@@ -67,7 +68,7 @@ final class VideoCache {
             for (int i = 0; i < a.length(); i++) {
                 JSONObject o = a.getJSONObject(i);
                 clips.add(new Clip(o.getString("id"), o.getString("url"), o.optString("title"),
-                        o.optLong("mb", 100) * MB));
+                        o.optString("cat", "landscapes"), o.optLong("mb", 100) * MB));
             }
         } catch (Exception ignored) {
         }

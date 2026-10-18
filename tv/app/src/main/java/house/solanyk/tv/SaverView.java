@@ -12,8 +12,11 @@ import android.widget.VideoView;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 
 /* The screensaver itself, shared by the system screensaver (FamilyDream)
@@ -110,8 +113,7 @@ final class SaverView extends FrameLayout {
         if (running) return;
         running = true;
         order.clear();
-        order.addAll(cache.clips);
-        Collections.shuffle(order);
+        order.addAll(weave(cache.clips));
         idx = 0;
         if (pageReady) begin();
     }
@@ -150,6 +152,49 @@ final class SaverView extends FrameLayout {
         js("showVideo(" + Web.quote(current.title) + ")");
         video.setVideoURI(cache.uri(current));
         h.postDelayed(stalled, START_TIMEOUT_MS);
+    }
+
+    /* How often each kind of film comes up: Chad likes the animals and
+       underwater ones as much as the landscapes. */
+    private static final Map<String, Integer> WEIGHT = new HashMap<>();
+    static {
+        WEIGHT.put("underwater", 3);
+        WEIGHT.put("landscapes", 3);
+        WEIGHT.put("space", 2);
+        WEIGHT.put("cities", 1);
+    }
+
+    /* Every clip once, shuffled within its kind, the kinds mixed by weight. */
+    private static List<VideoCache.Clip> weave(List<VideoCache.Clip> clips) {
+        Map<String, List<VideoCache.Clip>> byCat = new HashMap<>();
+        for (VideoCache.Clip c : clips) {
+            List<VideoCache.Clip> l = byCat.get(c.cat);
+            if (l == null) byCat.put(c.cat, l = new ArrayList<>());
+            l.add(c);
+        }
+        for (List<VideoCache.Clip> l : byCat.values()) Collections.shuffle(l);
+        Random rnd = new Random();
+        List<VideoCache.Clip> out = new ArrayList<>();
+        while (out.size() < clips.size()) {
+            int total = 0;
+            for (Map.Entry<String, List<VideoCache.Clip>> e : byCat.entrySet())
+                if (!e.getValue().isEmpty()) total += weight(e.getKey());
+            int r = rnd.nextInt(total);
+            for (Map.Entry<String, List<VideoCache.Clip>> e : byCat.entrySet()) {
+                if (e.getValue().isEmpty()) continue;
+                r -= weight(e.getKey());
+                if (r < 0) {
+                    out.add(e.getValue().remove(0));
+                    break;
+                }
+            }
+        }
+        return out;
+    }
+
+    private static int weight(String cat) {
+        Integer w = WEIGHT.get(cat);
+        return w == null ? 1 : w;
     }
 
     private VideoCache.Clip pick() {

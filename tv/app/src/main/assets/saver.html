@@ -89,7 +89,7 @@
     display: grid; column-gap: 5vw; row-gap: 4vh;
     grid-template-columns: 1.12fr 1fr;
     grid-template-rows: auto 1fr auto;
-    grid-template-areas: "clock wx" ". ." "verse extra";
+    grid-template-areas: "clock wx" "cd ." "verse extra";
     transition: opacity 3s ease;
     will-change: transform;
   }
@@ -98,6 +98,7 @@
   .a-wx { grid-area: wx; }
   .a-verse { grid-area: verse; align-self: end; }
   .a-extra { grid-area: extra; align-self: end; }
+  .a-cd { grid-area: cd; align-self: center; }
 
   .fx { opacity: 0; transform: translateY(1.4vh); transition: opacity 1.8s ease, transform 2.4s cubic-bezier(.2, .7, .2, 1); }
   #family.shown .fx { opacity: 1; transform: none; }
@@ -105,6 +106,7 @@
   #family.shown .fx:nth-child(2) { transition-delay: 1.0s; }
   #family.shown .fx:nth-child(3) { transition-delay: 1.5s; }
   #family.shown .fx:nth-child(4) { transition-delay: 1.9s; }
+  #family.shown .fx:nth-child(5) { transition-delay: 2.3s; }
 
   .clock {
     font-size: 15vw; font-weight: 100; line-height: .86; letter-spacing: -.025em;
@@ -160,10 +162,26 @@
   .kid .krow .n { font-size: 1.9vw; color: var(--accent); margin-left: .3vw; }
   .kid .krow.none { color: var(--faint); font-size: 1.4vw; }
 
+  /* countdown to the next big family event */
+  .a-cd { display: flex; align-items: center; }
+  .cd-num {
+    font-size: 7.2vw; font-weight: 100; line-height: .9; letter-spacing: -.02em;
+    color: var(--accent); font-variant-numeric: tabular-nums; white-space: nowrap;
+  }
+  .cd-num.word { font-size: 4.2vw; font-weight: 200; letter-spacing: 0; }
+  .cd-txt { margin-left: 1.8vw; padding-left: 1.8vw; border-left: 1px solid var(--hair); line-height: 1.35; }
+  .cd-unit { font-size: 1.45vw; color: var(--accent-dim); letter-spacing: .03em; }
+  .cd-unit:empty { display: none; }
+  .cd-title { font-size: 2vw; font-weight: 300; color: var(--ink); white-space: nowrap; }
+  .cd-title .em { font-size: .85em; margin-right: .6vw; filter: saturate(.7); opacity: .9; }
+  .cd-when { margin-top: .5vh; }
+  #scene.L1 .a-cd, #scene.L2 .a-cd { flex-direction: row-reverse; justify-self: end; text-align: right; }
+  #scene.L1 .cd-txt, #scene.L2 .cd-txt { margin: 0 1.8vw 0 0; padding: 0 1.8vw 0 0; border-left: 0; border-right: 1px solid var(--hair); }
+
   .hide { display: none !important; }
 
   /* Layout 1: mirrored */
-  #scene.L1 { grid-template-columns: 1fr 1.12fr; grid-template-areas: "wx clock" ". ." "extra verse"; }
+  #scene.L1 { grid-template-columns: 1fr 1.12fr; grid-template-areas: "wx clock" ". cd" "extra verse"; }
   #scene.L1 .a-clock, #scene.L1 .a-verse { text-align: right; justify-self: end; }
   #scene.L1 .verse-ref::before { display: none; }
   #scene.L1 .verse-ref::after { content: ""; display: inline-block; width: 1.8vw; height: 1px; background: var(--accent-dim); vertical-align: .35em; margin-left: .9vw; }
@@ -171,8 +189,8 @@
   /* Layout 2: centred clock and verse, weather and family along the bottom */
   #scene.L2 {
     grid-template-columns: 1.35fr 1fr; row-gap: 0;
-    grid-template-rows: auto 1fr auto;
-    grid-template-areas: "clock clock" "verse verse" "wx extra";
+    grid-template-rows: auto 1fr auto auto;
+    grid-template-areas: "clock clock" "verse verse" "wx cd" "wx extra";
   }
   #scene.L2 .a-clock { text-align: center; }
   #scene.L2 .clock { font-size: 11.5vw; }
@@ -183,6 +201,9 @@
   #scene.L2 .verse-text.longer { font-size: 1.4vw; }
   #scene.L2 .verse-ref::before { display: none; }
   #scene.L2 .a-wx { display: flex; align-items: flex-end; gap: 2.4vw; align-self: end; }
+  #scene.L2 .a-cd { align-self: end; margin-bottom: 3.4vh; }
+  #scene.L2 .cd-num { font-size: 5.4vw; }
+  #scene.L2 .cd-num.word { font-size: 3.6vw; }
   #scene.L2 .now { flex-direction: column; align-items: flex-start; gap: .6vh; }
   #scene.L2 .now .row { display: flex; align-items: center; gap: 1.2vw; }
   #scene.L2 .wicon { width: 3.6vw; height: 3.6vw; }
@@ -214,6 +235,14 @@
       <div class="clock" id="fClock"></div>
       <div class="date" id="fDate"></div>
       <div class="greet" id="fGreet"></div>
+    </section>
+    <section class="a-cd fx hide" id="cd">
+      <div class="cd-num" id="cdNum"></div>
+      <div class="cd-txt">
+        <div class="cd-unit" id="cdUnit"></div>
+        <div class="cd-title" id="cdTitle"></div>
+        <div class="cd-when label" id="cdWhen"></div>
+      </div>
     </section>
     <section class="a-wx fx hide" id="wx">
       <div class="now">
@@ -257,6 +286,7 @@
   }
 </script>
 <script src="scripture.js" onerror="devScripture()"></script>
+<script src="countdowns.js"></script>
 <script>
 (function () {
   'use strict';
@@ -479,8 +509,35 @@
     $('extra').classList.toggle('hide', !any);
   }
 
+  /* The next big event: days to go, then hours on the last day, then
+     "Today!" once it has begun. */
+  function renderCountdown() {
+    var el = $('cd');
+    var c = typeof Countdowns !== 'undefined' && Countdowns.next ? Countdowns.next(now()) : null;
+    if (!c || !c.at) { el.classList.add('hide'); return; }
+    var ms = c.at - now(), n, unit, word = false;
+    if (!c.today && c.sleeps >= 2) { n = c.sleeps; unit = 'days to go'; }
+    else if (ms >= 36e5) { n = Math.ceil(ms / 36e5); unit = n === 1 ? 'hour to go' : 'hours to go'; }
+    else if (ms > 0) { n = Math.max(1, Math.ceil(ms / 6e4)); unit = n === 1 ? 'minute to go' : 'minutes to go'; }
+    else { n = 'Today!'; unit = ''; word = true; }
+
+    var at = c.at, hasTime = at.getHours() || at.getMinutes();
+    var day = c.today ? 'Today' : c.sleeps === 1 ? 'Tomorrow'
+      : DAYS[at.getDay()].slice(0, 3) + ', ' + MONTHS[at.getMonth()].slice(0, 3) + ' ' + at.getDate();
+    var when = word ? DAYS[at.getDay()] + ', ' + MONTHS[at.getMonth()] + ' ' + at.getDate()
+      : day + (hasTime ? ' · ' + hm(at).t + ' ' + hm(at).ap.toUpperCase() : '');
+
+    $('cdNum').textContent = n;
+    $('cdNum').classList.toggle('word', word);
+    $('cdUnit').textContent = unit;
+    $('cdTitle').innerHTML = (c.emoji ? '<span class="em">' + esc(c.emoji) + '</span>' : '') + esc(c.title);
+    $('cdWhen').textContent = when;
+    el.classList.remove('hide');
+  }
+
   function renderFamily() {
     renderClock();
+    renderCountdown();
     renderWeather();
     renderVerse();
     renderExtra();
@@ -598,7 +655,7 @@
   refresh();
   setInterval(refresh, REFRESH_MS);
   setInterval(renderClock, 1000);
-  setInterval(function () { if (mode === 'family') { renderVerse(); renderExtra(); } }, 60 * 1000);
+  setInterval(function () { if (mode === 'family') { renderCountdown(); renderVerse(); renderExtra(); } }, 60 * 1000);
 
   /* Native's first showFamily() usually arrives before this page has loaded
      (and is dropped by its `window.showFamily &&` guard). Every sequence

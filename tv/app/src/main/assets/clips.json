@@ -4,846 +4,975 @@
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/SE_A016_C009_SDR_20190717_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "Seals · Underwater",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "underwater"
  },
  {
   "id": "ap7719b48a",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/comp_A114_C001_0305OT_v10_SDR_FINAL_22062018_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "Southern California to Baja · From space",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "space"
  },
  {
   "id": "ap2f52e34c",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/comp_GL_G002_C002_PSNK_v03_SDR_PS_20180925_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "Greenland · Landscapes",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "landscapes"
  },
  {
   "id": "ap009ba758",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/comp_GMT026_363A_103NC_E1027_KOREA_JAPAN_NIGHT_v18_SDR_PS_20180907_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "Korea and Japan Night · From space",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "space"
  },
  {
   "id": "apba4eca11",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/PA_A001_C007_SDR_20190717_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "Palau Jellies · Underwater",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "underwater"
  },
  {
   "id": "ap92e48de9",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/comp_LA_A008_C004_ALTB_ED_FROM_FLAME_RETIME_v46_SDR_PS_20180917_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "Los Angeles · Cities",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "cities"
  },
  {
   "id": "apa5aaff5d",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/comp_L007_C007_PS_v01_SDR_PS_20180925_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "London · Cities",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "cities"
  },
  {
   "id": "apa837fa8c",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/comp_GMT312_162NC_139M_1041_AFRICA_NIGHT_v14_SDR_FINAL_20180706_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "Africa Night · From space",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "space"
  },
  {
   "id": "ap9ccb8297",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/comp_CH_C002_C005_PSNK_v05_SDR_PS_FINAL_20180709_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "China · Landscapes",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "landscapes"
  },
  {
   "id": "apb8f204ce",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/comp_GL_G004_C010_PSNK_v04_SDR_PS_FINAL_20180709_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "Greenland · Landscapes",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "landscapes"
  },
  {
   "id": "apf07cc61b",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/PA_A004_C003_SDR_20190719_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "Palau Coral · Underwater",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "underwater"
  },
  {
   "id": "ap35693aea",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/comp_LA_A005_C009_PSNK_ALT_v09_SDR_PS_201809134_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "Los Angeles · Cities",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "cities"
  },
  {
   "id": "ape556bbc5",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/comp_A009_C001_010181A_v09_SDR_PS_FINAL_20180725_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "Sahara and Italy · From space",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "space"
  },
  {
   "id": "apf5804dd6",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/comp_LA_A011_C003_DGRN_LNFIX_STAB_v57_SDR_PS_20181002_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "Los Angeles · Cities",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "cities"
  },
  {
   "id": "ap6143116d",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/KP_A010_C002_SDR_20190717_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "Kelp · Underwater",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "underwater"
  },
  {
   "id": "ap44166c39",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/comp_N013_C004_PS_v01_SDR_PS_20180925_F1970F7193_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "New York · Cities",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "cities"
  },
  {
   "id": "ape5db138a",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/comp_GMT329_113NC_396B_1105_ITALY_v03_SDR_FINAL_20180706_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "Italy to Asia · From space",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "space"
  },
  {
   "id": "apec67726a",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/comp_LA_A006_C004_v01_SDR_FINAL_PS_20180730_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "Los Angeles · Cities",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "cities"
  },
  {
   "id": "ap1088217c",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/comp_A105_C002_v06_SDR_FINAL_25062018_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "Caribbean · From space",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "space"
  },
  {
   "id": "ap72b4390d",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/comp_A013_C012_0122D6_CC_v01_SDR_PS_FINAL_20180709_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "San Francisco · Cities",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "cities"
  },
  {
   "id": "ap2b30e324",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/BO_A018_C029_SDR_20190812_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "Barracuda · Underwater",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "underwater"
  },
  {
   "id": "apd5e76230",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/comp_CH_C007_C004_PSNK_v02_SDR_PS_FINAL_20180709_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "China · Landscapes",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "landscapes"
  },
  {
   "id": "ap737e9e24",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/comp_GMT314_139M_170NC_NORTH_AMERICA_AURORA__COMP_v22_SDR_20181206_v12CC_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "North America Aurora · From space",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "space"
  },
  {
   "id": "apce279831",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/comp_LA_A006_C008_PSNK_ALL_LOGOS_v10_SDR_PS_FINAL_20180801_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "Los Angeles · Cities",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "cities"
  },
  {
   "id": "ap9680b8eb",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/comp_DB_D011_C010_PSNK_DENOISE_v19_SDR_PS_20180914_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "Dubai · Cities",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "cities"
  },
  {
   "id": "ap63c042f0",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/comp_A001_C004_1207W5_v23_SDR_FINAL_20180706_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "West Africa to the Alps · From space",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "space"
  },
  {
   "id": "apf439b0a7",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/comp_A083_C002_1130KZ_v04_SDR_PS_FINAL_20180725_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "Iran and Afghanistan · From space",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "space"
  },
  {
   "id": "ape580e5a5",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/PA_A002_C009_SDR_20190730_ALT01_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "Palau Jellies · Underwater",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "underwater"
  },
  {
   "id": "ap4f881f8b",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/comp_GMT308_139K_142NC_CARIBBEAN_DAY_v09_SDR_FINAL_22062018_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "Caribbean Day · From space",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "space"
  },
  {
   "id": "ap3d729cfc",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/comp_H012_C009_PS_v01_SDR_PS_20180925_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "Hawaii · Landscapes",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "landscapes"
  },
  {
   "id": "apee01f02d",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/comp_GL_G010_C006_PSNK_NOSUN_v12_SDR_PS_FINAL_20180709_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "Greenland · Landscapes",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "landscapes"
  },
  {
   "id": "ap12318ccb",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/comp_GMT306_139NC_139J_3066_CALI_TO_VEGAS_v08_SDR_PS_20180824_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "California to Vegas · From space",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "space"
  },
  {
   "id": "ap3ba0cfc7",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/comp_N008_C009_PS_v01_SDR_PS_20180925_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "New York · Cities",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "cities"
  },
  {
   "id": "ap89b1643b",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/comp_LA_A009_C009_PSNK_v02_SDR_PS_FINAL_20180709_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "Los Angeles · Cities",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "cities"
  },
  {
   "id": "apf604af56",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/comp_L012_c002_PS_v01_SDR_PS_20180925_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "London · Cities",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "cities"
  },
  {
   "id": "ap258a6797",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/comp_H004_C009_PS_v01_SDR_PS_20180925_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "Hawaii · Landscapes",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "landscapes"
  },
  {
   "id": "apd5cfb2ff",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/comp_A108_C001_v09_SDR_FINAL_22062018_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "Caribbean · From space",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "space"
  },
  {
   "id": "ap7c643a39",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/comp_GMT329_117NC_401C_1037_IRELAND_TO_ASIA_v48_SDR_PS_FINAL_20180725_F0F6300_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "Ireland to Asia · From space",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "space"
  },
  {
   "id": "ap876d51f4",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/comp_DB_D008_C010_PSNK_v21_SDR_PS_20180914_F0F16157_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "Dubai · Cities",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "cities"
  },
  {
   "id": "ap044ad56c",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/comp_C003_C003_PS_v01_SDR_PS_20180925_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "China · Landscapes",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "landscapes"
  },
  {
   "id": "apec3dc957",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/PA_A010_C007_SDR_20190717_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "Palau Jellies · Underwater",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "underwater"
  },
  {
   "id": "ape99fa658",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/comp_HK_B005_C011_PSNK_v16_SDR_PS_20180914_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "Hong Kong · Cities",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "cities"
  },
  {
   "id": "ap499995fa",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/comp_H005_C012_PS_v01_SDR_PS_20180925_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "Hawaii · Landscapes",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "landscapes"
  },
  {
   "id": "ap6324f6eb",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/comp_GMT329_113NC_396B_1105_CHINA_v04_SDR_FINAL_20180706_F900F2700_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "China · From space",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "space"
  },
  {
   "id": "ap3e94ae98",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/comp_A015_C018_0128ZS_v03_SDR_PS_FINAL_20180709__SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "San Francisco · Cities",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "cities"
  },
  {
   "id": "ap3c4678e4",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/comp_A050_C004_1027V8_v16_SDR_FINAL_20180706_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "Nile Delta · From space",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "space"
  },
  {
   "id": "ap00ba71cd",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/comp_DB_D002_C003_PSNK_v04_SDR_PS_20180914_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "Dubai · Cities",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "cities"
  },
  {
   "id": "apb876b645",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/comp_CH_C007_C011_PSNK_v02_SDR_PS_FINAL_20180709_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "China · Landscapes",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "landscapes"
  },
  {
   "id": "ap581a4f1a",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/BO_A012_C031_SDR_20190726_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "Sea Stars · Underwater",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "underwater"
  },
  {
   "id": "ap78911b7e",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/comp_A105_C003_0212CT_FLARE_v10_SDR_PS_FINAL_20180711_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "New Zealand · From space",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "space"
  },
  {
   "id": "apafa22c08",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/comp_LW_L001_C003__PSNK_DENOISE_v04_SDR_PS_FINAL_20180803_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "Liwa · Landscapes",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "landscapes"
  },
  {
   "id": "apc8559883",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/comp_HK_H004_C010_PSNK_v08_SDR_PS_20181009_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "Hong Kong · Cities",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "cities"
  },
  {
   "id": "ap87060ec2",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/comp_A351_C001_v06_SDR_PS_20180725_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "South Africa to North Asia · From space",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "space"
  },
  {
   "id": "ap687d03a2",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/BO_A014_C008_SDR_20190719_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "Bumpheads · Underwater",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "underwater"
  },
  {
   "id": "ap64d11dab",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/comp_A001_C001_120530_v04_SDR_FINAL_20180706_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "Atlantic Ocean to Spain and France · From space",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "space"
  },
  {
   "id": "apde851e6d",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/comp_A006_C003_1219EE_CC_v01_SDR_PS_FINAL_20180709_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "San Francisco · Cities",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "cities"
  },
  {
   "id": "ape991ac0c",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/comp_DB_D001_C001_PSNK_v06_SDR_PS_20180824_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "Dubai · Cities",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "cities"
  },
  {
   "id": "ap537a4dab",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/BO_A014_C023_SDR_20190717_F240F3709_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "Jacks · Underwater",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "underwater"
  },
  {
   "id": "ap640dfb00",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/comp_N008_C003_PS_v01_SDR_PS_20180925_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "New York · Cities",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "cities"
  },
  {
   "id": "ap03ec0f5e",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/comp_GMT110_112NC_364D_1054_AURORA_ANTARTICA__COMP_FINAL_v34_PS_SDR_20181107_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "Antarctica · From space",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "space"
  },
  {
   "id": "ap58754319",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/comp_L010_C006_PS_v01_SDR_PS_20180925_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "London · Cities",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "cities"
  },
  {
   "id": "ap4ad99907",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/comp_1223LV_FLARE_v21_SDR_PS_FINAL_20180709_F0F5700_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "San Francisco · Cities",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "cities"
  },
  {
   "id": "ap2f72bc1e",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/comp_A103_C002_0205DG_v12_SDR_FINAL_20180706_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "Africa and the Middle East · From space",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "space"
  },
  {
   "id": "ap840fe8e4",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/comp_N003_C006_PS_v01_SDR_PS_20180925_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "New York · Cities",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "cities"
  },
  {
   "id": "apf0236ec5",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/comp_C001_C005_PS_v01_SDR_PS_20180925_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "China · Landscapes",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "landscapes"
  },
  {
   "id": "apee533fbd",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/comp_A008_C007_011550_CC_v01_SDR_PS_FINAL_20180709_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "San Francisco · Cities",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "cities"
  },
  {
   "id": "apb1b5ddc5",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/comp_GMT307_136NC_134K_8277_NY_NIGHT_01_v25_SDR_PS_20180907_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "New York Night · From space",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "space"
  },
  {
   "id": "ap7f4c26c2",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/comp_L004_C011_PS_v01_SDR_PS_20180925_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "London · Cities",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "cities"
  },
  {
   "id": "ap82bd33c9",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/comp_H004_C007_PS_v02_SDR_PS_20180925_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "Hawaii · Landscapes",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "landscapes"
  },
  {
   "id": "ap024891de",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/HK_H004_C013_4K_SDR_HEVC.mov",
   "mb": 400,
   "title": "Hong Kong · Cities",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "cities"
  },
  {
   "id": "ap3ffa2a97",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/comp_DB_D001_C005_COMP_PSNK_v12_SDR_PS_20180912_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "Dubai · Cities",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "cities"
  },
  {
   "id": "ap85ce77bf",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/comp_A012_C014_1223PT_v53_SDR_PS_FINAL_20180709_F0F8700_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "San Francisco · Cities",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "cities"
  },
  {
   "id": "ap12e0343d",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/comp_H007_C003_PS_v01_SDR_PS_20180925_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "Hawaii · Landscapes",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "landscapes"
  },
  {
   "id": "apfe8e1f9d",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/comp_HK_H004_C008_PSNK_v19_SDR_PS_20180914_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "Hong Kong · Cities",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "cities"
  },
  {
   "id": "ap29bdf297",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/comp_A007_C017_01156B_v02_SDR_PS_20180925_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "San Francisco · Cities",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "cities"
  },
  {
   "id": "ap001c94ae",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/comp_LW_L001_C006_PSNK_DENOISE_v02_SDR_PS_FINAL_20180709_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "Liwa · Landscapes",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "landscapes"
  },
  {
   "id": "ap81337355",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/comp_GMT060_117NC_363D_1034_AUSTRALIA_v35_SDR_PS_FINAL_20180731_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "Australia · From space",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "space"
  },
  {
   "id": "ap22162a9b",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/comp_C004_C003_PS_v01_SDR_PS_20180925_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "China · Landscapes",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "landscapes"
  },
  {
   "id": "apdd47d8e1",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/g201_WH_D004_L014_SDR_20191031_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "Humpback Whale · Underwater",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "underwater"
  },
  {
   "id": "ap27a37b0f",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/DL_B002_C011_SDR_20191122_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "California Dolphins · Underwater",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "underwater"
  },
  {
   "id": "ap149e7795",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/g201_TH_803_A001_8_SDR_20191031_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "Tahiti Waves · Underwater",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "underwater"
  },
  {
   "id": "ap8c31b06f",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/g201_TH_804_A001_8_SDR_20191031_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "Tahiti Waves · Underwater",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "underwater"
  },
  {
   "id": "ap82175c1f",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/RS_A008_C010_SDR_20191218_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "Red Sea Coral · Underwater",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "underwater"
  },
  {
   "id": "ap58c75c62",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/MEX_A006_C008_SDR_20190923_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "Cownose Rays · Underwater",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "underwater"
  },
  {
   "id": "apeb3f48e7",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/g201_CA_A016_C002_SDR_20191114_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "California Kelp Forest · Underwater",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "underwater"
  },
  {
   "id": "apc7ad3d0a",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/g201_AK_A003_C014_SDR_20191113_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "Alaskan Jellies · Underwater",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "underwater"
  },
  {
   "id": "ap3716dd4b",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/FK_U009_C004_SDR_20191220_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "Gray Reef Sharks · Underwater",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "underwater"
  },
  {
   "id": "apce9b5d5b",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/CR_A009_C007_SDR_20191113_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "Costa Rica Dolphins · Underwater",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "underwater"
  },
  {
   "id": "apc6dc4e54",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/AK_A004_C012_SDR_20191217_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "Alaskan Jellies · Underwater",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "underwater"
  },
  {
   "id": "ape334a6d2",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/G007_C004_UHD_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "Grand Canyon · Landscapes",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "landscapes"
  },
  {
   "id": "apdd266e1f",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/G008_C015_UHD_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "Grand Canyon · Landscapes",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "landscapes"
  },
  {
   "id": "apf9f918cd",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/G009_C003_UHD_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "Grand Canyon · Landscapes",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "landscapes"
  },
  {
   "id": "apae0115ae",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/G009_C014_UHD_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "Grand Canyon · Landscapes",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "landscapes"
  },
  {
   "id": "ap8002c4c8",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/G010_C026_UHD_SDR_v02_4K_HEVC.mov",
   "mb": 400,
   "title": "Grand Canyon · Landscapes",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "landscapes"
  },
  {
   "id": "ap5c987900",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/P001_C005_UHD_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "Patagonia · Landscapes",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "landscapes"
  },
  {
   "id": "apb004358b",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/P005_C002_UHD_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "Patagonia · Landscapes",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "landscapes"
  },
  {
   "id": "ap25a6cfb2",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/P006_C002_UHD_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "Patagonia · Landscapes",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "landscapes"
  },
  {
   "id": "ape5d58cc2",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/P007_C027_UHD_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "Patagonia · Landscapes",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "landscapes"
  },
  {
   "id": "ape5799a24",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/Y004_C015_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "Yosemite · Landscapes",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "landscapes"
  },
  {
   "id": "ape487c6ef",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/Y005_C003_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "Yosemite · Landscapes",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "landscapes"
  },
  {
   "id": "ape540dee6",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/Y002_C013_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "Yosemite · Landscapes",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "landscapes"
  },
  {
   "id": "ap81ca5acd",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/Y003_C009_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "Yosemite · Landscapes",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "landscapes"
  },
  {
   "id": "ap4109d42a",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/Y011_C001_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "Yosemite · Landscapes",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "landscapes"
  },
  {
   "id": "apdad82dce",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/Y009_C015_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "Yosemite · Landscapes",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "landscapes"
  },
  {
   "id": "ap8d04d70f",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/Y011_C008_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "Yosemite · Landscapes",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "landscapes"
  },
  {
   "id": "apdde50c77",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/I003_C008_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "Iceland · Landscapes",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "landscapes"
  },
  {
   "id": "ap0c747c29",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/S003_C020_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "Scotland · Landscapes",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "landscapes"
  },
  {
   "id": "ape54d5afe",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/I003_C011_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "Iceland · Landscapes",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "landscapes"
  },
  {
   "id": "ap8acf5d77",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/I004_C014_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "Iceland · Landscapes",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "landscapes"
  },
  {
   "id": "apf9518d54",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/I003_C015_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "Iceland · Landscapes",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "landscapes"
  },
  {
   "id": "ap8590d0c5",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/I003_C004_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "Iceland · Landscapes",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "landscapes"
  },
  {
   "id": "ape161929c",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/S006_C007_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "Scotland · Landscapes",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "landscapes"
  },
  {
   "id": "ap3954a7c4",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/S005_C015_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "Scotland · Landscapes",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "landscapes"
  },
  {
   "id": "ap2f17fcce",
   "url": "http://sylvan.apple.com/Aerials/2x/Videos/I005_C008_CROP_SDR_4K_HEVC.mov",
   "mb": 400,
   "title": "Iceland · Landscapes",
-  "credit": "Apple"
+  "credit": "Apple",
+  "cat": "landscapes"
  },
  {
   "id": "px3235598",
   "url": "https://videos.pexels.com/video-files/3235598/3235598-uhd_3840_2160_24fps.mp4",
   "mb": 103,
   "title": "Forest and mountain",
-  "credit": "Pexels"
+  "credit": "Pexels",
+  "cat": "landscapes"
  },
  {
   "id": "px32873553",
   "url": "https://videos.pexels.com/video-files/32873553/14011499_3840_2160_24fps.mp4",
   "mb": 299,
   "title": "Alpine lake · Switzerland",
-  "credit": "Pexels"
+  "credit": "Pexels",
+  "cat": "landscapes"
  },
  {
   "id": "px5208612",
   "url": "https://videos.pexels.com/video-files/5208612/5208612-uhd_3840_2160_30fps.mp4",
   "mb": 165,
   "title": "Fjord and cliffs · Norway",
-  "credit": "Pexels"
+  "credit": "Pexels",
+  "cat": "landscapes"
  },
  {
   "id": "px33313967",
   "url": "https://videos.pexels.com/video-files/33313967/14188002_3840_2160_24fps.mp4",
   "mb": 170,
   "title": "Swiss Alps",
-  "credit": "Pexels"
+  "credit": "Pexels",
+  "cat": "landscapes"
  },
  {
   "id": "px3765078",
   "url": "https://videos.pexels.com/video-files/3765078/3765078-uhd_3840_2160_30fps.mp4",
   "mb": 140,
   "title": "Coral reef · Underwater",
-  "credit": "Pexels"
+  "credit": "Pexels",
+  "cat": "underwater"
  },
  {
   "id": "px13382270",
   "url": "https://videos.pexels.com/video-files/13382270/13382270-uhd_3840_2160_24fps.mp4",
   "mb": 105,
   "title": "The Milky Way · Night sky",
-  "credit": "Pexels"
+  "credit": "Pexels",
+  "cat": "space"
  },
  {
   "id": "px13192265",
   "url": "https://videos.pexels.com/video-files/13192265/13192265-uhd_3840_2160_25fps.mp4",
   "mb": 97,
   "title": "Aquarium",
-  "credit": "Pexels"
+  "credit": "Pexels",
+  "cat": "underwater"
+ },
+ {
+  "id": "px11760750",
+  "url": "https://videos.pexels.com/video-files/11760750/11760750-uhd_4096_2160_30fps.mp4",
+  "mb": 73,
+  "title": "Watering hole · African savanna",
+  "credit": "Pexels",
+  "cat": "landscapes"
  }
 ]
