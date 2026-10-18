@@ -1,0 +1,166 @@
+{
+ "seed": 1018,
+ "title": "Salvation Is of the LORD!",
+ "service": "Evening Worship · Sunday, October 18, 2026",
+ "passage": "Jonah 1:17–2:10",
+ "listen": [
+  {
+   "label": "GOD",
+   "icon": "GOD"
+  },
+  {
+   "label": "FISH",
+   "icon": "FISH"
+  },
+  {
+   "label": "JONAH",
+   "icon": "PERSON"
+  },
+  {
+   "label": "PRAY",
+   "icon": "PRAY"
+  }
+ ],
+ "psalters": [
+  "42C",
+  "38B",
+  "88A",
+  "27A"
+ ],
+ "verse": {
+  "ref": "Jonah 2:9",
+  "lines": [
+   "Salvation is",
+   "of the LORD"
+  ]
+ },
+ "maze": {
+  "title": "Maze: Out of the Fish to Dry Land",
+  "start_icon": "FISH",
+  "start_label": "START",
+  "end_icon": "LAND",
+  "end_label": "END",
+  "caption": "“And the LORD spake unto the fish, and it vomited out Jonah upon the dry land.” Jonah 2:10"
+ },
+ "search": [
+  {
+   "word": "GOD",
+   "icon": "GOD"
+  },
+  {
+   "word": "FISH",
+   "icon": "FISH"
+  },
+  {
+   "word": "JONAH",
+   "icon": "PERSON"
+  },
+  {
+   "word": "PRAY",
+   "icon": "PRAY"
+  },
+  {
+   "word": "SEA",
+   "icon": "SEA"
+  },
+  {
+   "word": "LAND",
+   "icon": "LAND"
+  }
+ ],
+ "color1": {
+  "title": "Color: Jonah Prays in the Fish",
+  "svg": "<path d=\"M0 22 q12 -10 25 0 t25 0 t25 0 t25 0 t25 0 t25 0 t25 0 t25 0 t25 0 t25 0 t25 0 t25 0\"/><path d=\"M0 36 q12 -10 25 0 t25 0 t25 0 t25 0 t25 0 t25 0 t25 0 t25 0 t25 0 t25 0 t25 0 t25 0\" stroke-width=\"1.5\"/><path d=\"M28 108 C55 40 205 38 238 96 L288 58 L276 108 L288 160 L238 122 C205 178 55 176 28 108 Z\" stroke-width=\"2.5\"/><path d=\"M28 108 L58 116\"/><circle cx=\"66\" cy=\"90\" r=\"7\"/><circle cx=\"66\" cy=\"90\" r=\"2.5\" fill=\"#000\"/><path d=\"M92 72 Q104 108 92 146\"/><path d=\"M120 52 L132 30 L150 50\" /><ellipse cx=\"170\" cy=\"112\" rx=\"50\" ry=\"36\" stroke-dasharray=\"5 4\" stroke-width=\"1.5\"/><circle cx=\"168\" cy=\"98\" r=\"10\"/><path d=\"M164 99 q4 3 8 0\" stroke-width=\"1.5\"/><circle cx=\"164\" cy=\"95\" r=\"1\" fill=\"#000\"/><circle cx=\"172\" cy=\"95\" r=\"1\" fill=\"#000\"/><path d=\"M156 108 L180 108 L188 136 L148 136 Z\"/><path d=\"M162 120 L170 112 L178 120\" stroke-width=\"1.5\"/><path d=\"M150 90 q6 -14 12 -2 q6 -12 12 0 q6 -12 12 2\" stroke-width=\"1.5\"/><path d=\"M146 96 q-8 6 -4 14\" stroke-width=\"1.5\"/><path d=\"M190 96 q8 6 4 14\" stroke-width=\"1.5\"/><circle cx=\"208\" cy=\"96\" r=\"4\"/><circle cx=\"214\" cy=\"84\" r=\"3\"/><circle cx=\"130\" cy=\"122\" r=\"3\"/><path d=\"M0 194 q20 -8 40 0 t40 0 t40 0 t40 0 t40 0 t40 0 t40 0 t40 0\"/><path d=\"M20 194 q-6 -12 0 -22 q6 -10 0 -20\"/><path d=\"M262 194 q-6 -12 0 -22 q6 -10 0 -20\"/><path d=\"M276 194 q6 -10 0 -18\"/>",
+  "caption": "“I cried by reason of mine affliction unto the LORD, and he heard me.” Jonah 2:2"
+ },
+ "color2": {
+  "title": "Color: Jonah Thanks God",
+  "svg": "<circle cx=\"250\" cy=\"38\" r=\"18\"/><path d=\"M250 10 v-8 M250 66 v8 M222 38 h-8 M278 38 h8 M230 18 l-6 -6 M270 18 l6 -6 M230 58 l-6 6 M270 58 l6 6\"/><path d=\"M30 36 q7 -7 14 0 q7 -7 14 0\"/><path d=\"M80 22 q6 -6 12 0 q6 -6 12 0\"/><path d=\"M118 200 Q170 128 300 132 L300 200\"/><path d=\"M150 186 q10 -6 20 0\"/><path d=\"M200 172 q10 -6 20 0\"/><path d=\"M250 180 q10 -6 20 0\"/><path d=\"M266 132 q2 -30 -4 -50\"/><path d=\"M262 84 q-20 -6 -30 6 M262 84 q-14 -16 -32 -10 M262 84 q14 -16 32 -10 M262 84 q20 -4 30 10\"/><circle cx=\"208\" cy=\"102\" r=\"10\"/><path d=\"M203 104 q5 5 10 0\" stroke-width=\"1.5\"/><circle cx=\"204\" cy=\"99\" r=\"1\" fill=\"#000\"/><circle cx=\"212\" cy=\"99\" r=\"1\" fill=\"#000\"/><path d=\"M196 112 L220 112 L228 146 L188 146 Z\"/><path d=\"M199 116 L186 92 M217 116 L230 92\"/><circle cx=\"185\" cy=\"89\" r=\"3\"/><circle cx=\"231\" cy=\"89\" r=\"3\"/><path d=\"M4 150 C14 116 70 112 96 136 L108 128 L104 146 L112 160 L96 154 C70 176 14 176 4 150 Z\"/><path d=\"M4 150 L30 146 L8 160\"/><circle cx=\"28\" cy=\"134\" r=\"4\"/><circle cx=\"28\" cy=\"134\" r=\"1.4\" fill=\"#000\"/><path d=\"M0 172 q10 -8 20 0 t20 0 t20 0 t20 0 t20 0 t20 0\"/><path d=\"M0 186 q10 -8 20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0\"/><path d=\"M44 138 q10 -6 20 -2 M52 128 q8 -6 18 -2\" stroke-width=\"1.2\" stroke-dasharray=\"3 3\"/>",
+  "caption": "“I will sacrifice unto thee with the voice of thanksgiving.” Jonah 2:9"
+ },
+ "dots": {
+  "points": [
+   [
+    22,
+    72
+   ],
+   [
+    38,
+    48
+   ],
+   [
+    62,
+    32
+   ],
+   [
+    88,
+    24
+   ],
+   [
+    104,
+    6
+   ],
+   [
+    122,
+    26
+   ],
+   [
+    146,
+    36
+   ],
+   [
+    166,
+    52
+   ],
+   [
+    196,
+    22
+   ],
+   [
+    186,
+    70
+   ],
+   [
+    198,
+    116
+   ],
+   [
+    166,
+    90
+   ],
+   [
+    146,
+    104
+   ],
+   [
+    120,
+    112
+   ],
+   [
+    90,
+    114
+   ],
+   [
+    62,
+    106
+   ],
+   [
+    40,
+    96
+   ],
+   [
+    30,
+    88
+   ]
+  ],
+  "extras_svg": "<circle cx=\"58\" cy=\"60\" r=\"4\"/><circle cx=\"58\" cy=\"60\" r=\"1.2\" fill=\"#000\"/><circle cx=\"-1\" cy=\"28\" r=\"3\"/><circle cx=\"-4\" cy=\"14\" r=\"2.3\"/><circle cx=\"2\" cy=\"2\" r=\"2\"/>",
+  "caption": "“Now the LORD had prepared a great fish to swallow up Jonah.” Jonah 1:17"
+ },
+ "questions": [
+  "Jonah was in the fish ____ days and ____ nights.",
+  "What did Jonah do inside the fish? ______________",
+  "What was wrapped about Jonah’s head? __________",
+  "Who <b>prepared</b> the great fish? ______________",
+  "Who saved Jonah? &#9744; Jonah &nbsp;&#9744; The sailors &nbsp;&#9744; The LORD"
+ ]
+}
