@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Apple's aerial films are served from sylvan.apple.com, whose HTTPS
+     certificate chains to a root Android doesn't trust, so they stream over
+     plain HTTP. Everything else stays HTTPS-only. -->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="false" />
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="false">sylvan.apple.com</domain>
+    </domain-config>
+</network-security-config>

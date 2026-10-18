@@ -96,13 +96,15 @@ final class SaverView extends FrameLayout {
         });
     }
 
-    private final Runnable stalled = () -> {
+    private final Runnable stalled = this::onStalled;
+
+    private void onStalled() {
         if (current != null) bad.add(current.id);
         video.stopPlayback();
         h.removeCallbacksAndMessages(null);
         ending = false;
         next();
-    };
+    }
 
     void start() {
         if (running) return;

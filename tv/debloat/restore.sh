@@ -17,6 +17,9 @@ ENABLE=(
   com.nvidia.nvgamecast
   com.google.android.feedback
   com.android.printspooler
+  com.netflix.ninja
+  com.nvidia.tegrazone3
+  com.google.android.tv
 )
 for p in "${ENABLE[@]}"; do
   echo -n "$p: "; sh pm enable "$p"
@@ -27,6 +30,12 @@ done
 # sh settings put global window_animation_scale 1.0
 # sh settings put global transition_animation_scale 1.0
 # sh settings put global animator_duration_scale 1.0
+
+# The custom launcher switch (2026-10-17): the stock Android TV home was disabled so
+# house.solanyk.tv could be the default home, and the screensaver was changed from Aerial Dream.
+# To go back, uncomment:
+# sh pm enable com.google.android.tvlauncher
+# sh settings put secure screensaver_components com.codingbuffalo.aerialdream/com.codingbuffalo.aerialdream.AerialDream
 
 echo "--- still disabled (should be just com.nvidia.benchmarkblocker):"; sh pm list packages -d
 echo "Reboot (adb reboot) so the re-enabled services start cleanly."

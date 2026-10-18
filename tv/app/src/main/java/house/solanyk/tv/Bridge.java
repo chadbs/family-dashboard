@@ -70,9 +70,16 @@ final class Bridge {
                 art.put(key, img);
             }
             o.put("banner", img.charAt(0) == 'B');
+            o.put("game", isGame(ai.applicationInfo));
             o.put("img", img.substring(1));
             out.put(o);
         }
+    }
+
+    @SuppressWarnings("deprecation")
+    private static boolean isGame(android.content.pm.ApplicationInfo a) {
+        return a.category == android.content.pm.ApplicationInfo.CATEGORY_GAME
+                || (a.flags & android.content.pm.ApplicationInfo.FLAG_IS_GAME) != 0;
     }
 
     private static String png(Drawable d, int w, int h) {

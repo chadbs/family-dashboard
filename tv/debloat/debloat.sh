@@ -20,6 +20,9 @@ DISABLE=(
   com.nvidia.nvgamecast       # GameStream/Gamecast broadcasting service, ~30 MB RSS (persistent)
   com.google.android.feedback # Google "send feedback" agent
   com.android.printspooler    # Android print spooler; a TV has no printing
+  com.netflix.ninja           # Netflix: Chad does not use it (2026-10-17)
+  com.nvidia.tegrazone3       # GeForce NOW: not used
+  com.google.android.tv       # Live Channels, ~150 MB: not used
 )
 for p in "${DISABLE[@]}"; do
   echo -n "$p: "; sh pm disable-user --user 0 "$p"
