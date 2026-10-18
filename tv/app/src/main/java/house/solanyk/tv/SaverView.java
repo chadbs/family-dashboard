@@ -6,6 +6,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.view.Gravity;
 import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
 import android.widget.VideoView;
 
@@ -23,11 +24,13 @@ import java.util.Set;
    for the family scene. Between every scene the page fades to true black,
    so the OLED goes dark rather than cutting. */
 final class SaverView extends FrameLayout {
-    private static final long MIN_CLIP_MS = 25_000;
-    private static final long MAX_CLIP_MS = 75_000;
+    private static final long MIN_CLIP_MS = 30_000;
+    private static final long MAX_CLIP_MS = 240_000;
     private static final long FAMILY_MS = 40_000;
     private static final long FADE_MS = 1_600;
     private static final int CLIPS_PER_FAMILY = 2;
+    /* A streamed film that has not shown a frame by now is skipped. */
+    private static final long START_TIMEOUT_MS = 20_000;
 
     private final VideoView video;
     private final WebView web;
@@ -40,9 +43,13 @@ final class SaverView extends FrameLayout {
     private int sinceFamily;
     private boolean running;
     private boolean ending;
+    private boolean pageReady;
+    private final boolean videosOnly;
 
-    SaverView(Context ctx) {
+    /* videosOnly: just the flyovers, no family scenes (the home screen's Flyovers button). */
+    SaverView(Context ctx, boolean videosOnly) {
         super(ctx);
+        this.videosOnly = videosOnly;
         setBackgroundColor(0xFF000000);
         cache = VideoCache.get(ctx);
 
@@ -50,6 +57,15 @@ final class SaverView extends FrameLayout {
         addView(video, new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT, Gravity.CENTER));
         web = Web.make(ctx, true);
         addView(web, new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
+        /* Scenes start only once the page can hear them. */
+        web.setWebViewClient(new WebViewClient() {
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                if (pageReady) return;
+                pageReady = true;
+                if (running) begin();
+            }
+        });
         web.loadUrl("file:///android_asset/saver.html");
 
         video.setOnPreparedListener(mp -> {
@@ -57,7 +73,10 @@ final class SaverView extends FrameLayout {
             mp.setVolume(0f, 0f);
             mp.setVideoScalingMode(MediaPlayer.VIDEO_SCALING_MODE_SCALE_TO_FIT_WITH_CROPPING);
             mp.setOnInfoListener((m, what, extra) -> {
-                if (what == MediaPlayer.MEDIA_INFO_VIDEO_RENDERING_START) js("reveal()");
+                if (what == MediaPlayer.MEDIA_INFO_VIDEO_RENDERING_START) {
+                    h.removeCallbacks(stalled);
+                    js("reveal()");
+                }
                 return false;
             });
             long dur = mp.getDuration();
@@ -77,6 +96,14 @@ final class SaverView extends FrameLayout {
         });
     }
 
+    private final Runnable stalled = () -> {
+        if (current != null) bad.add(current.id);
+        video.stopPlayback();
+        h.removeCallbacksAndMessages(null);
+        ending = false;
+        next();
+    };
+
     void start() {
         if (running) return;
         running = true;
@@ -84,7 +111,12 @@ final class SaverView extends FrameLayout {
         order.addAll(cache.clips);
         Collections.shuffle(order);
         idx = 0;
-        family();
+        if (pageReady) begin();
+    }
+
+    private void begin() {
+        if (videosOnly) next();
+        else family();
     }
 
     void stop() {
@@ -107,7 +139,7 @@ final class SaverView extends FrameLayout {
     private void next() {
         if (!running) return;
         ending = false;
-        current = sinceFamily >= CLIPS_PER_FAMILY ? null : pick();
+        current = !videosOnly && sinceFamily >= CLIPS_PER_FAMILY ? null : pick();
         if (current == null) {
             family();
             return;
@@ -115,6 +147,7 @@ final class SaverView extends FrameLayout {
         sinceFamily++;
         js("showVideo(" + Web.quote(current.title) + ")");
         video.setVideoURI(cache.uri(current));
+        h.postDelayed(stalled, START_TIMEOUT_MS);
     }
 
     private VideoCache.Clip pick() {

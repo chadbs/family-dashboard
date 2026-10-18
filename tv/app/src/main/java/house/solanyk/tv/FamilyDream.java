@@ -12,7 +12,7 @@ public class FamilyDream extends DreamService {
         setInteractive(false);
         setFullscreen(true);
         setScreenBright(true);
-        view = new SaverView(this);
+        view = new SaverView(this, false);
         setContentView(view);
     }
 

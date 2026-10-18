@@ -113,4 +113,9 @@ final class Bridge {
     public void screensaver() {
         act.startActivity(new Intent(act, ScreensaverActivity.class));
     }
+
+    @JavascriptInterface
+    public void flyovers() {
+        act.startActivity(new Intent(act, ScreensaverActivity.class).putExtra(ScreensaverActivity.EXTRA_VIDEOS, true));
+    }
 }

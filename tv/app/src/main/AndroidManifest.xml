@@ -24,7 +24,7 @@
         android:icon="@drawable/icon"
         android:banner="@drawable/banner"
         android:theme="@style/Black"
-        android:usesCleartextTraffic="false">
+        android:networkSecurityConfig="@xml/network">
 
         <activity
             android:name=".HomeActivity"
