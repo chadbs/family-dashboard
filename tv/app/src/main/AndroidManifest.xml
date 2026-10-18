@@ -47,7 +47,7 @@
 
         <activity
             android:name=".ScreensaverActivity"
-            android:exported="false"
+            android:exported="true"
             android:excludeFromRecents="true"
             android:configChanges="keyboard|keyboardHidden|navigation|orientation|screenSize|screenLayout|uiMode|density" />
 

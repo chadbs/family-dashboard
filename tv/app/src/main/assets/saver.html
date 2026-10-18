@@ -1,1 +1,610 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><style>html,body{margin:0;background:transparent;color:#ddd;font-family:sans-serif}</style></head><body><p>saver placeholder</p></body></html>
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Saver</title>
+<!--
+  The Solanyk House screensaver overlay.
+
+  A native 4K VideoView plays underneath; this page is a transparent WebView
+  on top. Native drives the timing through four globals:
+    showFamily()     page goes solid black, family scene fades in (40 s)
+    showVideo(title) curtain down instantly, caption set, family hidden
+    reveal()         first video frame is up: curtain fades out (~1.2 s)
+    curtain()        fade to true black (~1.4 s); native waits 1.6 s
+  html/body stay transparent: all black comes from #family and #curtain.
+
+  Weather icons are drawn from Feather (feathericons.com, MIT).
+-->
+<style>
+  :root {
+    --ink: rgba(255, 255, 255, .88);
+    --soft: rgba(255, 255, 255, .66);
+    --dim: rgba(255, 255, 255, .42);
+    --faint: rgba(255, 255, 255, .26);
+    --hair: rgba(255, 255, 255, .12);
+    --accent: #d4b071;
+    --accent-dim: rgba(212, 176, 113, .62);
+    --sans: Roboto, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    --serif: "Noto Serif", Georgia, "Times New Roman", serif;
+  }
+  html, body {
+    margin: 0; height: 100%; overflow: hidden;
+    background: transparent;
+    color: var(--ink);
+    font-family: var(--sans); font-weight: 300;
+    -webkit-font-smoothing: antialiased;
+    cursor: none; user-select: none;
+  }
+  .label {
+    font-size: 1.1vw; font-weight: 400; letter-spacing: .22em;
+    text-transform: uppercase; color: var(--dim);
+  }
+  svg { display: block; overflow: visible; }
+
+  /* ── layers: video overlay < family < curtain ── */
+  #overlay, #family, #curtain { position: fixed; inset: 0; }
+  #overlay { z-index: 1; pointer-events: none; }
+  /* a faint scrim along the bottom so caption and clock read on snow and sky */
+  #overlay::before {
+    content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 34vh;
+    background: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, .22));
+  }
+  #family { z-index: 2; background: #000; visibility: hidden; }
+  #family.on { visibility: visible; }
+  #curtain { z-index: 3; background: #000; opacity: 1; pointer-events: none; }
+
+  /* ── video mode: caption lower-left, clock lower-right ── */
+  .shadowed {
+    text-shadow: 0 0 1.4vw rgba(0, 0, 0, .55), 0 .12vw .35vw rgba(0, 0, 0, .55);
+  }
+  #caption {
+    position: absolute; left: 6vw; bottom: 8.5vh; max-width: 60vw;
+    opacity: 0; transition: opacity 2.2s ease;
+  }
+  #caption.on { opacity: 1; transition: opacity 1.6s ease .5s; }
+  #caption .rule {
+    width: 2.6vw; height: 1px; background: rgba(255, 255, 255, .7);
+    margin-bottom: 1.6vh; box-shadow: 0 0 .6vw rgba(0, 0, 0, .5);
+  }
+  #capMain { font-size: 2.5vw; font-weight: 300; letter-spacing: .03em; color: rgba(255, 255, 255, .9); }
+  #capSub {
+    font-size: 1.15vw; font-weight: 400; letter-spacing: .24em; text-transform: uppercase;
+    color: rgba(255, 255, 255, .7); margin-top: .9vh;
+  }
+  #capSub:empty { display: none; }
+  #vclock {
+    position: absolute;
+    right: calc(6vw + var(--vx, 0px)); bottom: calc(8vh + var(--vy, 0px));
+    font-size: 3.4vw; font-weight: 200; letter-spacing: .02em;
+    color: rgba(255, 255, 255, .7);
+    font-variant-numeric: tabular-nums;
+  }
+  #vclock small { font-size: 1.15vw; font-weight: 400; letter-spacing: .14em; margin-left: .35vw; opacity: .8; }
+
+  /* ── family scene ── */
+  #scene {
+    position: absolute; inset: 8vh 7.5vw;
+    display: grid; column-gap: 5vw; row-gap: 4vh;
+    grid-template-columns: 1.12fr 1fr;
+    grid-template-rows: auto 1fr auto;
+    grid-template-areas: "clock wx" ". ." "verse extra";
+    transition: opacity 3s ease;
+    will-change: transform;
+  }
+  .night #scene { opacity: .55; }
+  .a-clock { grid-area: clock; }
+  .a-wx { grid-area: wx; }
+  .a-verse { grid-area: verse; align-self: end; }
+  .a-extra { grid-area: extra; align-self: end; }
+
+  .fx { opacity: 0; transform: translateY(1.4vh); transition: opacity 1.8s ease, transform 2.4s cubic-bezier(.2, .7, .2, 1); }
+  #family.shown .fx { opacity: 1; transform: none; }
+  #family.shown .fx:nth-child(1) { transition-delay: .5s; }
+  #family.shown .fx:nth-child(2) { transition-delay: 1.0s; }
+  #family.shown .fx:nth-child(3) { transition-delay: 1.5s; }
+  #family.shown .fx:nth-child(4) { transition-delay: 1.9s; }
+
+  .clock {
+    font-size: 15vw; font-weight: 100; line-height: .86; letter-spacing: -.025em;
+    font-variant-numeric: tabular-nums; color: rgba(255, 255, 255, .92);
+    white-space: nowrap;
+  }
+  .clock small {
+    font-size: 2vw; font-weight: 300; letter-spacing: .16em; color: var(--dim);
+    margin-left: .8vw; vertical-align: .3em; text-transform: uppercase;
+  }
+  .date { font-size: 2.45vw; font-weight: 300; color: var(--soft); margin-top: 2.6vh; letter-spacing: .01em; }
+  .greet { font-size: 1.75vw; font-weight: 300; color: var(--accent); margin-top: 1.1vh; letter-spacing: .02em; }
+
+  .now { display: flex; align-items: center; gap: 1.8vw; }
+  .wicon { width: 5.6vw; height: 5.6vw; color: var(--soft); flex: none; }
+  .wicon svg { width: 100%; height: 100%; }
+  .temp { font-size: 7.6vw; font-weight: 100; line-height: 1; letter-spacing: -.02em; position: relative; }
+  .temp sup { font-size: .4em; font-weight: 200; position: absolute; top: .12em; margin-left: .04em; color: var(--soft); }
+  .wmeta { margin-left: 1.6vw; line-height: 1.5; }
+  #wCond { font-size: 1.75vw; color: var(--ink); }
+  #wHiLo { font-size: 1.5vw; color: var(--soft); font-variant-numeric: tabular-nums; }
+  #wHiLo b { font-weight: 300; color: var(--ink); }
+  #wPlace { margin-top: .5vh; }
+  .days {
+    display: grid; grid-template-columns: repeat(5, 1fr); gap: 1vw;
+    margin-top: 4vh; padding-top: 3vh; border-top: 1px solid var(--hair);
+  }
+  .day { text-align: center; }
+  .day .label { letter-spacing: .18em; }
+  .day .ic { width: 3.1vw; height: 3.1vw; margin: 1.5vh auto 1.4vh; color: var(--soft); }
+  .day .ic svg { width: 100%; height: 100%; }
+  .day .hl { font-size: 1.55vw; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .day .hl span { color: var(--dim); margin-left: .5vw; }
+  .day .pop { font-size: 1vw; color: var(--accent-dim); margin-top: .5vh; letter-spacing: .08em; min-height: 1.4em; }
+
+  .verse-text {
+    font-family: var(--serif); font-style: italic; font-weight: 400;
+    font-size: 2.15vw; line-height: 1.5; color: rgba(255, 255, 255, .74);
+    margin: 0; max-width: 46vw; text-wrap: pretty;
+  }
+  .verse-text.long { font-size: 1.8vw; }
+  .verse-text.longer { font-size: 1.5vw; }
+  .verse-ref { margin-top: 1.8vh; color: var(--accent-dim); }
+  .verse-ref::before { content: ""; display: inline-block; width: 1.8vw; height: 1px; background: var(--accent-dim); vertical-align: .35em; margin-right: .9vw; }
+
+  .a-extra { display: flex; flex-direction: column; gap: 3.4vh; }
+  #dName { font-size: 2.2vw; font-weight: 300; margin-top: .9vh; line-height: 1.25; max-width: 34vw; }
+  #dName .em { font-size: .85em; margin-right: .6vw; filter: saturate(.7); opacity: .9; }
+  #stars { display: flex; gap: 3.4vw; }
+  .kid .kname { font-size: 1.6vw; color: var(--soft); }
+  .kid .krow { display: flex; gap: .4vw; margin-top: 1vh; color: var(--accent); align-items: center; }
+  .kid .krow svg { width: 1.7vw; height: 1.7vw; }
+  .kid .krow .n { font-size: 1.9vw; color: var(--accent); margin-left: .3vw; }
+  .kid .krow.none { color: var(--faint); font-size: 1.4vw; }
+
+  .hide { display: none !important; }
+
+  /* Layout 1: mirrored */
+  #scene.L1 { grid-template-columns: 1fr 1.12fr; grid-template-areas: "wx clock" ". ." "extra verse"; }
+  #scene.L1 .a-clock, #scene.L1 .a-verse { text-align: right; justify-self: end; }
+  #scene.L1 .verse-ref::before { display: none; }
+  #scene.L1 .verse-ref::after { content: ""; display: inline-block; width: 1.8vw; height: 1px; background: var(--accent-dim); vertical-align: .35em; margin-left: .9vw; }
+
+  /* Layout 2: centred clock and verse, weather and family along the bottom */
+  #scene.L2 {
+    grid-template-columns: 1.35fr 1fr; row-gap: 0;
+    grid-template-rows: auto 1fr auto;
+    grid-template-areas: "clock clock" "verse verse" "wx extra";
+  }
+  #scene.L2 .a-clock { text-align: center; }
+  #scene.L2 .clock { font-size: 11.5vw; }
+  #scene.L2 .date { margin-top: 1.8vh; }
+  #scene.L2 .a-verse { align-self: center; justify-self: center; text-align: center; }
+  #scene.L2 .verse-text { max-width: 64vw; font-size: 1.95vw; }
+  #scene.L2 .verse-text.long { font-size: 1.65vw; }
+  #scene.L2 .verse-text.longer { font-size: 1.4vw; }
+  #scene.L2 .verse-ref::before { display: none; }
+  #scene.L2 .a-wx { display: flex; align-items: flex-end; gap: 2.4vw; align-self: end; }
+  #scene.L2 .now { flex-direction: column; align-items: flex-start; gap: .6vh; }
+  #scene.L2 .now .row { display: flex; align-items: center; gap: 1.2vw; }
+  #scene.L2 .wicon { width: 3.6vw; height: 3.6vw; }
+  #scene.L2 .temp { font-size: 5.4vw; }
+  #scene.L2 .wmeta { margin-left: 0; line-height: 1.35; }
+  #scene.L2 .days { margin-top: 0; padding-top: 0; border-top: 0; padding-left: 2.4vw; border-left: 1px solid var(--hair); gap: .6vw; flex: 1; }
+  #scene.L2 .day .ic { width: 2.6vw; height: 2.6vw; margin: 1.1vh auto 1vh; }
+  #scene.L2 .day .hl { font-size: 1.35vw; }
+  #scene.L2 .a-extra { align-items: flex-end; text-align: right; }
+  #scene.L2 #stars { justify-content: flex-end; }
+  #scene.L2 .kid .krow { justify-content: flex-end; }
+  .now .row { display: contents; }
+</style>
+</head>
+<body>
+
+<div id="overlay">
+  <div id="caption" class="shadowed">
+    <div class="rule"></div>
+    <div id="capMain"></div>
+    <div id="capSub"></div>
+  </div>
+  <div id="vclock" class="shadowed"></div>
+</div>
+
+<div id="family">
+  <div id="scene">
+    <section class="a-clock fx">
+      <div class="clock" id="fClock"></div>
+      <div class="date" id="fDate"></div>
+      <div class="greet" id="fGreet"></div>
+    </section>
+    <section class="a-wx fx hide" id="wx">
+      <div class="now">
+        <div class="row">
+          <div class="wicon" id="wIcon"></div>
+          <div class="temp"><span id="wTemp"></span><sup>°</sup></div>
+        </div>
+        <div class="wmeta">
+          <div id="wCond"></div>
+          <div id="wHiLo"></div>
+          <div id="wPlace" class="label"></div>
+        </div>
+      </div>
+      <div class="days" id="wDays"></div>
+    </section>
+    <section class="a-verse fx hide" id="verse">
+      <p class="verse-text" id="vText"></p>
+      <div class="verse-ref label" id="vRef"></div>
+    </section>
+    <section class="a-extra fx hide" id="extra">
+      <div id="dinner" class="hide">
+        <div class="label">Tonight</div>
+        <div id="dName"></div>
+      </div>
+      <div id="stars" class="hide"></div>
+    </section>
+  </div>
+</div>
+
+<div id="curtain"></div>
+
+<script>
+  /* Desktop preview only: the real scripture.js is copied into assets at
+     build time. Off-device, fall back to a scratch copy under tv/dev/. */
+  function devScripture() {
+    if (/android_asset/.test(location.href)) return;
+    var s = document.createElement('script');
+    s.src = '../../../../dev/scripture.js';
+    s.onload = function () { window.renderFamily && renderFamily(); };
+    document.head.appendChild(s);
+  }
+</script>
+<script src="scripture.js" onerror="devScripture()"></script>
+<script>
+(function () {
+  'use strict';
+
+  var API = 'https://solanyk-house.chadbs.deno.net/api/hub';
+  var DEV = /android_asset/.test(location.href) ? null : '../../../../dev/';
+  var REFRESH_MS = 10 * 60 * 1000;
+  var KIDS = ['Addison', 'Sophie'];
+
+  var $ = function (id) { return document.getElementById(id); };
+  var curtainEl = $('curtain'), familyEl = $('family'), sceneEl = $('scene'), captionEl = $('caption');
+
+  var mode = 'black';          // black | family | video-wait | video
+  var called = false;          // has native driven us yet?
+  var lastLayout = -1;
+  var captionTimer = 0;
+  var clockOffset = 0;         // debug time travel (ms)
+
+  function now() { return new Date(Date.now() + clockOffset); }
+  function isNight(d) { var h = d.getHours(); return h >= 22 || h < 6; }
+
+  /* ── storage (never trusted to exist) ── */
+  function load(key) {
+    try { var v = localStorage.getItem('saver.' + key); return v ? JSON.parse(v) : null; } catch (e) { return null; }
+  }
+  function save(key, val) {
+    try { localStorage.setItem('saver.' + key, JSON.stringify(val)); } catch (e) {}
+  }
+
+  var hub = load('hub');       // {plan, recipes:{id:{name,emoji}}, stars}
+  var weather = load('weather');
+
+  /* ── curtain ── */
+  function setCurtain(opacity, seconds) {
+    if (!seconds) {
+      curtainEl.style.transition = 'none';
+      curtainEl.style.opacity = opacity;
+      void curtainEl.offsetWidth;
+    } else {
+      curtainEl.style.transition = 'opacity ' + seconds + 's ease-in-out';
+      curtainEl.style.opacity = opacity;
+    }
+  }
+  function videoCurtain() { return isNight(now()) ? 0.45 : 0; }
+
+  /* ── time formatting ── */
+  var DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  var MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  var KEYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
+
+  function hm(d) {
+    var h = d.getHours() % 12 || 12, m = d.getMinutes();
+    return { t: h + ':' + (m < 10 ? '0' : '') + m, ap: d.getHours() < 12 ? 'am' : 'pm' };
+  }
+  function greeting(d) {
+    var h = d.getHours();
+    if (h >= 4 && h < 12) return 'Good morning';
+    if (h >= 12 && h < 17) return 'Good afternoon';
+    if (h >= 17 && h < 21) return 'Good evening';
+    return 'Good night';
+  }
+  function isoWeek(d) {
+    var t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+    var day = t.getUTCDay() || 7;
+    t.setUTCDate(t.getUTCDate() + 4 - day);
+    var y = t.getUTCFullYear();
+    var w = Math.ceil(((t - Date.UTC(y, 0, 1)) / 864e5 + 1) / 7);
+    return y + '-W' + (w < 10 ? '0' : '') + w;
+  }
+  function ymd(d) {
+    var m = d.getMonth() + 1, day = d.getDate();
+    return d.getFullYear() + '-' + (m < 10 ? '0' : '') + m + '-' + (day < 10 ? '0' : '') + day;
+  }
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+    });
+  }
+
+  /* ── weather icons (Feather paths, thin stroke) ── */
+  var CLOUD = 'M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z';
+  var CLOUD_OPEN = 'M20 16.58A5 5 0 0 0 18 7h-1.26A8 8 0 1 0 4 15.25';
+  var SUN_RAYS = 'M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42';
+  var MOON = 'M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z';
+  var ICONS = {
+    'clear-day': '<circle cx="12" cy="12" r="4.6"/><path d="' + SUN_RAYS + '"/>',
+    'clear-night': '<path d="' + MOON + '"/>',
+    'partly-day': '<g transform="translate(16 8) scale(.58) translate(-12 -12)"><circle cx="12" cy="12" r="5" vector-effect="non-scaling-stroke"/><path d="' + SUN_RAYS + '" vector-effect="non-scaling-stroke"/></g>' +
+      '<path d="' + CLOUD + '" transform="translate(-1.5 2.5)" fill="#000"/>',
+    'partly-night': '<path d="' + MOON + '" transform="translate(9.5 -1) scale(.55)" vector-effect="non-scaling-stroke"/>' +
+      '<path d="' + CLOUD + '" transform="translate(-1.5 2.5)" fill="#000"/>',
+    'cloudy': '<path d="' + CLOUD + '" transform="translate(0 1)"/>',
+    'fog': '<path d="' + CLOUD_OPEN + '" transform="translate(0 -1.5)"/><path d="M3 18h18M6 21.5h12"/>',
+    'drizzle': '<path d="' + CLOUD_OPEN + '"/><path d="M8 19v2M8 13v2M16 19v2M16 13v2M12 21v2M12 15v2"/>',
+    'rain': '<path d="' + CLOUD_OPEN + '"/><path d="M16 13v8M8 13v8M12 15v8"/>',
+    'snow': '<path d="' + CLOUD_OPEN + '"/><path d="M8 16h.01M8 20h.01M12 18h.01M12 22h.01M16 16h.01M16 20h.01" stroke-width="2.2"/>',
+    'storm': '<path d="M19 16.9A5 5 0 0 0 18 7h-1.26a8 8 0 1 0-11.62 9"/><path d="M13 11l-4 6h6l-4 6"/>'
+  };
+  function svgIcon(kind) {
+    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">' +
+      (ICONS[kind] || ICONS.cloudy) + '</svg>';
+  }
+  var STAR = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.6l2.9 5.9 6.5.95-4.7 4.6 1.1 6.45L12 17.45 6.2 20.5l1.1-6.45-4.7-4.6 6.5-.95z"/></svg>';
+
+  function wmo(code, day) {
+    var c = +code;
+    if (c === 0) return { k: day ? 'clear-day' : 'clear-night', t: day ? 'Sunny' : 'Clear' };
+    if (c === 1) return { k: day ? 'clear-day' : 'clear-night', t: day ? 'Mostly sunny' : 'Mostly clear' };
+    if (c === 2) return { k: day ? 'partly-day' : 'partly-night', t: 'Partly cloudy' };
+    if (c === 3) return { k: 'cloudy', t: 'Cloudy' };
+    if (c === 45 || c === 48) return { k: 'fog', t: 'Fog' };
+    if (c >= 51 && c <= 55) return { k: 'drizzle', t: 'Drizzle' };
+    if (c === 56 || c === 57) return { k: 'drizzle', t: 'Freezing drizzle' };
+    if (c >= 61 && c <= 65) return { k: 'rain', t: c === 65 ? 'Heavy rain' : 'Rain' };
+    if (c === 66 || c === 67) return { k: 'rain', t: 'Freezing rain' };
+    if (c >= 71 && c <= 77) return { k: 'snow', t: c === 75 ? 'Heavy snow' : 'Snow' };
+    if (c >= 80 && c <= 82) return { k: 'rain', t: 'Showers' };
+    if (c === 85 || c === 86) return { k: 'snow', t: 'Snow showers' };
+    if (c >= 95) return { k: 'storm', t: 'Thunderstorms' };
+    return { k: 'cloudy', t: '' };
+  }
+  function num(v) { return typeof v === 'number' && isFinite(v); }
+
+  /* ── render ── */
+  function renderClock() {
+    var d = now(), x = hm(d);
+    var big = x.t + '<small>' + x.ap + '</small>';
+    if ($('fClock').innerHTML !== big) $('fClock').innerHTML = big;
+    var small = x.t + '<small>' + x.ap.toUpperCase() + '</small>';
+    if ($('vclock').innerHTML !== small) $('vclock').innerHTML = small;
+    $('fDate').textContent = DAYS[d.getDay()] + ', ' + MONTHS[d.getMonth()] + ' ' + d.getDate();
+    $('fGreet').textContent = greeting(d);
+    document.body.classList.toggle('night', isNight(d));
+    if (mode === 'video') setCurtain(videoCurtain(), 3);
+  }
+
+  function renderWeather() {
+    var w = weather, el = $('wx');
+    if (!w || !w.current || !w.daily || !w.daily.time) { el.classList.add('hide'); return; }
+    el.classList.remove('hide');
+    var cur = w.current, dl = w.daily;
+    var sensorT = w.sensor && num(w.sensor.temperature_F) ? w.sensor.temperature_F : null;
+    var t = sensorT != null ? sensorT : cur.temperature_2m;
+    var c = wmo(cur.weather_code, cur.is_day !== 0);
+    $('wIcon').innerHTML = svgIcon(c.k);
+    $('wTemp').textContent = num(t) ? Math.round(t) : '–';
+    $('wCond').textContent = c.t;
+    $('wPlace').textContent = sensorT != null ? 'Backyard' : 'Hudsonville';
+
+    var today = ymd(now());
+    var i0 = dl.time.indexOf(today);
+    if (i0 < 0) i0 = 0;
+    var hi = dl.temperature_2m_max && dl.temperature_2m_max[i0];
+    var lo = dl.temperature_2m_min && dl.temperature_2m_min[i0];
+    $('wHiLo').innerHTML = num(hi) && num(lo)
+      ? 'High <b>' + Math.round(hi) + '°</b> &nbsp;·&nbsp; Low <b>' + Math.round(lo) + '°</b>' : '';
+
+    var html = '';
+    for (var i = i0 + 1; i < dl.time.length && i <= i0 + 5; i++) {
+      var p = dl.time[i].split('-'), dd = new Date(+p[0], +p[1] - 1, +p[2]);
+      var dc = wmo(dl.weather_code[i], true);
+      var pop = dl.precipitation_probability_max ? dl.precipitation_probability_max[i] : null;
+      html += '<div class="day"><div class="label">' + DAYS[dd.getDay()].slice(0, 3) + '</div>' +
+        '<div class="ic">' + svgIcon(dc.k) + '</div>' +
+        '<div class="hl">' + Math.round(dl.temperature_2m_max[i]) + '°<span>' + Math.round(dl.temperature_2m_min[i]) + '°</span></div>' +
+        '<div class="pop">' + (num(pop) && pop >= 30 ? pop + '%' : '') + '</div></div>';
+    }
+    $('wDays').innerHTML = html;
+    $('wDays').classList.toggle('hide', !html);
+  }
+
+  function renderVerse() {
+    var S = typeof SCRIPTURE !== 'undefined' ? SCRIPTURE : null;
+    var vs = S && S.verses;
+    if (!vs || !vs.length) { $('verse').classList.add('hide'); return; }
+    var d = now();
+    var dayNum = Math.floor(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) / 864e5);
+    var v = vs[dayNum % vs.length];
+    var tx = $('vText');
+    tx.textContent = v.text;
+    tx.classList.toggle('long', v.text.length > 150 && v.text.length <= 240);
+    tx.classList.toggle('longer', v.text.length > 240);
+    $('vRef').textContent = v.ref;
+    $('verse').classList.remove('hide');
+  }
+
+  function renderExtra() {
+    var d = now(), any = false;
+    var slot = hub && hub.plan && hub.plan[isoWeek(d)] && hub.plan[isoWeek(d)][KEYS[d.getDay()]];
+    var name = '', emoji = '';
+    if (slot && slot.kind) {
+      if (slot.kind === 'recipe') {
+        var r = hub.recipes && hub.recipes[slot.recipeId];
+        name = (r && r.name) || slot.title || '';
+        emoji = (r && r.emoji) || '';
+      } else if (slot.kind === 'out') name = 'Eating out';
+      else if (slot.kind === 'leftovers') name = 'Leftovers';
+      else name = slot.title || '';
+    }
+    $('dinner').classList.toggle('hide', !name);
+    if (name) {
+      any = true;
+      $('dName').innerHTML = (emoji ? '<span class="em">' + esc(emoji) + '</span>' : '') + esc(name);
+    }
+
+    var stars = hub && hub.stars, html = '';
+    if (stars) {
+      KIDS.forEach(function (k) {
+        if (!num(stars[k])) return;
+        var n = Math.max(0, Math.round(stars[k])), row;
+        if (n === 0) row = '<div class="krow none">No stars yet</div>';
+        else if (n <= 10) row = '<div class="krow">' + new Array(n + 1).join(STAR) + '</div>';
+        else row = '<div class="krow">' + STAR + '<span class="n">' + n + '</span></div>';
+        html += '<div class="kid"><div class="kname">' + k + '</div>' + row + '</div>';
+      });
+    }
+    $('stars').innerHTML = html;
+    $('stars').classList.toggle('hide', !html);
+    if (html) any = true;
+    $('extra').classList.toggle('hide', !any);
+  }
+
+  function renderFamily() {
+    renderClock();
+    renderWeather();
+    renderVerse();
+    renderExtra();
+  }
+  window.renderFamily = renderFamily;
+
+  /* A new arrangement and a small random offset every time, plus a slow
+     drift while it shows, so nothing sits on the same pixels for long. */
+  function arrange() {
+    var n = 3, L;
+    do { L = Math.floor(Math.random() * n); } while (L === lastLayout);
+    lastLayout = L;
+    sceneEl.className = 'L' + L;
+    var rnd = function (a) { return (Math.random() * 2 - 1) * a; };
+    var dx = rnd(2), dy = rnd(2.4), ex = rnd(1.4), ey = rnd(1.4);
+    sceneEl.style.transition = 'none';
+    sceneEl.style.transform = 'translate(' + dx + 'vw,' + dy + 'vh)';
+    void sceneEl.offsetWidth;
+    sceneEl.style.transition = 'transform 46s linear, opacity 3s ease';
+    sceneEl.style.transform = 'translate(' + (dx + ex) + 'vw,' + (dy + ey) + 'vh)';
+  }
+
+  /* ── native API ── */
+  window.showFamily = function () {
+    called = true;
+    mode = 'family';
+    clearTimeout(captionTimer);
+    captionEl.classList.remove('on');
+    setCurtain(1, 0);
+    renderFamily();
+    familyEl.classList.remove('shown');
+    familyEl.classList.add('on');
+    arrange();
+    void familyEl.offsetWidth;
+    familyEl.classList.add('shown');
+    setCurtain(0, 1.6);
+  };
+
+  window.showVideo = function (title) {
+    called = true;
+    mode = 'video-wait';
+    setCurtain(1, 0);
+    familyEl.classList.remove('on', 'shown');
+    clearTimeout(captionTimer);
+    captionEl.classList.remove('on');
+    var parts = String(title || '').split(/\s+·\s+/);
+    $('capMain').textContent = parts[0] || '';
+    $('capSub').textContent = parts.slice(1).join(' · ');
+    var vc = $('vclock');
+    vc.style.setProperty('--vx', ((Math.random() * 2 - 1) * 0.9).toFixed(2) + 'vw');
+    vc.style.setProperty('--vy', ((Math.random() * 2 - 1) * 1.2).toFixed(2) + 'vh');
+    renderClock();
+  };
+
+  window.reveal = function () {
+    called = true;
+    if (mode === 'family') return;
+    mode = 'video';
+    setCurtain(videoCurtain(), 1.2);
+    clearTimeout(captionTimer);
+    if ($('capMain').textContent) {
+      captionEl.classList.add('on');
+      captionTimer = setTimeout(function () { captionEl.classList.remove('on'); }, 6500);
+    }
+  };
+
+  window.curtain = function () {
+    called = true;
+    mode = 'black';
+    setCurtain(1, 1.4);
+  };
+
+  /* ── data ── */
+  function getJSON(url) {
+    var ctl = typeof AbortController !== 'undefined' ? new AbortController() : null;
+    var t = ctl && setTimeout(function () { ctl.abort(); }, 20000);
+    return fetch(url, { cache: 'no-store', signal: ctl ? ctl.signal : undefined }).then(function (r) {
+      clearTimeout(t);
+      if (!r.ok) throw new Error(r.status);
+      return r.json();
+    });
+  }
+  function withDev(url, devFile) {
+    return getJSON(url).catch(function (e) {
+      if (!DEV) throw e;
+      return getJSON(DEV + devFile);
+    });
+  }
+  function slimHub(h) {
+    var docs = (h && h.docs) || {}, colls = (h && h.colls) || {};
+    var rec = {}, src = colls.recipes || {};
+    Object.keys(src).forEach(function (id) {
+      if (src[id]) rec[id] = { name: src[id].name, emoji: src[id].emoji };
+    });
+    return { plan: docs.plan || {}, recipes: rec, stars: (docs.rewards && docs.rewards.stars) || null };
+  }
+  function setData(h, w) {
+    if (h) { hub = slimHub(h); save('hub', hub); }
+    if (w && w.current) { weather = w; save('weather', w); }
+    if (mode === 'family') { renderWeather(); renderExtra(); }
+  }
+  function refresh() {
+    withDev(API, 'hub.json').then(function (h) { setData(h, null); }).catch(function () {});
+    withDev(API + '/weather', 'weather.json').then(function (w) { setData(null, w); }).catch(function () {});
+  }
+
+  /* ── debug hooks for the desktop harness ── */
+  window.saverDebug = {
+    data: setData,
+    at: function (iso) { clockOffset = iso ? new Date(iso).getTime() - Date.now() : 0; renderFamily(); },
+    layout: function (n) { sceneEl.className = 'L' + n; sceneEl.style.transform = 'none'; lastLayout = n; }
+  };
+
+  renderFamily();
+  refresh();
+  setInterval(refresh, REFRESH_MS);
+  setInterval(renderClock, 1000);
+  setInterval(function () { if (mode === 'family') { renderVerse(); renderExtra(); } }, 60 * 1000);
+
+  /* Native's first showFamily() usually arrives before this page has loaded
+     (and is dropped by its `window.showFamily &&` guard). Every sequence
+     starts with the family scene, so start it ourselves. */
+  setTimeout(function () { if (!called) window.showFamily(); }, 0);
+})();
+</script>
+</body>
+</html>

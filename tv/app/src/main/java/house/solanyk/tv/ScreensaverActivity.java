@@ -21,6 +21,7 @@ public class ScreensaverActivity extends Activity {
     protected void onResume() {
         super.onResume();
         view.start();
+        VideoCache.get(this).fill();
     }
 
     @Override

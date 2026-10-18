@@ -33,6 +33,12 @@ public class HomeActivity extends Activity {
     }
 
     @Override
+    protected void onPause() {
+        web.evaluateJavascript("window.onHidden && onHidden()", null);
+        super.onPause();
+    }
+
+    @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
         /* The Home button while already home: back to the first tile. */

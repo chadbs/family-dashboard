@@ -1,1 +1,915 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><style>html,body{margin:0;background:#000;color:#ddd;font-family:sans-serif}</style></head><body><p>home placeholder</p></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Home</title>
+<!--
+  The Solanyk House TV home screen (house.solanyk.tv, HomeActivity).
+
+  Built for an OLED panel: pure black everywhere, thin light type, nothing
+  big and bright, and the clock block drifts a few pixels every minute so
+  nothing static burns in. After a few idle minutes the whole page dims.
+
+  Native contract (HomeActivity / Bridge.java):
+    Shield.apps() -> JSON [{pkg,label,banner,img}]   Shield.launch(pkg) -> bool
+    Shield.settings()   Shield.screensaver()
+    native calls window.onShown(), onHome(), onBack()
+  In a desktop browser there is no Shield, so a mock bridge and the fixtures
+  in tv/dev/ stand in (see tv/dev/serve.js).
+-->
+<style>
+  :root {
+    --fg: #e4e4e7;
+    --fg2: #8b8b92;
+    --fg3: #56565c;
+    --line: #141416;
+    --tile: #0b0b0d;
+    --gold: #c9a35c;
+    --sun: #d2b06a;
+    --ease: cubic-bezier(.2, .75, .25, 1);
+  }
+  html, body {
+    margin: 0;
+    height: 100%;
+    background: #000;
+    color: var(--fg);
+    overflow: hidden;
+  }
+  body {
+    font-family: Roboto, "Segoe UI", system-ui, sans-serif;
+    font-weight: 300;
+    -webkit-font-smoothing: antialiased;
+    cursor: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  #stage {
+    position: absolute;
+    inset: 0;
+    padding: 5.5vh 5vw 4.5vh;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    transition: opacity 2.5s ease, transform 4s ease-in-out;
+  }
+  body.idle #stage { opacity: .3; }
+
+  /* ── Clock + weather ─────────────────────────────────────────── */
+  #top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    transition: transform 4s ease-in-out;
+  }
+  #greet {
+    font-size: 2.7vh;
+    color: var(--fg2);
+    letter-spacing: .04em;
+  }
+  #clock {
+    font-size: 17vh;
+    font-weight: 100;
+    line-height: .95;
+    letter-spacing: -.01em;
+    color: #d9d9dd;
+    margin-top: .8vh;
+    white-space: nowrap;
+  }
+  #ampm {
+    font-size: 3.2vh;
+    font-weight: 300;
+    color: var(--fg3);
+    letter-spacing: .12em;
+    margin-left: 1.2vh;
+  }
+  #date {
+    font-size: 3.3vh;
+    color: var(--fg2);
+    margin-top: 1.4vh;
+  }
+
+  #wx {
+    text-align: right;
+    min-width: 30vw;
+    transition: opacity 1s;
+  }
+  #wx.stale { opacity: .45; }
+  #wx-now {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 1.6vh;
+    margin-top: 2.6vh;
+  }
+  #wx-icon { width: 7.5vh; height: 7.5vh; color: var(--fg2); }
+  #wx-icon.warm { color: var(--sun); }
+  #wx-temp {
+    font-size: 10.5vh;
+    font-weight: 100;
+    line-height: 1;
+    color: #d9d9dd;
+  }
+  #wx-cond { font-size: 2.8vh; color: var(--fg2); margin-top: 1vh; }
+  #wx-hilo { font-size: 2.6vh; color: var(--fg3); margin-top: .7vh; letter-spacing: .02em; }
+  #wx-hilo b { font-weight: 300; color: var(--fg2); }
+  #wx-days {
+    display: flex;
+    justify-content: flex-end;
+    gap: 2.6vw;
+    margin-top: 1.8vh;
+    color: var(--fg3);
+    font-size: 2.2vh;
+  }
+  .day { display: flex; align-items: center; gap: .8vh; }
+  .day svg { width: 2.6vh; height: 2.6vh; }
+  .day .n { letter-spacing: .08em; text-transform: uppercase; font-size: 1.9vh; }
+
+  /* ── Family strip ────────────────────────────────────────────── */
+  #family {
+    display: flex;
+    align-items: stretch;
+    margin-top: 4.2vh;
+    transition: transform 4s ease-in-out;
+  }
+  .fam {
+    padding: 0 2.4vw;
+    border-left: 1px solid var(--line);
+    min-width: 0;
+  }
+  .fam:first-child { padding-left: 0; border-left: 0; }
+  .fam.grow { flex: 1; }
+  .k {
+    font-size: 1.8vh;
+    font-weight: 400;
+    color: var(--fg3);
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    margin-bottom: 1vh;
+  }
+  .v {
+    font-size: 3vh;
+    color: #c6c6cb;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 34vw;
+  }
+  .v .em { margin-right: .9vh; }
+  .v.muted { color: var(--fg3); }
+  .star { color: var(--gold); margin: 0 .5vh 0 .9vh; font-size: 2.6vh; }
+  .kid + .kid { margin-left: 2.2vw; }
+  #verse {
+    font-size: 2.3vh;
+    line-height: 1.45;
+    color: var(--fg2);
+    font-style: italic;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    max-width: none;
+    white-space: normal;
+  }
+  #verse .ref { font-style: normal; color: var(--fg3); margin-left: .8vh; letter-spacing: .03em; }
+
+  /* ── App row ─────────────────────────────────────────────────── */
+  #apps-sec { margin-top: auto; }
+  #apps-wrap {
+    overflow: hidden;
+    margin: 0 -5vw;
+    padding: 2.6vh 5vw 1.2vh;
+  }
+  .track {
+    position: relative;
+    display: flex;
+    gap: 1.8vw;
+    transition: transform .38s var(--ease);
+    will-change: transform;
+  }
+  .tile {
+    flex: none;
+    position: relative;
+    width: 19vw;
+    height: 10.6875vw; /* 16:9 */
+    border-radius: 1.1vh;
+    background: var(--tile);
+    opacity: .5;
+    transition: transform .26s var(--ease), opacity .26s, box-shadow .26s;
+  }
+  .tile img {
+    display: block;
+    -webkit-user-drag: none;
+  }
+  .tile.banner img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: inherit;
+  }
+  .tile.icon {
+    background: linear-gradient(160deg, #141417, #09090a);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .tile.icon img { width: 5.2vw; height: 5.2vw; object-fit: contain; }
+  .tile.icon .lbl {
+    font-size: 2.1vh;
+    color: var(--fg2);
+    margin-top: 1.1vh;
+    max-width: 88%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .tile.focus {
+    opacity: 1;
+    transform: scale(1.1);
+    z-index: 2;
+    box-shadow: 0 0 0 .3vh rgba(255, 255, 255, .78), 0 1.2vh 4.5vh rgba(130, 160, 255, .22);
+  }
+  .tile.focus.press { transform: scale(1.04); transition-duration: .1s; }
+  .tile.bump-l { animation: bumpL .28s var(--ease); }
+  .tile.bump-r { animation: bumpR .28s var(--ease); }
+  .tile.bump-u { animation: bumpU .28s var(--ease); }
+  .tile.bump-d { animation: bumpD .28s var(--ease); }
+  @keyframes bumpL { 40% { transform: scale(1.1) translateX(-.6vw); } }
+  @keyframes bumpR { 40% { transform: scale(1.1) translateX(.6vw); } }
+  @keyframes bumpU { 40% { transform: scale(1.1) translateY(-.8vh); } }
+  @keyframes bumpD { 40% { transform: scale(1.1) translateY(.8vh); } }
+  body.idle .tile.focus { box-shadow: none; }
+
+  #caption {
+    height: 3.4vh;
+    font-size: 2.5vh;
+    color: var(--fg);
+    white-space: nowrap;
+    transition: transform .38s var(--ease), opacity .25s;
+    margin-top: .6vh;
+  }
+  #caption.off { opacity: 0; }
+  #empty { font-size: 2.6vh; color: var(--fg3); padding: 3vh 0; }
+
+  /* ── Utility row ─────────────────────────────────────────────── */
+  #util { margin-top: 1.6vh; gap: 1.2vw; }
+  .pill {
+    flex: none;
+    display: flex;
+    align-items: center;
+    gap: 1.1vh;
+    height: 6.2vh;
+    padding: 0 2.1vw 0 1.7vw;
+    border-radius: 3.1vh;
+    background: var(--tile);
+    color: var(--fg3);
+    font-size: 2.4vh;
+    transition: transform .26s var(--ease), background .26s, color .26s, box-shadow .26s;
+  }
+  .pill svg { width: 2.8vh; height: 2.8vh; }
+  .pill.focus {
+    background: #18181b;
+    color: var(--fg);
+    transform: scale(1.06);
+    box-shadow: 0 0 0 .25vh rgba(255, 255, 255, .6);
+  }
+  .pill.focus.press { transform: scale(1.0); transition-duration: .1s; }
+  .pill.bump-l { animation: pbumpL .28s var(--ease); }
+  .pill.bump-r { animation: pbumpR .28s var(--ease); }
+  .pill.bump-d { animation: pbumpD .28s var(--ease); }
+  @keyframes pbumpL { 40% { transform: scale(1.06) translateX(-.5vw); } }
+  @keyframes pbumpR { 40% { transform: scale(1.06) translateX(.5vw); } }
+  @keyframes pbumpD { 40% { transform: scale(1.06) translateY(.6vh); } }
+
+  svg.i { fill: none; stroke: currentColor; stroke-width: 1.3; stroke-linecap: round; stroke-linejoin: round; }
+
+  #toast {
+    position: absolute;
+    left: 50%;
+    bottom: 6vh;
+    transform: translate(-50%, 1vh);
+    padding: 1.3vh 2.6vw;
+    border-radius: 3vh;
+    background: #121214;
+    color: var(--fg2);
+    font-size: 2.4vh;
+    opacity: 0;
+    transition: opacity .3s, transform .3s var(--ease);
+    pointer-events: none;
+    white-space: nowrap;
+  }
+  #toast.on { opacity: 1; transform: translate(-50%, 0); }
+</style>
+</head>
+<body>
+<div id="stage">
+  <header id="top">
+    <div id="time">
+      <div id="greet">&nbsp;</div>
+      <div id="clock"><span id="hm">&nbsp;</span><span id="ampm"></span></div>
+      <div id="date">&nbsp;</div>
+    </div>
+    <div id="wx">
+      <div id="wx-now"><svg id="wx-icon" class="i" viewBox="0 0 24 24"></svg><span id="wx-temp"></span></div>
+      <div id="wx-cond"></div>
+      <div id="wx-hilo"></div>
+      <div id="wx-days"></div>
+    </div>
+  </header>
+
+  <section id="family">
+    <div class="fam"><div class="k" id="dinner-k">Tonight</div><div class="v muted" id="dinner">&mdash;</div></div>
+    <div class="fam"><div class="k">Stars</div><div class="v muted" id="stars">&mdash;</div></div>
+    <div class="fam grow"><div class="k">Today&rsquo;s verse</div><div class="v" id="verse"></div></div>
+  </section>
+
+  <section id="apps-sec">
+    <div id="apps-wrap"><div class="track" id="apps"></div></div>
+    <div id="caption" class="off"></div>
+  </section>
+
+  <div class="track" id="util"></div>
+</div>
+<div id="toast"></div>
+
+<script src="scripture.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  var API = 'https://solanyk-house.chadbs.deno.net/api/hub';
+  var REFRESH_MS = 10 * 60 * 1000;
+  var IDLE_MS = 4 * 60 * 1000;
+  var KIDS = ['Addison', 'Sophie'];
+  var DAYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
+  var DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  var MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July',
+    'August', 'September', 'October', 'November', 'December'];
+
+  function $(id) { return document.getElementById(id); }
+
+  var store = {
+    get: function (k, d) {
+      try { var v = localStorage.getItem('home.' + k); return v == null ? d : JSON.parse(v); }
+      catch (e) { return d; }
+    },
+    set: function (k, v) {
+      try { localStorage.setItem('home.' + k, JSON.stringify(v)); } catch (e) {}
+    }
+  };
+
+  /* ── Bridge (real on the Shield, mock in a desktop browser) ───────── */
+  var NATIVE = !!(window.Shield && typeof window.Shield.apps === 'function');
+  var bridge = NATIVE ? window.Shield : mockBridge();
+
+  function mockBridge() {
+    function art(label, bg, fg, banner) {
+      var w = banner ? 320 : 160, h = banner ? 180 : 160;
+      var svg = "<svg xmlns='http://www.w3.org/2000/svg' width='" + w + "' height='" + h + "'>" +
+        "<rect width='100%' height='100%' rx='" + (banner ? 0 : 36) + "' fill='" + bg + "'/>" +
+        "<text x='50%' y='52%' font-family='sans-serif' font-weight='700' font-size='" + (banner ? 38 : 84) +
+        "' fill='" + fg + "' text-anchor='middle' dominant-baseline='middle'>" +
+        (banner ? label : label.charAt(0)) + "</text></svg>";
+      return 'data:image/svg+xml,' + encodeURIComponent(svg);
+    }
+    var list = [
+      ['com.netflix.ninja', 'Netflix', '#000', '#d81f26', 1],
+      ['com.google.android.youtube.tv', 'YouTube', '#0f0f0f', '#f1f1f1', 1],
+      ['com.plexapp.android', 'Plex', '#1c1c1c', '#e5a00d', 1],
+      ['com.disney.disneyplus', 'Disney+', '#0a1b3d', '#f4f4f4', 1],
+      ['org.xbmc.kodi', 'Kodi', '#1a98c9', '#fff', 0],
+      ['com.amazon.amazonvideo.livingroom', 'Prime Video', '#00050d', '#1a98ff', 1],
+      ['com.spotify.tv.android', 'Spotify', '#121212', '#1ed760', 1],
+      ['com.nvidia.geforcenow', 'GeForce NOW', '#000', '#76b900', 1],
+      ['com.android.vending', 'Google Play Store', '#202124', '#34a853', 0],
+      ['org.pbskids.video', 'PBS KIDS', '#1d5fbf', '#fff', 1],
+      ['com.android.chrome', 'Chrome', '#2b2b2b', '#8ab4f8', 0]
+    ].map(function (a) {
+      return { pkg: a[0], label: a[1], banner: !!a[4], img: art(a[1], a[2], a[3], a[4]) };
+    });
+    return {
+      apps: function () { return JSON.stringify(list); },
+      launch: function (pkg) { toast('Would open ' + pkg); return true; },
+      settings: function () { toast('Would open Settings'); },
+      screensaver: function () { toast('Would start the screensaver'); }
+    };
+  }
+
+  /* ── Icons ─────────────────────────────────────────────────────────── */
+  var CLOUD = 'M7 18h10.2a4.5 4.5 0 0 0 .3-9A6 6 0 0 0 6.3 10.2 4 4 0 0 0 7 18z';
+  var ICON = {
+    sun: '<circle cx="12" cy="12" r="4"/><path d="M12 3v1.6M12 19.4V21M3 12h1.6M19.4 12H21M5.6 5.6l1.1 1.1M17.3 17.3l1.1 1.1M5.6 18.4l1.1-1.1M17.3 6.7l1.1-1.1"/>',
+    moon: '<path d="M19.5 14.6A7.8 7.8 0 0 1 9.4 4.5a7.8 7.8 0 1 0 10.1 10.1z"/>',
+    cloud: '<path d="' + CLOUD + '"/>',
+    partSun: '<circle cx="8.6" cy="8.4" r="3"/><path d="M8.6 2.6v1.1M2.8 8.4h1.1M4.5 4.3l.8.8M12.7 4.3l-.8.8"/>' +
+      '<path fill="#000" transform="translate(2.6 2.4) scale(.86)" d="' + CLOUD + '"/>',
+    partMoon: '<path d="M12.2 9.6A4.6 4.6 0 0 1 6.4 3.8a4.6 4.6 0 1 0 5.8 5.8z"/>' +
+      '<path fill="#000" transform="translate(2.6 2.4) scale(.86)" d="' + CLOUD + '"/>',
+    fog: '<path d="M4 9h16M6 13h12M4 17h16"/>',
+    rain: '<path transform="translate(0 -3)" d="' + CLOUD + '"/><path d="M8.5 17.5l-1 2.5M12.5 17.5l-1 2.5M16.5 17.5l-1 2.5"/>',
+    snow: '<path transform="translate(0 -3)" d="' + CLOUD + '"/><path d="M8 18.6h.01M12 20h.01M16 18.6h.01M10 21.2h.01M14 21.2h.01" stroke-width="2"/>',
+    storm: '<path transform="translate(0 -3)" d="' + CLOUD + '"/><path d="M12.8 15.5l-2 3.2h2.6l-1.6 3"/>',
+    screen: '<rect x="3" y="5" width="18" height="12" rx="1.5"/><path d="M9 20h6"/><path d="M15.5 9.2a3 3 0 1 1-3.6 3.6 2.4 2.4 0 0 0 3.6-3.6z"/>',
+    gear: '<circle cx="12" cy="12" r="3"/><path d="M12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.5 5.5l1.7 1.7M16.8 16.8l1.7 1.7M5.5 18.5l1.7-1.7M16.8 7.2l1.7-1.7"/><circle cx="12" cy="12" r="6.2"/>'
+  };
+
+  /* WMO weather code -> [words, icon by day, icon by night] */
+  function wmo(code) {
+    var c = +code;
+    if (c === 0) return ['Clear', 'sun', 'moon'];
+    if (c === 1) return ['Mostly clear', 'sun', 'moon'];
+    if (c === 2) return ['Partly cloudy', 'partSun', 'partMoon'];
+    if (c === 3) return ['Cloudy', 'cloud', 'cloud'];
+    if (c === 45 || c === 48) return ['Fog', 'fog', 'fog'];
+    if (c >= 51 && c <= 55) return ['Drizzle', 'rain', 'rain'];
+    if (c === 56 || c === 57) return ['Freezing drizzle', 'rain', 'rain'];
+    if (c === 61) return ['Light rain', 'rain', 'rain'];
+    if (c === 63) return ['Rain', 'rain', 'rain'];
+    if (c === 65) return ['Heavy rain', 'rain', 'rain'];
+    if (c === 66 || c === 67) return ['Freezing rain', 'rain', 'rain'];
+    if (c === 71) return ['Light snow', 'snow', 'snow'];
+    if (c === 73) return ['Snow', 'snow', 'snow'];
+    if (c === 75) return ['Heavy snow', 'snow', 'snow'];
+    if (c === 77) return ['Snow grains', 'snow', 'snow'];
+    if (c >= 80 && c <= 82) return ['Showers', 'rain', 'rain'];
+    if (c === 85 || c === 86) return ['Snow showers', 'snow', 'snow'];
+    if (c === 95) return ['Thunderstorms', 'storm', 'storm'];
+    if (c === 96 || c === 99) return ['Storms with hail', 'storm', 'storm'];
+    return ['', 'cloud', 'cloud'];
+  }
+
+  function iconSvg(name, cls) {
+    return '<svg class="i' + (cls ? ' ' + cls : '') + '" viewBox="0 0 24 24">' + (ICON[name] || '') + '</svg>';
+  }
+
+  /* ── Small helpers ─────────────────────────────────────────────────── */
+  function ymd(d) {
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' +
+      String(d.getDate()).padStart(2, '0');
+  }
+
+  /* ISO week key, e.g. "2026-W42" — same as the family app's Fmt.weekKey. */
+  function weekKey(d) {
+    var t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+    var day = t.getUTCDay() || 7;
+    t.setUTCDate(t.getUTCDate() + 4 - day);
+    var y = t.getUTCFullYear();
+    var w = Math.ceil(((t - Date.UTC(y, 0, 1)) / 864e5 + 1) / 7);
+    return y + '-W' + String(w).padStart(2, '0');
+  }
+
+  function el(tag, cls, text) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text != null) e.textContent = text;
+    return e;
+  }
+
+  var toastTimer;
+  function toast(msg) {
+    var t = $('toast');
+    t.textContent = msg;
+    t.classList.add('on');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { t.classList.remove('on'); }, 2600);
+  }
+
+  /* ── Clock ─────────────────────────────────────────────────────────── */
+  function renderClock() {
+    var now = new Date(), h = now.getHours(), m = now.getMinutes();
+    $('hm').textContent = ((h % 12) || 12) + ':' + String(m).padStart(2, '0');
+    $('ampm').textContent = h < 12 ? 'AM' : 'PM';
+    $('date').textContent = DAY_NAMES[now.getDay()] + ', ' + MONTHS[now.getMonth()] + ' ' + now.getDate();
+    $('greet').textContent = h < 5 ? 'Good night' : h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' :
+      h < 21 ? 'Good evening' : 'Good night';
+  }
+
+  /* Burn-in care: everything wanders a few px along a slow Lissajous path,
+     the clock block a little further. One step a minute, eased over 4s. */
+  function drift() {
+    var t = Date.now() / 60000;
+    var sx = Math.round(3 * Math.sin(t / 7.3)), sy = Math.round(2 * Math.sin(t / 11.1));
+    var hx = Math.round(5 * Math.sin(t / 5.1 + 1)), hy = Math.round(4 * Math.cos(t / 8.7));
+    $('stage').style.transform = 'translate(' + sx + 'px,' + sy + 'px)';
+    $('top').style.transform = 'translate(' + hx + 'px,' + hy + 'px)';
+    $('family').style.transform = 'translate(' + Math.round(hx / 2) + 'px,' + Math.round(hy / 2) + 'px)';
+  }
+
+  /* ── Weather ───────────────────────────────────────────────────────── */
+  function renderWeather() {
+    var c = store.get('wx', null), w = c && c.data;
+    var box = $('wx');
+    if (!w || !w.current || !w.daily) {
+      $('wx-temp').textContent = '';
+      $('wx-cond').textContent = '';
+      $('wx-hilo').textContent = '';
+      $('wx-days').textContent = '';
+      $('wx-icon').innerHTML = '';
+      return;
+    }
+    var s = w.sensor, sensorT = s && typeof s.temperature_F === 'number' ? s.temperature_F : null;
+    var temp = sensorT != null ? sensorT : w.current.temperature_2m;
+    var day = w.current.is_day !== 0;
+    var info = wmo(w.current.weather_code);
+    var icon = day ? info[1] : info[2];
+    var d = w.daily, i = d.time ? d.time.indexOf(ymd(new Date())) : 0;
+    if (i < 0) i = 0;
+
+    $('wx-temp').textContent = typeof temp === 'number' ? Math.round(temp) + '°' : '';
+    var ic = $('wx-icon');
+    ic.innerHTML = ICON[icon] || '';
+    ic.setAttribute('class', 'i' + (icon === 'sun' || icon === 'partSun' ? ' warm' : ''));
+    $('wx-cond').textContent = info[0] + (sensorT != null ? ' · Backyard' : '');
+
+    var hi = d.temperature_2m_max && d.temperature_2m_max[i];
+    var lo = d.temperature_2m_min && d.temperature_2m_min[i];
+    var pop = d.precipitation_probability_max && d.precipitation_probability_max[i];
+    var hl = $('wx-hilo');
+    hl.innerHTML = '';
+    if (typeof hi === 'number') {
+      hl.appendChild(document.createTextNode('High '));
+      hl.appendChild(el('b', '', Math.round(hi) + '°'));
+      hl.appendChild(document.createTextNode('  ·  Low '));
+      hl.appendChild(el('b', '', Math.round(lo) + '°'));
+      if (typeof pop === 'number' && pop >= 30) hl.appendChild(document.createTextNode('  ·  ' + pop + '% rain'));
+    }
+
+    var days = $('wx-days');
+    days.innerHTML = '';
+    for (var j = i + 1; j <= i + 3 && d.time && j < d.time.length; j++) {
+      var dt = new Date(d.time[j] + 'T12:00:00');
+      var box2 = el('div', 'day');
+      box2.appendChild(el('span', 'n', DAY_NAMES[dt.getDay()].slice(0, 3)));
+      box2.insertAdjacentHTML('beforeend', iconSvg(wmo(d.weather_code[j])[1]));
+      box2.appendChild(el('span', '', Math.round(d.temperature_2m_max[j]) + '°'));
+      days.appendChild(box2);
+    }
+    box.classList.toggle('stale', Date.now() - c.at > 3 * 3600 * 1000);
+  }
+
+  /* ── Family strip ──────────────────────────────────────────────────── */
+  function dinnerOn(h, date) {
+    var wk = h.plan && h.plan[weekKey(date)];
+    var e = wk && wk[DAYS[date.getDay()]];
+    if (!e) return null;
+    var title = (e.title || '').trim();
+    if (e.kind === 'recipe') {
+      var r = h.recipes && h.recipes[e.recipeId];
+      if (r && r.name) return { text: r.name, emoji: r.emoji || '' };
+      return title ? { text: title } : null;
+    }
+    if (e.kind === 'out') return { text: title ? 'Out · ' + title : 'Eating out' };
+    if (e.kind === 'leftovers') return { text: 'Leftovers' };
+    return title ? { text: title } : null;
+  }
+
+  function renderFamily() {
+    var c = store.get('hub', null), h = c && c.data;
+    var now = new Date();
+
+    var dn = $('dinner'), label = 'Tonight', meal = null;
+    if (h) {
+      if (now.getHours() >= 20) {
+        var tm = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+        meal = dinnerOn(h, tm);
+        if (meal) label = 'Tomorrow';
+      }
+      if (!meal) meal = dinnerOn(h, now);
+    }
+    $('dinner-k').textContent = label;
+    dn.textContent = '';
+    if (meal) {
+      if (meal.emoji) dn.appendChild(el('span', 'em', meal.emoji));
+      dn.appendChild(document.createTextNode(meal.text));
+      dn.classList.remove('muted');
+    } else {
+      dn.textContent = h ? 'Nothing planned' : '—';
+      dn.classList.add('muted');
+    }
+
+    var st = $('stars');
+    st.textContent = '';
+    var stars = h && h.stars;
+    if (stars) {
+      var names = KIDS.filter(function (k) { return k in stars; })
+        .concat(Object.keys(stars).filter(function (k) { return KIDS.indexOf(k) < 0; }));
+      names.forEach(function (k) {
+        var s = el('span', 'kid');
+        s.appendChild(document.createTextNode(k));
+        s.appendChild(el('span', 'star', '★'));
+        s.appendChild(document.createTextNode(String(stars[k] || 0)));
+        st.appendChild(s);
+      });
+      st.classList.remove('muted');
+    } else {
+      st.textContent = '—';
+      st.classList.add('muted');
+    }
+
+    var vs = $('verse');
+    vs.textContent = '';
+    var list = typeof SCRIPTURE !== 'undefined' && SCRIPTURE && SCRIPTURE.verses;
+    if (list && list.length) {
+      var dayNum = Math.floor(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()) / 864e5);
+      var v = list[dayNum % list.length];
+      vs.appendChild(document.createTextNode('“' + String(v.text).trim() + '”'));
+      vs.appendChild(el('span', 'ref', v.ref));
+    }
+    vs.parentNode.style.display = vs.textContent ? '' : 'none';
+  }
+
+  /* ── Data ──────────────────────────────────────────────────────────── */
+  function getJSON(url) {
+    var ctl = typeof AbortController === 'function' ? new AbortController() : null;
+    var timer = setTimeout(function () { if (ctl) ctl.abort(); }, 15000);
+    return fetch(url, { cache: 'no-store', signal: ctl ? ctl.signal : undefined })
+      .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+      .then(function (j) { clearTimeout(timer); return j; },
+            function (e) { clearTimeout(timer); throw e; });
+  }
+
+  /* On the Shield the API answers directly. A desktop browser is blocked by
+     CORS, so fall back to the fixtures in tv/dev/ for previewing. */
+  function getData(path, fixture) {
+    return getJSON(API + path).catch(function (e) {
+      if (NATIVE) throw e;
+      return getJSON('dev/' + fixture);
+    });
+  }
+
+  /* The hub doc is big (recipes with photos and all); keep only what this
+     page shows: this week's and next week's plan, the recipes they name,
+     and the star counts. */
+  function slimHub(j) {
+    var docs = j.docs || {}, colls = j.colls || {};
+    var plan = {}, recipes = {}, now = new Date();
+    [now, new Date(now.getFullYear(), now.getMonth(), now.getDate() + 7)].forEach(function (d) {
+      var k = weekKey(d), wk = docs.plan && docs.plan[k];
+      if (!wk) return;
+      plan[k] = wk;
+      Object.keys(wk).forEach(function (day) {
+        var e = wk[day], r = e && e.recipeId && colls.recipes && colls.recipes[e.recipeId];
+        if (r) recipes[e.recipeId] = { name: r.name, emoji: r.emoji };
+      });
+    });
+    return { plan: plan, recipes: recipes, stars: docs.rewards && docs.rewards.stars };
+  }
+
+  var lastRefresh = 0;
+  function refresh() {
+    lastRefresh = Date.now();
+    getData('/weather', 'weather.json').then(function (w) {
+      if (w && w.current) { store.set('wx', { at: Date.now(), data: w }); renderWeather(); }
+    }).catch(function () {});
+    getData('', 'hub.json').then(function (j) {
+      if (j && j.docs) { store.set('hub', { at: Date.now(), data: slimHub(j) }); renderFamily(); }
+    }).catch(function () {});
+  }
+
+  /* ── Apps ──────────────────────────────────────────────────────────── */
+  var apps = [], appsSig = '';
+
+  /* Most-used first: a launch count that halves every two weeks without use. */
+  function usageScore(use, pkg, now) {
+    var u = use[pkg];
+    return u ? u.n * Math.pow(0.5, (now - u.last) / (14 * 864e5)) : 0;
+  }
+
+  function recordUse(pkg) {
+    var use = store.get('usage', {}), now = Date.now();
+    use[pkg] = { n: usageScore(use, pkg, now) + 1, last: now };
+    store.set('usage', use);
+  }
+
+  function loadApps() {
+    var list = [];
+    try { list = JSON.parse(bridge.apps() || '[]') || []; } catch (e) { list = []; }
+    var use = store.get('usage', {}), now = Date.now();
+    list.forEach(function (a) { a.score = usageScore(use, a.pkg, now); });
+    list.sort(function (a, b) {
+      return (b.score - a.score) || String(a.label).localeCompare(String(b.label));
+    });
+    var sig = list.map(function (a) { return a.pkg + ':' + (a.img ? a.img.length : 0); }).join('|');
+    if (sig === appsSig) return;
+    appsSig = sig;
+    var keep = focusedPkg();
+    apps = list;
+    renderApps(keep);
+  }
+
+  /* keep: the package to leave focused, wherever it lands in the new order. */
+  function renderApps(keep) {
+    var track = $('apps');
+    track.textContent = '';
+    apps.forEach(function (a, i) {
+      var t = el('div', 'tile ' + (a.banner ? 'banner' : 'icon'));
+      t.dataset.act = 'app';
+      t.dataset.i = i;
+      if (a.img) {
+        var img = new Image();
+        img.decoding = 'async';
+        img.alt = '';
+        img.src = a.img;
+        t.appendChild(img);
+      }
+      if (!a.banner) t.appendChild(el('div', 'lbl', a.label));
+      track.appendChild(t);
+    });
+    if (!apps.length) track.appendChild(el('div', '', 'No apps found')).id = 'empty';
+
+    var row = rows[0];
+    row.items = apps.length ? Array.prototype.slice.call(track.children) : [];
+    var at = -1;
+    if (keep) apps.forEach(function (a, i) { if (a.pkg === keep) at = i; });
+    row.idx = at >= 0 ? at : Math.min(row.idx, Math.max(0, row.items.length - 1));
+    if (!row.items.length && rowI === 0) rowI = 1;
+    paint();
+  }
+
+  /* ── Focus ─────────────────────────────────────────────────────────── */
+  var rows = [
+    { el: $('apps'), items: [], idx: 0, x: 0 },
+    { el: $('util'), items: [], idx: 0 }
+  ];
+  var rowI = 0;
+
+  function current() {
+    var r = rows[rowI];
+    return r && r.items[r.idx];
+  }
+
+  function focusedPkg() {
+    var t = rows[0].items[rows[0].idx];
+    return t && apps[+t.dataset.i] ? apps[+t.dataset.i].pkg : null;
+  }
+
+  function paint() {
+    rows.forEach(function (r, ri) {
+      r.items.forEach(function (it, i) { it.classList.toggle('focus', ri === rowI && i === r.idx); });
+    });
+    scrollApps();
+  }
+
+  /* Keep the focused tile inside the row with half a tile of the neighbour
+     peeking on either side, so you can see there is more. */
+  function scrollApps() {
+    var r = rows[0], t = r.items[r.idx], cap = $('caption');
+    if (!t) { cap.classList.add('off'); return; }
+    var wrap = $('apps-wrap'), cs = getComputedStyle(wrap);
+    var view = wrap.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+    var tw = t.offsetWidth, gap = parseFloat(getComputedStyle(r.el).columnGap) || 0;
+    var peek = (tw + gap) * 0.5;
+    var left = t.offsetLeft, right = left + tw;
+    var total = r.el.scrollWidth, x = r.x;
+    if (left - (r.idx ? peek : 0) < x) x = left - (r.idx ? peek : 0);
+    if (right + (r.idx < r.items.length - 1 ? peek : 0) > x + view)
+      x = right + (r.idx < r.items.length - 1 ? peek : 0) - view;
+    x = Math.max(0, Math.min(x, Math.max(0, total - view)));
+    r.x = x;
+    r.el.style.transform = 'translate3d(' + (-x) + 'px,0,0)';
+
+    var a = apps[+t.dataset.i];
+    cap.textContent = a ? a.label : '';
+    cap.style.transform = 'translateX(' + (left - x) + 'px)';
+    cap.classList.toggle('off', rowI !== 0);
+  }
+
+  function bump(dir) {
+    var t = current();
+    if (!t) return;
+    var cls = 'bump-' + dir;
+    t.classList.remove('bump-l', 'bump-r', 'bump-u', 'bump-d');
+    void t.offsetWidth;
+    t.classList.add(cls);
+    setTimeout(function () { t.classList.remove(cls); }, 300);
+  }
+
+  function move(dx, dy) {
+    var r = rows[rowI];
+    if (dx) {
+      var n = r.idx + dx;
+      if (n < 0 || n >= r.items.length) return bump(dx < 0 ? 'l' : 'r');
+      r.idx = n;
+      return paint();
+    }
+    var to = rowI + dy;
+    while (to >= 0 && to < rows.length && !rows[to].items.length) to += dy;
+    if (to < 0 || to >= rows.length) return bump(dy < 0 ? 'u' : 'd');
+    if (to === 1) {
+      /* Down into the utility row: the pill nearest under the focused tile. */
+      var from = current(), fx = from ? from.getBoundingClientRect().left : 0, best = 0, bd = 1e9;
+      rows[1].items.forEach(function (it, i) {
+        var d = Math.abs(it.getBoundingClientRect().left - fx);
+        if (d < bd) { bd = d; best = i; }
+      });
+      rows[1].idx = best;
+    }
+    rowI = to;
+    paint();
+  }
+
+  function activate() {
+    var t = current();
+    if (!t) return;
+    t.classList.add('press');
+    setTimeout(function () { t.classList.remove('press'); }, 160);
+    var act = t.dataset.act;
+    if (act === 'app') {
+      var a = apps[+t.dataset.i], ok = false;
+      try { ok = bridge.launch(a.pkg); } catch (e) { ok = false; }
+      if (ok) recordUse(a.pkg);
+      else toast('Couldn’t open ' + a.label);
+    } else if (act === 'saver') {
+      try { bridge.screensaver(); } catch (e) {}
+    } else if (act === 'settings') {
+      try { bridge.settings(); } catch (e) {}
+    }
+  }
+
+  function home() {
+    wake();
+    rowI = rows[0].items.length ? 0 : 1;
+    rows[rowI].idx = 0;
+    paint();
+  }
+
+  function buildUtil() {
+    var u = $('util');
+    [['saver', 'Screensaver', 'screen'], ['settings', 'Settings', 'gear']].forEach(function (p) {
+      var b = el('div', 'pill');
+      b.dataset.act = p[0];
+      b.insertAdjacentHTML('beforeend', iconSvg(p[2]));
+      b.appendChild(el('span', '', p[1]));
+      u.appendChild(b);
+    });
+    rows[1].items = Array.prototype.slice.call(u.children);
+  }
+
+  /* ── Idle dimming ──────────────────────────────────────────────────── */
+  var lastInput = Date.now();
+  function wake() {
+    lastInput = Date.now();
+    if (!document.body.classList.contains('idle')) return false;
+    document.body.classList.remove('idle');
+    return true;
+  }
+
+  document.addEventListener('keydown', function (e) {
+    var k = e.key, c = e.keyCode, handled = true;
+    var isSelect = k === 'Enter' || c === 13 || c === 23;
+    var isArrow = c >= 37 && c <= 40;
+    if (!isSelect && !isArrow && !(k === 'Escape' || k === 'Backspace')) return;
+    e.preventDefault();
+    /* The first press after the page dimmed only wakes it. */
+    if (wake()) return;
+    if (c === 37) move(-1, 0);
+    else if (c === 39) move(1, 0);
+    else if (c === 38) move(0, -1);
+    else if (c === 40) move(0, 1);
+    else if (isSelect) { if (!e.repeat) activate(); }
+    else if (!NATIVE) window.onBack(); /* Escape/Backspace stand in for Back on desktop */
+    else handled = false;
+    return handled;
+  });
+
+  /* ── Native hooks ──────────────────────────────────────────────────── */
+  window.onShown = function () {
+    wake();
+    loadApps();
+    renderClock();
+    renderWeather();
+    renderFamily();
+    if (Date.now() - lastRefresh > 60 * 1000) refresh();
+  };
+  window.onHome = home;
+  window.onBack = home;
+
+  /* ── Start ─────────────────────────────────────────────────────────── */
+  buildUtil();
+  renderClock();
+  drift();
+  renderWeather();
+  renderFamily();
+  loadApps();
+  paint();
+  refresh();
+
+  var lastMin = new Date().getMinutes();
+  setInterval(function () {
+    var now = new Date();
+    if (now.getMinutes() !== lastMin) {
+      lastMin = now.getMinutes();
+      renderClock();
+      drift();
+      renderFamily();
+      renderWeather();
+    }
+    if (Date.now() - lastInput > IDLE_MS) document.body.classList.add('idle');
+  }, 1000);
+  setInterval(refresh, REFRESH_MS);
+  window.addEventListener('resize', scrollApps);
+})();
+</script>
+</body>
+</html>

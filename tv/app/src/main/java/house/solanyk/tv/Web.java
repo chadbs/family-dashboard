@@ -6,6 +6,8 @@ import android.graphics.Color;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 
+import org.json.JSONObject;
+
 /* One place that sets up a WebView the way every screen here wants it:
    black (or clear) behind, JavaScript on, and allowed to read the family
    app's API from the page bundled in the APK. */
@@ -14,6 +16,7 @@ final class Web {
 
     @SuppressLint("SetJavaScriptEnabled")
     static WebView make(Context ctx, boolean transparent) {
+        WebView.setWebContentsDebuggingEnabled(true);
         WebView w = new WebView(ctx);
         w.setBackgroundColor(transparent ? Color.TRANSPARENT : Color.BLACK);
         w.setVerticalScrollBarEnabled(false);
@@ -30,15 +33,8 @@ final class Web {
         return w;
     }
 
+    /* A Java string as a JavaScript string literal. */
     static String quote(String s) {
-        if (s == null) return "null";
-        StringBuilder b = new StringBuilder("\"");
-        for (char c : s.toCharArray()) {
-            if (c == '"' || c == '\') b.append('\').append(c);
-            else if (c == '\n') b.append("\n");
-            else if (c < 0x20 || c == 0x2028 || c == 0x2029) b.append(String.format("\u%04x", (int) c));
-            else b.append(c);
-        }
-        return b.append('"').toString();
+        return s == null ? "null" : JSONObject.quote(s);
     }
 }
