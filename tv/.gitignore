@@ -1,0 +1,8 @@
+.gradle/
+build/
+app/build/
+local.properties
+*.apk
+*.keystore
+app/src/main/assets/scripture.js
+dev/

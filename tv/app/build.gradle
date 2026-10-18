@@ -1,0 +1,35 @@
+plugins {
+    id "com.android.application"
+}
+
+android {
+    namespace "house.solanyk.tv"
+    compileSdk 34
+
+    defaultConfig {
+        applicationId "house.solanyk.tv"
+        minSdk 26
+        targetSdk 34
+        versionCode 1
+        versionName "1.0"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            signingConfig signingConfigs.debug
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+
+/* The verse of the day reads the same KJV list the hub's morning word does. */
+tasks.register("copyScripture", Copy) {
+    from "$rootDir/../hub/src/data/scripture.js"
+    into "$projectDir/src/main/assets"
+}
+preBuild.dependsOn "copyScripture"
