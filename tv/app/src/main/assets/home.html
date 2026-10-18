@@ -1480,6 +1480,24 @@
     if (!h.long) h.tap();
   });
 
+  /* On the Shield the WebView never sees OK repeat while held, so
+     HomeActivity reads the OK button itself and reports its three moments:
+     "down", "hold" (still down after HOLD_MS) and "up". */
+  window.nativeOk = function (phase) {
+    if (phase === 'down') {
+      if (wake()) return;
+      selectDown({ repeat: false });
+    } else if (phase === 'hold') {
+      if (hold && !hold.long) { hold.long = true; clearTimeout(hold.timer); hold.hold(); }
+    } else if (phase === 'up') {
+      var h = hold;
+      hold = null;
+      if (!h) return;
+      clearTimeout(h.timer);
+      if (!h.long) h.tap();
+    }
+  };
+
   /* ── Native hooks ──────────────────────────────────────────────────── */
   window.onShown = function () {
     wake();
