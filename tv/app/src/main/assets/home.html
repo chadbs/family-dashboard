@@ -28,6 +28,9 @@
     --gold: #c9a35c;
     --sun: #d2b06a;
     --ease: cubic-bezier(.2, .75, .25, 1);
+    /* a touch of overshoot, the way tvOS focus settles */
+    --spring: cubic-bezier(.3, 1.4, .55, 1);
+    --lift: perspective(70vw) rotateY(0deg) scale(1.1);
   }
   html, body {
     margin: 0;
@@ -44,10 +47,17 @@
     -webkit-user-select: none;
     user-select: none;
   }
+  /* The home screen is one screen tall; the Games row waits below the fold
+     and the whole page slides up to it. */
+  #page {
+    position: absolute;
+    inset: 0;
+    transition: transform .6s var(--ease);
+  }
   #stage {
     position: absolute;
     inset: 0;
-    padding: 5.5vh 5vw 4.5vh;
+    padding: 5.5vh 5vw 7.5vh;
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
@@ -73,6 +83,7 @@
     line-height: .95;
     letter-spacing: -.01em;
     color: #d9d9dd;
+    font-variant-numeric: tabular-nums;
     margin-top: .8vh;
     white-space: nowrap;
   }
@@ -148,8 +159,8 @@
     margin-bottom: 1vh;
   }
   .v {
-    font-size: 3vh;
-    color: #c6c6cb;
+    font-size: 2.6vh;
+    color: #b6b6bc;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -157,10 +168,10 @@
   }
   .v .em { margin-right: .9vh; }
   .v.muted { color: var(--fg3); }
-  .star { color: var(--gold); margin: 0 .5vh 0 .9vh; font-size: 2.6vh; }
+  .star { color: var(--gold); margin: 0 .5vh 0 .8vh; font-size: 2.3vh; }
   .kid + .kid { margin-left: 2.2vw; }
   #verse {
-    font-size: 2.3vh;
+    font-size: 2.1vh;
     line-height: 1.45;
     color: var(--fg2);
     font-style: italic;
@@ -175,27 +186,28 @@
 
   /* ── App row ─────────────────────────────────────────────────── */
   #apps-sec { margin-top: auto; }
-  #apps-wrap {
+  #apps-wrap, #games-wrap {
     overflow: hidden;
     margin: 0 -5vw;
-    padding: 2.6vh 5vw 1.2vh;
+    padding: 2.2vh 5vw 1vh;
   }
   .track {
     position: relative;
     display: flex;
-    gap: 1.8vw;
+    gap: 1.5vw;
     transition: transform .38s var(--ease);
     will-change: transform;
   }
   .tile {
     flex: none;
     position: relative;
-    width: 17vw;
-    height: 9.5625vw; /* 16:9 */
-    border-radius: 1.1vh;
+    width: 13.4vw;
+    height: 7.5375vw; /* 16:9 */
+    border-radius: .95vh;
     background: var(--tile);
     opacity: .5;
-    transition: transform .26s var(--ease), opacity .26s, box-shadow .26s;
+    transform: perspective(70vw) rotateY(0deg) scale(1);
+    transition: transform .42s var(--spring), opacity .3s ease, box-shadow .35s ease;
   }
   .tile img {
     display: block;
@@ -214,11 +226,11 @@
     align-items: center;
     justify-content: center;
   }
-  .tile.icon img { width: 4.6vw; height: 4.6vw; object-fit: contain; }
+  .tile.icon img { width: 3.6vw; height: 3.6vw; object-fit: contain; }
   .tile.icon .lbl {
-    font-size: 2.1vh;
+    font-size: 1.8vh;
     color: var(--fg2);
-    margin-top: 1.1vh;
+    margin-top: .8vh;
     max-width: 88%;
     white-space: nowrap;
     overflow: hidden;
@@ -226,54 +238,80 @@
   }
   .tile.focus {
     opacity: 1;
-    transform: scale(1.1);
+    transform: var(--lift);
     z-index: 2;
-    box-shadow: 0 0 0 .3vh rgba(255, 255, 255, .78), 0 1.2vh 4.5vh rgba(130, 160, 255, .22);
+    box-shadow: 0 0 0 .22vh rgba(255, 255, 255, .7), 0 2.6vh 4.6vh -1.2vh rgba(0, 0, 0, .95);
   }
-  .tile.focus.press { transform: scale(1.04); transition-duration: .1s; }
+  .tile.focus.press { transform: perspective(70vw) scale(1.04); transition: transform .12s ease; }
+  /* Light across the glass: a soft top highlight while focused, and one
+     slow sheen as focus arrives. */
+  .shine {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    opacity: 0;
+    background:
+      linear-gradient(112deg, rgba(255, 255, 255, 0) 38%, rgba(255, 255, 255, .2) 48%, rgba(255, 255, 255, 0) 58%) 140% 0 / 260% 100% no-repeat,
+      linear-gradient(180deg, rgba(255, 255, 255, .1), rgba(255, 255, 255, 0) 42%);
+    transition: opacity .35s ease;
+  }
+  .tile.focus .shine { opacity: 1; animation: sheen 1.1s cubic-bezier(.3, .6, .3, 1) .08s both; }
+  body.idle .tile.focus .shine { opacity: 0; animation: none; }
+  @keyframes sheen {
+    from { background-position: 140% 0, 0 0; }
+    to { background-position: -40% 0, 0 0; }
+  }
+  /* Arriving from the side, the tile leans in and settles. */
+  .tile.focus.arrive-r { animation: arriveR .55s var(--spring); }
+  .tile.focus.arrive-l { animation: arriveL .55s var(--spring); }
+  @keyframes arriveR { from { transform: perspective(70vw) rotateY(-9deg) scale(1.03); } }
+  @keyframes arriveL { from { transform: perspective(70vw) rotateY(9deg) scale(1.03); } }
   .tile.bump-l { animation: bumpL .28s var(--ease); }
   .tile.bump-r { animation: bumpR .28s var(--ease); }
   .tile.bump-u { animation: bumpU .28s var(--ease); }
   .tile.bump-d { animation: bumpD .28s var(--ease); }
-  @keyframes bumpL { 40% { transform: scale(1.1) translateX(-.6vw); } }
-  @keyframes bumpR { 40% { transform: scale(1.1) translateX(.6vw); } }
-  @keyframes bumpU { 40% { transform: scale(1.1) translateY(-.8vh); } }
-  @keyframes bumpD { 40% { transform: scale(1.1) translateY(.8vh); } }
+  @keyframes bumpL { 40% { transform: perspective(70vw) scale(1.1) translateX(-.5vw); } }
+  @keyframes bumpR { 40% { transform: perspective(70vw) scale(1.1) translateX(.5vw); } }
+  @keyframes bumpU { 40% { transform: perspective(70vw) scale(1.1) translateY(-.6vh); } }
+  @keyframes bumpD { 40% { transform: perspective(70vw) scale(1.1) translateY(.6vh); } }
   body.idle .tile.focus { box-shadow: none; }
 
-  #caption {
+  .caption {
     height: 3vh;
-    font-size: 2.5vh;
-    color: var(--fg);
+    font-size: 2.2vh;
+    color: var(--fg2);
     white-space: nowrap;
     transition: transform .38s var(--ease), opacity .25s;
     margin-top: .6vh;
   }
-  #caption.off { opacity: 0; }
+  .caption.off { opacity: 0; }
   #empty { font-size: 2.6vh; color: var(--fg3); padding: 3vh 0; }
 
   /* ── Utility row ─────────────────────────────────────────────── */
-  #util { margin-top: 1.6vh; gap: 1.2vw; }
+  #util { margin-top: 1.2vh; gap: 1vw; align-items: center; }
   .pill {
     flex: none;
     display: flex;
     align-items: center;
     gap: 1.1vh;
-    height: 6.2vh;
-    padding: 0 2.1vw 0 1.7vw;
-    border-radius: 3.1vh;
+    height: 5.4vh;
+    padding: 0 1.9vw 0 1.5vw;
+    border-radius: 2.7vh;
     background: var(--tile);
     color: var(--fg3);
-    font-size: 2.4vh;
-    transition: transform .26s var(--ease), background .26s, color .26s, box-shadow .26s;
+    font-size: 2.15vh;
+    transition: transform .38s var(--spring), background .25s ease, color .25s ease, box-shadow .3s ease;
   }
-  .pill svg { width: 2.8vh; height: 2.8vh; }
+  .pill svg { width: 2.5vh; height: 2.5vh; }
   .pill.focus {
-    background: #18181b;
-    color: var(--fg);
+    background: #f2f2f4;
+    color: #0b0b0c;
     transform: scale(1.06);
-    box-shadow: 0 0 0 .25vh rgba(255, 255, 255, .6);
+    box-shadow: 0 1.2vh 3.4vh -1vh rgba(255, 255, 255, .14);
   }
+  .pill.focus svg.i { stroke-width: 1.6; }
+  body.idle .pill.focus { background: #2a2a2d; color: var(--fg); box-shadow: none; }
   .pill.focus.press { transform: scale(1.0); transition-duration: .1s; }
   .pill.bump-l { animation: pbumpL .28s var(--ease); }
   .pill.bump-r { animation: pbumpR .28s var(--ease); }
@@ -283,22 +321,32 @@
   @keyframes pbumpD { 40% { transform: scale(1.06) translateY(.6vh); } }
 
   /* ── Games row (only when there are games) ───────────────────── */
-  #games-sec .k { margin: 1.4vh 0 0; }
-  /* With a games row below, the focused-app caption would crowd it; the
-     banners carry their own names. */
-  body.has-games #caption { display: none; }
-  #games-wrap {
-    overflow: hidden;
-    margin: 0 -5vw;
-    padding: 1.3vh 5vw 1vh;
+  #games-sec {
+    position: absolute;
+    left: 5vw;
+    right: 5vw;
+    top: calc(100% + 6vh);
   }
-  #games { gap: 1.4vw; }
-  #games .tile { width: 11vw; height: 6.1875vw; border-radius: .9vh; }
-  #games .tile.icon img { width: 2.8vw; height: 2.8vw; }
-  #games .tile.icon .lbl { font-size: 1.6vh; margin-top: .5vh; }
+  #games-sec .k { margin: 0; }
+  /* A quiet pointer at the end of the pills: there is more below. */
+  #below-hint {
+    margin-left: auto;
+    display: none;
+    align-items: center;
+    gap: .6vh;
+    color: var(--fg3);
+    font-size: 1.8vh;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    opacity: .8;
+    transition: opacity .3s;
+  }
+  #below-hint svg { width: 2.2vh; height: 2.2vh; }
+  body.has-games #below-hint { display: flex; }
+  body.below #below-hint { opacity: 0; }
 
   /* The "All apps" tile at the end of the app row. */
-  .tile.more svg { width: 3.6vw; height: 3.6vw; color: var(--fg2); }
+  .tile.more svg { width: 2.8vw; height: 2.8vw; color: var(--fg2); }
 
   /* ── All apps overlay ────────────────────────────────────────── */
   #all {
@@ -373,7 +421,8 @@
     transition: --glow .9s ease, transform .5s var(--ease), opacity 1.2s ease;
   }
   #glow.off, body.idle #glow { opacity: 0; }
-  #top, #family, #apps-sec, #games-sec, #util { position: relative; z-index: 1; }
+  #top, #family, #apps-sec, #util { position: relative; z-index: 1; }
+  #games-sec { z-index: 1; }
 
   /* ── Top-right: connection + Settings chip ───────────────────── */
   #chips {
@@ -415,25 +464,25 @@
   #cd.today #cd-n { color: var(--gold); }
 
   /* ── Move mode (hold OK on an app) ───────────────────────────── */
-  .tile { transition: transform .26s var(--ease), opacity .26s, box-shadow .26s, translate .24s var(--ease); }
+  .tile { transition: transform .42s var(--spring), opacity .3s ease, box-shadow .35s ease, translate .3s var(--ease); }
   .tile.flip-now { transition: none !important; }
   .tile.moving {
     opacity: 1;
     z-index: 3;
-    transform: scale(1.15);
-    box-shadow: 0 0 0 .4vh rgba(255, 255, 255, .95), 0 1.4vh 5vh rgba(130, 160, 255, .3);
+    transform: perspective(70vw) scale(1.16) translateY(-1vh);
+    box-shadow: 0 0 0 .3vh rgba(255, 255, 255, .9), 0 3.4vh 5vh -1.4vh rgba(0, 0, 0, 1);
   }
   .tile.moving::before, .tile.moving::after {
     position: absolute;
     top: 50%;
-    margin-top: -3vh;
-    font-size: 4.4vh;
-    line-height: 6vh;
+    margin-top: -2.5vh;
+    font-size: 3.6vh;
+    line-height: 5vh;
     color: #fff;
     font-weight: 200;
   }
-  .tile.moving::before { content: '\2039'; left: -2.6vh; }
-  .tile.moving::after { content: '\203A'; right: -2.6vh; }
+  .tile.moving::before { content: '\2039'; left: -2.2vh; }
+  .tile.moving::after { content: '\203A'; right: -2.2vh; }
   body.moving #util, body.moving #chips { opacity: .15; transition: opacity .3s; }
   #movehint {
     position: absolute;
@@ -459,6 +508,18 @@
 
   svg.i { fill: none; stroke: currentColor; stroke-width: 1.3; stroke-linecap: round; stroke-linejoin: round; }
 
+  /* Coming home: the screen settles in, top to bottom. */
+  body.enter #top { animation: rise .9s var(--ease) backwards; }
+  body.enter #family { animation: rise .9s var(--ease) .08s backwards; }
+  body.enter #apps-sec .tile { animation: rise .7s var(--ease) .14s backwards; }
+  body.enter #apps-sec .tile:nth-child(2) { animation-delay: .17s; }
+  body.enter #apps-sec .tile:nth-child(3) { animation-delay: .2s; }
+  body.enter #apps-sec .tile:nth-child(4) { animation-delay: .23s; }
+  body.enter #apps-sec .tile:nth-child(5) { animation-delay: .26s; }
+  body.enter #apps-sec .tile:nth-child(n+6) { animation-delay: .29s; }
+  body.enter #util { animation: rise .8s var(--ease) .3s backwards; }
+  @keyframes rise { from { opacity: 0; transform: translateY(1.6vh); } }
+
   #toast {
     position: absolute;
     left: 50%;
@@ -478,6 +539,7 @@
 </style>
 </head>
 <body>
+<div id="page">
 <div id="stage">
   <div id="glow" class="off"></div>
   <header id="top">
@@ -508,15 +570,17 @@
 
   <section id="apps-sec">
     <div id="apps-wrap"><div class="track" id="apps"></div></div>
-    <div id="caption" class="off"></div>
+    <div id="caption" class="caption off"></div>
   </section>
 
   <section id="games-sec" style="display:none">
     <div class="k">Games</div>
     <div id="games-wrap"><div class="track" id="games"></div></div>
+    <div id="gcaption" class="caption off"></div>
   </section>
 
   <div class="track" id="util"></div>
+</div>
 </div>
 
 <div id="all">
@@ -613,6 +677,7 @@
     storm: '<path transform="translate(0 -3)" d="' + CLOUD + '"/><path d="M12.8 15.5l-2 3.2h2.6l-1.6 3"/>',
     wifi: '<path d="M2.8 9.2a13.5 13.5 0 0 1 18.4 0M5.8 12.4a9 9 0 0 1 12.4 0M8.9 15.6a4.6 4.6 0 0 1 6.2 0"/><path d="M12 19.2h.01" stroke-width="2.4"/>',
     wifiOff: '<path d="M2.8 9.2a13.5 13.5 0 0 1 18.4 0M5.8 12.4a9 9 0 0 1 12.4 0M8.9 15.6a4.6 4.6 0 0 1 6.2 0"/><path d="M12 19.2h.01" stroke-width="2.4"/><path d="M4 3.5l16 17"/>',
+    down: '<path d="M6 9.5l6 6 6-6"/>',
     grid: '<rect x="4" y="4" width="6.5" height="6.5" rx="1.4"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.4"/>' +
       '<rect x="4" y="13.5" width="6.5" height="6.5" rx="1.4"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.4"/>',
     peaks: '<path d="M2.5 19l6.5-11 4 6.5 2.5-3.5 6 8z"/><path d="M7.2 11l1.8 1.6 1.6-1.4"/>',
@@ -983,6 +1048,7 @@
       t.appendChild(img);
     }
     if (!a.banner) t.appendChild(el('div', 'lbl', a.label));
+    t.appendChild(el('i', 'shine'));
     return t;
   }
 
@@ -997,6 +1063,7 @@
       m.dataset.act = 'all';
       m.insertAdjacentHTML('beforeend', iconSvg('grid'));
       m.appendChild(el('div', 'lbl', 'All apps'));
+      m.appendChild(el('i', 'shine'));
       track.appendChild(m);
     }
     if (ri === 0 && !all.length) track.appendChild(el('div', '', 'No apps found')).id = 'empty';
@@ -1019,12 +1086,12 @@
   /* ── Focus on the home screen ─────────────────────────────────────── */
   var rows = [
     { el: $('apps'), wrap: $('apps-wrap'), cap: $('caption'), items: [], idx: 0, x: 0 },
-    { el: $('games'), wrap: $('games-wrap'), items: [], idx: 0, x: 0 },
+    { el: $('games'), wrap: $('games-wrap'), cap: $('gcaption'), items: [], idx: 0, x: 0 },
     { el: $('util'), items: [], idx: 0 },
     { el: $('chips'), items: [], idx: 0 }
   ];
-  /* Top to bottom: the Settings chip, apps, games, pills. */
-  var ORDER = [3, 0, 1, 2];
+  /* Top to bottom: the Settings chip, apps, pills, then games below the fold. */
+  var ORDER = [3, 0, 2, 1];
   var rowI = 0;
 
   function firstRow() {
@@ -1048,7 +1115,24 @@
     });
     scrollRow(rows[0]);
     scrollRow(rows[1]);
+    scrollPage();
     updateGlow();
+  }
+
+  /* Down past the pills slides the page up until the Games row sits where
+     the app row was; anything else brings the first screen back. */
+  function scrollPage() {
+    var below = rowI === 1;
+    var y = 0;
+    if (below) {
+      /* ...and far enough that the family strip clears the top edge
+         rather than peeking in cut off. */
+      var fam = $('family');
+      y = Math.max($('games-sec').offsetTop - $('apps-sec').offsetTop,
+        fam.offsetTop + fam.offsetHeight + window.innerHeight * 0.05);
+    }
+    $('page').style.transform = y ? 'translate3d(0,' + (-y) + 'px,0)' : '';
+    document.body.classList.toggle('below', below);
   }
 
   /* Keep the focused tile inside its row with half a tile of the neighbour
@@ -1148,7 +1232,8 @@
       var n = r.idx + dx;
       if (n < 0 || n >= r.items.length) return bumpEl(current(), dx < 0 ? 'l' : 'r');
       r.idx = n;
-      return paint();
+      paint();
+      return arrive(current(), dx);
     }
     var pos = ORDER.indexOf(rowI) + dy;
     while (pos >= 0 && pos < ORDER.length && !rows[ORDER[pos]].items.length) pos += dy;
@@ -1165,6 +1250,25 @@
     }
     rowI = to;
     paint();
+  }
+
+  function arrive(t, dx) {
+    if (!t || !t.classList.contains('tile')) return;
+    t.classList.remove('arrive-l', 'arrive-r');
+    void t.offsetWidth;
+    t.classList.add(dx > 0 ? 'arrive-r' : 'arrive-l');
+    clearTimeout(t._arr);
+    t._arr = setTimeout(function () { t.classList.remove('arrive-l', 'arrive-r'); }, 600);
+  }
+
+  var enterTimer;
+  function enter() {
+    var b = document.body;
+    b.classList.remove('enter');
+    void b.offsetWidth;
+    b.classList.add('enter');
+    clearTimeout(enterTimer);
+    enterTimer = setTimeout(function () { b.classList.remove('enter'); }, 1300);
   }
 
   function press(t) {
@@ -1203,6 +1307,10 @@
       u.appendChild(b);
     });
     rows[2].items = Array.prototype.slice.call(u.children);
+    var hint = el('div', '', 'Games');
+    hint.id = 'below-hint';
+    hint.insertAdjacentHTML('afterbegin', iconSvg('down'));
+    u.appendChild(hint);
 
     /* Settings, one press up from the app row; its name opens out on focus. */
     var chip = el('div', 'pill chip');
@@ -1214,8 +1322,9 @@
   }
 
   function renderNet() {
+    /* Only worth showing when something is wrong. */
     var on = navigator.onLine !== false, n = $('net');
-    n.innerHTML = iconSvg(on ? 'wifi' : 'wifiOff');
+    n.innerHTML = on ? '' : iconSvg('wifiOff');
     if (!on) n.appendChild(el('span', '', 'Offline'));
     n.classList.toggle('offline', !on);
   }
@@ -1500,6 +1609,7 @@
 
   /* ── Native hooks ──────────────────────────────────────────────────── */
   window.onShown = function () {
+    enter();
     wake();
     loadApps();
     renderClock();
