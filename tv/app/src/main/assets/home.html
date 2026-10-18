@@ -670,15 +670,31 @@
   /* ── Apps ──────────────────────────────────────────────────────────── */
   var apps = [], appsSig = '';
 
+  /* The family's usual apps lead on a fresh install; each is worth less
+     than one real launch, so actual use takes over within a day or two. */
+  var FAVORITES = [
+    'com.netflix.ninja', 'com.google.android.youtube.tv', 'com.google.android.youtube.tvunplugged',
+    'com.peacocktv.peacockandroid', 'com.amazon.amazonvideo.livingroom', 'com.spotify.tv.android',
+    'org.xbmc.kodi', 'com.stremio.one', 'com.sermon.tv', 'com.espn.score_center'
+  ];
+  /* Clutter that sinks to the end of the row unless it actually gets used. */
+  var TAIL = [
+    'com.android.tv.settings', 'com.android.gallery3d', 'com.spocky.projengmenu', 'com.syncler.installer',
+    'com.google.android.play.games', 'com.google.android.apps.tachyon', 'com.codingbuffalo.aerialdream'
+  ];
+
   /* Most-used first: a launch count that halves every two weeks without use. */
   function usageScore(use, pkg, now) {
     var u = use[pkg];
-    return u ? u.n * Math.pow(0.5, (now - u.last) / (14 * 864e5)) : 0;
+    if (u) return u.n * Math.pow(0.5, (now - u.last) / (14 * 864e5));
+    var f = FAVORITES.indexOf(pkg);
+    if (f >= 0) return 0.5 - f * 0.01;
+    return TAIL.indexOf(pkg) >= 0 ? -1 : 0;
   }
 
   function recordUse(pkg) {
     var use = store.get('usage', {}), now = Date.now();
-    use[pkg] = { n: usageScore(use, pkg, now) + 1, last: now };
+    use[pkg] = { n: Math.max(0, usageScore(use, pkg, now)) + 1, last: now };
     store.set('usage', use);
   }
 
