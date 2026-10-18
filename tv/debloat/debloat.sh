@@ -23,6 +23,9 @@ DISABLE=(
   com.netflix.ninja           # Netflix: Chad does not use it (2026-10-17)
   com.nvidia.tegrazone3       # GeForce NOW: not used
   com.google.android.tv       # Live Channels, ~150 MB: not used
+  com.google.android.tvrecommendations # stock launcher rows; unused since the custom home (2026-10-18)
+  com.google.android.backdrop # Google Ambient Mode screensaver; replaced by Solanyk House
+  com.nvidia.diagtools        # NVIDIA diagnostics
 )
 for p in "${DISABLE[@]}"; do
   echo -n "$p: "; sh pm disable-user --user 0 "$p"

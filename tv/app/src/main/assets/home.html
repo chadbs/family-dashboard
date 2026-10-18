@@ -509,16 +509,12 @@
   svg.i { fill: none; stroke: currentColor; stroke-width: 1.3; stroke-linecap: round; stroke-linejoin: round; }
 
   /* Coming home: the screen settles in, top to bottom. */
-  body.enter #top { animation: rise .9s var(--ease) backwards; }
-  body.enter #family { animation: rise .9s var(--ease) .08s backwards; }
-  body.enter #apps-sec .tile { animation: rise .7s var(--ease) .14s backwards; }
-  body.enter #apps-sec .tile:nth-child(2) { animation-delay: .17s; }
-  body.enter #apps-sec .tile:nth-child(3) { animation-delay: .2s; }
-  body.enter #apps-sec .tile:nth-child(4) { animation-delay: .23s; }
-  body.enter #apps-sec .tile:nth-child(5) { animation-delay: .26s; }
-  body.enter #apps-sec .tile:nth-child(n+6) { animation-delay: .29s; }
-  body.enter #util { animation: rise .8s var(--ease) .3s backwards; }
-  @keyframes rise { from { opacity: 0; transform: translateY(1.6vh); } }
+  body.enter #top, body.enter #family { animation: settle .45s var(--ease); }
+  body.enter #apps-sec .tile { animation: settle .45s var(--ease); }
+  body.enter #apps-sec .tile:nth-child(2) { animation-duration: .5s; }
+  body.enter #apps-sec .tile:nth-child(3) { animation-duration: .55s; }
+  body.enter #apps-sec .tile:nth-child(n+4) { animation-duration: .6s; }
+  @keyframes settle { from { transform: translateY(.9vh); } }
 
   #toast {
     position: absolute;
@@ -997,9 +993,17 @@
 
   /* Once the order has been arranged by hand (hold OK on a tile), that
      order wins; apps installed later follow it, most-used first. */
+  /* The installed-app list only changes when an app is installed or updated;
+     Shield.appsSig() says when, so coming home skips the full list. */
+  var nativeApps = null, nativeSig = null;
   function loadApps() {
-    var list = [];
-    try { list = JSON.parse(bridge.apps() || '[]') || []; } catch (e) { list = []; }
+    var sig0 = null;
+    try { sig0 = bridge.appsSig ? bridge.appsSig() : null; } catch (e) { sig0 = null; }
+    if (!nativeApps || sig0 === null || sig0 !== nativeSig) {
+      try { nativeApps = JSON.parse(bridge.apps() || '[]') || []; } catch (e) { nativeApps = []; }
+      nativeSig = sig0;
+    }
+    var list = nativeApps.map(function (a) { return Object.assign({}, a); });
     var use = store.get('usage', {}), now = Date.now();
     var order = store.get('order', null), pos = {};
     if (order && order.forEach) order.forEach(function (p, i) { pos[p] = i; });
@@ -1011,7 +1015,7 @@
       return (a.pin - b.pin) || (b.score - a.score) || String(a.label).localeCompare(String(b.label));
     });
     var sig = list.map(function (a) {
-      return a.pkg + (a.game ? ':g:' : ':') + (a.img ? a.img.length : 0);
+      return a.pkg + (a.game ? ':g:' : ':') + (a.img || '');
     }).join('|');
     if (sig === appsSig) return;
     appsSig = sig;
@@ -1044,6 +1048,7 @@
       var img = new Image();
       img.decoding = 'async';
       img.alt = '';
+      img.crossOrigin = 'anonymous'; /* lets the glow read its colour */
       img.src = a.img;
       t.appendChild(img);
     }
@@ -1268,7 +1273,7 @@
     void b.offsetWidth;
     b.classList.add('enter');
     clearTimeout(enterTimer);
-    enterTimer = setTimeout(function () { b.classList.remove('enter'); }, 1300);
+    enterTimer = setTimeout(function () { b.classList.remove('enter'); }, 700);
   }
 
   function press(t) {
@@ -1616,7 +1621,8 @@
     renderWeather();
     renderFamily();
     renderNet();
-    if (Date.now() - lastRefresh > 60 * 1000) refresh();
+    /* Fetching and parsing the family data waits until home is on screen. */
+    if (Date.now() - lastRefresh > 60 * 1000) setTimeout(refresh, 1500);
   };
   window.onHidden = function () {
     hold = null;

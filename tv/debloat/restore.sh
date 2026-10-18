@@ -20,6 +20,9 @@ ENABLE=(
   com.netflix.ninja
   com.nvidia.tegrazone3
   com.google.android.tv
+  com.google.android.tvrecommendations
+  com.google.android.backdrop
+  com.nvidia.diagtools
 )
 for p in "${ENABLE[@]}"; do
   echo -n "$p: "; sh pm enable "$p"

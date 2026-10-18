@@ -8,7 +8,15 @@ import android.os.Looper;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.WindowManager;
+import android.net.Uri;
+import android.webkit.WebResourceRequest;
+import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
+import android.webkit.WebViewClient;
+
+import java.io.ByteArrayInputStream;
+import java.util.HashMap;
+import java.util.Map;
 
 /* The home screen. Everything you see is assets/home.html; this activity
    only hosts it, tells it when we come back to the front, and keeps the
@@ -24,7 +32,23 @@ public class HomeActivity extends Activity {
         super.onCreate(saved);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED);
         web = Web.make(this, false);
-        web.addJavascriptInterface(new Bridge(this), "Shield");
+        Bridge bridge = new Bridge(this);
+        web.addJavascriptInterface(bridge, "Shield");
+        /* App art: Bridge.ART_ORIGIN/<pkg>.png?v=<version>, drawn off the UI thread. */
+        web.setWebViewClient(new WebViewClient() {
+            @Override
+            public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest req) {
+                Uri u = req.getUrl();
+                if (!Bridge.ART_ORIGIN.equals(u.getScheme() + "://" + u.getHost())) return null;
+                String path = u.getLastPathSegment();
+                byte[] png = path == null ? null : bridge.art(path.replace(".png", ""), String.valueOf(u.getQueryParameter("v")));
+                Map<String, String> h = new HashMap<>();
+                h.put("Access-Control-Allow-Origin", "*");
+                h.put("Cache-Control", "max-age=31536000, immutable");
+                if (png == null) return new WebResourceResponse("image/png", null, 404, "Not Found", h, new ByteArrayInputStream(new byte[0]));
+                return new WebResourceResponse("image/png", null, 200, "OK", h, new ByteArrayInputStream(png));
+            }
+        });
         web.loadUrl("file:///android_asset/home.html");
         setContentView(web);
         web.requestFocus(View.FOCUS_DOWN);
