@@ -102,9 +102,9 @@ def dots_svg(pts, extras="", sc=1.3):
 def trace_svg(lines):
     ys = [36, 78][:len(lines)]
     longest = max(len(l) for l in lines)
-    w = min(240, max(110, longest * 20 + 16))  # short lines get a narrower box, so bigger letters
+    fs = min(34, int(224 / (longest * 0.7)))  # bold DejaVu is about 0.7em per letter
+    w = int(min(240, max(110, longest * fs * 0.7 + 16)))  # short lines get a narrower box, so bigger letters
     t = "".join(f'<text x="{w // 2}" y="{y}">{escape(l)}</text>' for l, y in zip(lines, ys))
-    fs = 34 if longest <= 13 else max(18, int(34 * 13 / longest))
     return (f'<svg viewBox="0 0 {w} {ys[-1]+6}" class="trace" font-size="{fs}" font-weight="800" '
             f'font-family="DejaVu Sans, sans-serif" fill="none" stroke="#666" stroke-width="1.3" '
             f'stroke-dasharray="2.5 2" text-anchor="middle">{t}</svg>')
@@ -135,7 +135,7 @@ header .name { font-size: 14px; white-space: nowrap; }
 .psalters span { border: 1.6px solid #000; border-radius: 4px; padding: 1px 7px; font-weight: 700; }
 .psalters span::before { content: "\\2610  "; font-weight: 400; }
 .verse { text-align: center; }
-.trace { width: 100%; height: auto; }
+.trace { width: 100%; height: auto; max-height: 84px; }
 .mazewrap { display: flex; align-items: stretch; justify-content: center; gap: 4px; }
 .maze { height: 178px; width: auto; }
 .ml { display: flex; flex-direction: column; align-items: center; font-size: 10px; font-weight: 800; text-align: center; width: 40px; }
