@@ -1,0 +1,178 @@
+{
+ "seed": 20261026,
+ "title": "Jesus Christ Is Come in the Flesh!",
+ "service": "Evening Worship · Sunday, October 25, 2026",
+ "passage": "1 John 4:2 · Confession of Faith",
+ "icons": {
+  "SPEAK": "<path d=\"M3 4 h18 v12 h-9 l-5 5 v-5 h-4 Z\"/>",
+  "HOUSE": "<path d=\"M3 11 L12 3 L21 11\"/><path d=\"M5 10 V21 H19 V10\"/><path d=\"M10 21 v-6 h4 v6\"/>"
+ },
+ "listen": [
+  {
+   "label": "GOD",
+   "icon": "GOD"
+  },
+  {
+   "label": "JESUS",
+   "icon": "CROSS"
+  },
+  {
+   "label": "LOVE",
+   "icon": "HEART"
+  },
+  {
+   "label": "CONFESS",
+   "icon": "SPEAK"
+  }
+ ],
+ "psalters": [
+  "138B",
+  "61B",
+  "119W",
+  "116B",
+  "27A"
+ ],
+ "verse": {
+  "ref": "1 John 4:8",
+  "lines": [
+   "God is",
+   "love"
+  ]
+ },
+ "maze": {
+  "title": "Maze: Let’s Go to Church!",
+  "start_icon": "HOUSE",
+  "start_label": "HOME",
+  "end_icon": "CHURCH",
+  "end_label": "CHURCH",
+  "caption": "“Whosoever shall confess that Jesus is the Son of God, God dwelleth in him, and he in God.” 1 John 4:15"
+ },
+ "search": [
+  {
+   "word": "GOD",
+   "icon": "GOD"
+  },
+  {
+   "word": "JESUS",
+   "icon": "CROSS"
+  },
+  {
+   "word": "LOVE",
+   "icon": "HEART"
+  },
+  {
+   "word": "BIBLE",
+   "icon": "BIBLE"
+  },
+  {
+   "word": "CHURCH",
+   "icon": "CHURCH"
+  },
+  {
+   "word": "SAY",
+   "icon": "SPEAK"
+  }
+ ],
+ "color1": {
+  "title": "Color: Saying “I Believe!” in Church",
+  "svg": "<path d=\"M15 95 V45 a20 20 0 0 1 40 0 V95 Z\"/><path d=\"M35 25 V95 M15 60 H55\" stroke-width=\"1.5\"/><path d=\"M70 95 V45 a20 20 0 0 1 40 0 V95 Z\"/><path d=\"M90 25 V95 M70 60 H110\" stroke-width=\"1.5\"/><path d=\"M175 6 h105 a10 10 0 0 1 10 10 v26 a10 10 0 0 1 -10 10 h-70 l-20 16 l5 -16 h-20 a10 10 0 0 1 -10 -10 v-26 a10 10 0 0 1 10 -10 Z\"/><text x=\"227\" y=\"35\" font-size=\"17\" font-weight=\"800\" fill=\"#000\" stroke=\"none\" text-anchor=\"middle\">I BELIEVE!</text><circle cx=\"134\" cy=\"72\" r=\"6\"/><circle cx=\"166\" cy=\"72\" r=\"6\"/><circle cx=\"150\" cy=\"78\" r=\"14\"/><circle cx=\"145\" cy=\"75\" r=\"1.4\" fill=\"#000\"/><circle cx=\"155\" cy=\"75\" r=\"1.4\" fill=\"#000\"/><path d=\"M144 83 q6 5 12 0\" stroke-width=\"1.5\"/><path d=\"M136 93 L164 93 L180 150 L120 150 Z\"/><path d=\"M141 150 v16 M159 150 v16\"/><path d=\"M130 110 L150 115 L170 110 L170 128 L150 133 L130 128 Z M150 115 V133\"/><path d=\"M0 176 H300\"/><path d=\"M0 190 H300\"/><circle cx=\"28\" cy=\"164\" r=\"10\"/><circle cx=\"62\" cy=\"162\" r=\"10\"/><circle cx=\"238\" cy=\"164\" r=\"10\"/><circle cx=\"272\" cy=\"162\" r=\"10\"/>",
+  "caption": "“Every spirit that confesseth that Jesus Christ is come in the flesh is of God.” 1 John 4:2"
+ },
+ "color2": {
+  "title": "Color: God Sent His Son",
+  "svg": "<polygon points=\"150.0,8.0 153.5,17.1 163.3,17.7 155.7,23.9 158.2,33.3 150.0,28.0 141.8,33.3 144.3,23.9 136.7,17.7 146.5,17.1\"/><path d=\"M150 0 v2 M126 22 h-10 M174 22 h10 M133 8 l-6 -5 M167 8 l6 -5 M134 36 l-6 5 M166 36 l6 5\" stroke-width=\"1.5\"/><path d=\"M55 92 L150 44 L245 92\"/><path d=\"M70 85 V172 M230 85 V172\"/><path d=\"M85 78 L150 56 L215 78\" stroke-width=\"1.5\"/><path d=\"M10 172 H290\"/><path d=\"M118 148 L182 148 L172 172 L128 172 Z\"/><path d=\"M122 148 l6 -9 M134 148 l4 -10 M150 148 v-10 M164 148 l-3 -10 M177 148 l-5 -9\" stroke-width=\"1.5\"/><path d=\"M248 166 a8 8 0 0 1 4 -14 a9 9 0 0 1 16 -2 a8 8 0 0 1 12 8 a7 7 0 0 1 -4 10 Z\"/><circle cx=\"246\" cy=\"154\" r=\"6\"/><path d=\"M256 166 v8 M272 166 v8\"/><path d=\"M10 140 Q35 120 55 132\" stroke-width=\"1.5\"/><path d=\"M245 120 Q270 108 290 118\" stroke-width=\"1.5\"/><path d=\"M10 185 q15 -6 30 0 M60 192 q15 -6 30 0 M200 190 q15 -6 30 0 M250 184 q15 -6 30 0\" stroke-width=\"1.5\"/>",
+  "caption": "“God sent his only begotten Son into the world, that we might live through him.” 1 John 4:9"
+ },
+ "dots": {
+  "points": [
+   [
+    105,
+    30
+   ],
+   [
+    120,
+    12
+   ],
+   [
+    140,
+    4
+   ],
+   [
+    160,
+    6
+   ],
+   [
+    176,
+    18
+   ],
+   [
+    182,
+    38
+   ],
+   [
+    176,
+    60
+   ],
+   [
+    160,
+    82
+   ],
+   [
+    140,
+    100
+   ],
+   [
+    126,
+    108
+   ],
+   [
+    105,
+    124
+   ],
+   [
+    84,
+    108
+   ],
+   [
+    70,
+    100
+   ],
+   [
+    50,
+    82
+   ],
+   [
+    34,
+    60
+   ],
+   [
+    28,
+    38
+   ],
+   [
+    34,
+    18
+   ],
+   [
+    50,
+    6
+   ],
+   [
+    70,
+    4
+   ],
+   [
+    90,
+    12
+   ]
+  ],
+  "caption": "“God is love.” 1 John 4:8"
+ },
+ "questions": [
+  "Who did God send? &#9744; an angel &nbsp;&#9744; Jesus &nbsp;&#9744; a king",
+  "God is ______. (1 John 4:8)",
+  "Jesus came in the ________ (a real body!)",
+  "Saying &ldquo;I believe&rdquo; in church is a ____________.",
+  "Who gives us faith? &#9744; me &nbsp;&#9744; my friends &nbsp;&#9744; God"
+ ]
+}

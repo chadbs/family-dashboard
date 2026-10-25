@@ -101,9 +101,11 @@ def dots_svg(pts, extras="", sc=1.3):
 
 def trace_svg(lines):
     ys = [36, 78][:len(lines)]
-    t = "".join(f'<text x="120" y="{y}">{escape(l)}</text>' for l, y in zip(lines, ys))
-    fs = 34 if max(len(l) for l in lines) <= 13 else max(18, int(34 * 13 / max(len(l) for l in lines)))
-    return (f'<svg viewBox="0 0 240 {ys[-1]+6}" class="trace" font-size="{fs}" font-weight="800" '
+    longest = max(len(l) for l in lines)
+    w = min(240, max(110, longest * 20 + 16))  # short lines get a narrower box, so bigger letters
+    t = "".join(f'<text x="{w // 2}" y="{y}">{escape(l)}</text>' for l, y in zip(lines, ys))
+    fs = 34 if longest <= 13 else max(18, int(34 * 13 / longest))
+    return (f'<svg viewBox="0 0 {w} {ys[-1]+6}" class="trace" font-size="{fs}" font-weight="800" '
             f'font-family="DejaVu Sans, sans-serif" fill="none" stroke="#666" stroke-width="1.3" '
             f'stroke-dasharray="2.5 2" text-anchor="middle">{t}</svg>')
 
@@ -126,7 +128,7 @@ header .name { font-size: 14px; white-space: nowrap; }
 .hint { font-size: 10px; margin: 0 0 3px; }
 .listen { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 14px; }
 .li { display: flex; align-items: center; gap: 6px; }
-.li .w { font-size: 13px; font-weight: 800; width: 52px; }
+.li .w { font-size: 13px; font-weight: 800; width: 68px; }
 .li .c { display: flex; gap: 3px; }
 .li .c span { width: 17px; height: 17px; border: 1.6px solid #000; border-radius: 50%; }
 .psalters { display: flex; gap: 6px; margin-top: 7px; font-size: 13px; align-items: center; flex-wrap: wrap; }
@@ -156,7 +158,7 @@ def build(s):
     g = make_search(rng, [w["word"] for w in s["search"]])
     listen = "".join(
         f'<div class="li">{icon(w["icon"], icons, 26)}<span class="w">{escape(w["label"])}</span>'
-        f'<span class="c">{"<span></span>" * 9}</span></div>' for w in s["listen"])
+        f'<span class="c">{"<span></span>" * 8}</span></div>' for w in s["listen"])
     words = "".join(f'<div>{icon(w["icon"], icons, 20)}{escape(w["word"])}</div>' for w in s["search"])
     psalters = "".join(f"<span>{escape(p)}</span>" for p in s["psalters"])
     qs = "".join(f"<li>{q}</li>" for q in s["questions"])
