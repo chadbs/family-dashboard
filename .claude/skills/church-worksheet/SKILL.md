@@ -7,7 +7,7 @@ description: Make the kids' one-page black-and-white church worksheets (morning 
 
 One printable letter page per service, black and white, for kids who **can't read yet**.
 The layout is fixed by `church-worksheet/make_sheet.py`; each week you only write a JSON file of
-content per service. `church-worksheet/sheets/2026-10-18-pm.json` is the approved example — copy its shape.
+content per service. `church-worksheet/sheets/2026-10-18-pm.json` is the approved example — copy its shape, but use `2026-11-01-am.json` for the current layout (one coloring + Count It!).
 
 ## What the family wants (don't change without being asked)
 
@@ -16,7 +16,8 @@ content per service. `church-worksheet/sheets/2026-10-18-pm.json` is the approve
 - "Check off the Psalters we sing" boxes, using the exact Psalter numbers from the bulletin.
 - Maze is 15x10 (built in). Don't make it bigger or harder.
 - Word search: 6 short words (each 8 letters or fewer), each with a picture clue. Right/down only (built in).
-- Two coloring pictures, a connect-the-dots picture, and 5 "Can You Answer?" questions a parent reads aloud.
+- **One** coloring picture, a "Count It!" box (counting themed pictures), a connect-the-dots picture, and 5
+  "Can You Answer?" questions a parent reads aloud.
 - Memory verse to trace: 1-2 short lines (13 characters or fewer per line looks best).
 - Reformed (Protestant Reformed Churches). Quote KJV only. **Never draw God or Jesus** (second commandment):
   use symbols like a crown, cross, Bible, or light. People in the passage (Jonah, David, sailors) are fine.
@@ -38,8 +39,10 @@ content per service. `church-worksheet/sheets/2026-10-18-pm.json` is the approve
    - `title`: short and kid-friendly, based on the sermon theme.
    - Icons: built-ins are GOD, FISH, PERSON, PRAY, SEA, LAND, BIBLE, CROSS, HEART, KEY, SHEEP, CHURCH, SUN,
      CROWN, BREAD, CUP. Add new ones under `"icons": {"NAME": "<svg inner markup, 24x24 viewBox, line art>"}`.
-   - `color1` / `color2`: draw **new** line-art SVG for this passage (inner markup only; viewBox is 300x200,
+   - `color1`: draw **new** line-art SVG for this passage (inner markup only; viewBox is 300x200,
      stroke black, no fill). Keep shapes big and simple with large areas to color, and avoid tiny detail.
+   - `count`: `{"icons": [4 icon names]}` for the "Count It!" box. Use themed icons. (Older sheets used a
+     second coloring picture, `color2`, instead; don't do that anymore.)
    - `dots.points`: 14-22 points in a 210x125 box tracing a simple outline (an animal, an ark, a crown, a lamp).
      `extras_svg` can pre-draw small details (like an eye) in the same coordinates.
    - `questions`: 5 questions. Mix fill-in blanks with picture-free checkbox choices (`&#9744;`).

@@ -1,0 +1,172 @@
+{
+ "seed": 20261102,
+ "title": "Good Works Say “Thank You, God!”",
+ "service": "Evening Worship · Sunday, November 1, 2026",
+ "passage": "Lord’s Day 32 · Matthew 25:14–46",
+ "icons": {
+  "APPLE": "<path d=\"M12 7 C8 4 3 6 3 12 C3 18 7 22 10 22 C11 22 11.5 21.5 12 21.5 C12.5 21.5 13 22 14 22 C17 22 21 18 21 12 C21 6 16 4 12 7 Z\"/><path d=\"M12 7 Q12 4 14 2\"/><path d=\"M13 4 q4 -3 7 -1 q-3 3 -7 1 Z\"/>",
+  "HOUSE": "<path d=\"M3 11 L12 3 L21 11\"/><path d=\"M5 10 V21 H19 V10\"/><path d=\"M10 21 v-6 h4 v6\"/>"
+ },
+ "listen": [
+  {
+   "label": "GOD",
+   "icon": "GOD"
+  },
+  {
+   "label": "JESUS",
+   "icon": "CROSS"
+  },
+  {
+   "label": "FRUIT",
+   "icon": "APPLE"
+  },
+  {
+   "label": "SHEEP",
+   "icon": "SHEEP"
+  }
+ ],
+ "psalters": [
+  "113C",
+  "30B",
+  "107F",
+  "116D"
+ ],
+ "verse": {
+  "ref": "Matthew 25:21",
+  "lines": [
+   "Well done"
+  ]
+ },
+ "maze": {
+  "title": "Maze: Help the Sheep Get Home",
+  "start_icon": "SHEEP",
+  "start_label": "START",
+  "end_icon": "HOUSE",
+  "end_label": "HOME",
+  "caption": "“Come, ye blessed of my Father, inherit the kingdom prepared for you.” Matthew 25:34"
+ },
+ "search": [
+  {
+   "word": "GOD",
+   "icon": "GOD"
+  },
+  {
+   "word": "SHEEP",
+   "icon": "SHEEP"
+  },
+  {
+   "word": "FRUIT",
+   "icon": "APPLE"
+  },
+  {
+   "word": "BREAD",
+   "icon": "BREAD"
+  },
+  {
+   "word": "CUP",
+   "icon": "CUP"
+  },
+  {
+   "word": "LOVE",
+   "icon": "HEART"
+  }
+ ],
+ "color1": {
+  "title": "Color: A Good Tree, Good Fruit",
+  "svg": "<path d=\"M138 182 C142 150 140 130 136 112 L164 112 C160 130 158 150 162 182 Z\"/><path d=\"M150 112 L128 92 M150 120 L172 96\" stroke-width=\"1.5\"/><path d=\"M150 8 C100 6 60 30 66 64 C40 80 56 112 92 110 C110 124 190 124 208 110 C244 112 260 80 234 64 C240 30 200 6 150 8 Z\"/><circle cx=\"100\" cy=\"40\" r=\"9\"/><circle cx=\"140\" cy=\"30\" r=\"9\"/><circle cx=\"190\" cy=\"38\" r=\"9\"/><circle cx=\"220\" cy=\"72\" r=\"9\"/><circle cx=\"80\" cy=\"80\" r=\"9\"/><circle cx=\"120\" cy=\"70\" r=\"9\"/><circle cx=\"170\" cy=\"64\" r=\"9\"/><circle cx=\"200\" cy=\"96\" r=\"9\"/><circle cx=\"110\" cy=\"98\" r=\"9\"/><circle cx=\"150\" cy=\"92\" r=\"9\"/><path d=\"M30 182 H270\"/><path d=\"M214 160 h52 l-6 22 h-40 Z\"/><path d=\"M220 160 q20 -24 40 0\"/><circle cx=\"228\" cy=\"156\" r=\"7\"/><circle cx=\"244\" cy=\"154\" r=\"7\"/><circle cx=\"60\" cy=\"176\" r=\"6\"/>",
+  "caption": "“Every good tree bringeth forth good fruit.” Matthew 7:17"
+ },
+ "count": {
+  "icons": [
+   "APPLE",
+   "SHEEP",
+   "BREAD",
+   "CUP"
+  ]
+ },
+ "dots": {
+  "points": [
+   [
+    105,
+    22
+   ],
+   [
+    125,
+    12
+   ],
+   [
+    150,
+    14
+   ],
+   [
+    168,
+    30
+   ],
+   [
+    176,
+    55
+   ],
+   [
+    172,
+    82
+   ],
+   [
+    160,
+    104
+   ],
+   [
+    140,
+    118
+   ],
+   [
+    120,
+    118
+   ],
+   [
+    105,
+    112
+   ],
+   [
+    90,
+    118
+   ],
+   [
+    70,
+    118
+   ],
+   [
+    50,
+    104
+   ],
+   [
+    38,
+    82
+   ],
+   [
+    34,
+    55
+   ],
+   [
+    42,
+    30
+   ],
+   [
+    60,
+    14
+   ],
+   [
+    85,
+    12
+   ]
+  ],
+  "extras_svg": "<path d=\"M105 22 Q103 10 98 2\"/><path d=\"M100 8 q-14 -12 -26 -4 q12 10 26 4 Z\"/>",
+  "caption": "“Wherefore by their fruits ye shall know them.” Matthew 7:20"
+ },
+ "questions": [
+  "The lazy servant hid his talent in the ________.",
+  "&ldquo;I was an hungred, and ye gave me ______.&rdquo;",
+  "Do good works save us? &#9744; yes &nbsp;&#9744; no, only Jesus!",
+  "Good works say &ldquo;________ ______, God!&rdquo;",
+  "A good work I can do this week: ______________"
+ ]
+}

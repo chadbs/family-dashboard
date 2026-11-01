@@ -109,6 +109,25 @@ def trace_svg(lines):
             f'font-family="DejaVu Sans, sans-serif" fill="none" stroke="#666" stroke-width="1.3" '
             f'stroke-dasharray="2.5 2" text-anchor="middle">{t}</svg>')
 
+def count_svg(rng, names, icons):
+    """'Count It!' box: icons scattered on a grid, then a row of 'icon = [ ]' answer boxes."""
+    counts = rng.sample(range(2, 7), len(names))
+    cells = rng.sample([(c, r) for c in range(8) for r in range(3)], sum(counts))
+    items = [n for n, k in zip(names, counts) for _ in range(k)]
+    s = ('<svg viewBox="0 0 300 200" class="color" fill="none" stroke="#000" stroke-width="1.8" '
+         'stroke-linejoin="round" stroke-linecap="round">')
+    for n, (c, r) in zip(items, cells):
+        x, y = 4 + c * 37 + rng.uniform(-3, 3), 4 + r * 41 + rng.uniform(-3, 3)
+        s += f'<svg x="{x:.1f}" y="{y:.1f}" width="31" height="31" viewBox="0 0 24 24">{icons[n]}</svg>'
+    s += '<path d="M0 134 H300" stroke-dasharray="4 4" stroke-width="1"/>'
+    w = 300 / len(names)
+    for i, n in enumerate(names):
+        x = i * w + w / 2 - 33
+        s += (f'<svg x="{x:.1f}" y="150" width="26" height="26" viewBox="0 0 24 24">{icons[n]}</svg>'
+              f'<text x="{x+29:.1f}" y="170" font-size="16" font-weight="800" fill="#000" stroke="none">=</text>'
+              f'<rect x="{x+41:.1f}" y="145" width="26" height="34" rx="4"/>')
+    return s + "</svg>"
+
 def color_svg(inner):
     return (f'<svg viewBox="0 0 300 200" class="color" fill="none" stroke="#000" stroke-width="2" '
             f'stroke-linejoin="round" stroke-linecap="round">{inner}</svg>')
@@ -162,7 +181,16 @@ def build(s):
     words = "".join(f'<div>{icon(w["icon"], icons, 20)}{escape(w["word"])}</div>' for w in s["search"])
     psalters = "".join(f"<span>{escape(p)}</span>" for p in s["psalters"])
     qs = "".join(f"<li>{q}</li>" for q in s["questions"])
-    m, c1, c2, d = s["maze"], s["color1"], s["color2"], s["dots"]
+    m, c1, d = s["maze"], s["color1"], s["dots"]
+    if "count" in s:
+        ct = s["count"]
+        second = (f'<h2>{escape(ct.get("title", "Count It!"))}</h2>'
+                  f'<div class="hint">Count each picture. Write how many in the box!</div>'
+                  f'{count_svg(rng, ct["icons"], icons)}')
+    else:
+        c2 = s["color2"]
+        second = f'<h2>{escape(c2["title"])}</h2>{color_svg(c2["svg"])}<div class="cap">{escape(c2["caption"])}</div>'
+
     return f"""<!doctype html><html><head><meta charset="utf-8"><title>{escape(s["title"])}</title>
 <style>{CSS}</style></head><body><div class="page">
 <header>
@@ -200,7 +228,7 @@ def build(s):
 </div>
 <div class="row">
   <div class="box"><h2>{escape(c1["title"])}</h2>{color_svg(c1["svg"])}<div class="cap">{escape(c1["caption"])}</div></div>
-  <div class="box"><h2>{escape(c2["title"])}</h2>{color_svg(c2["svg"])}<div class="cap">{escape(c2["caption"])}</div></div>
+  <div class="box">{second}</div>
 </div>
 <div class="row" style="flex:1">
   <div class="box">

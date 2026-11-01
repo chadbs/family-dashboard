@@ -1,0 +1,160 @@
+{
+ "seed": 20261101,
+ "title": "God Is for Us!",
+ "service": "Morning Worship (Communion) · Sunday, November 1, 2026",
+ "passage": "Romans 8:31–32",
+ "listen": [
+  {
+   "label": "GOD",
+   "icon": "GOD"
+  },
+  {
+   "label": "JESUS",
+   "icon": "CROSS"
+  },
+  {
+   "label": "LOVE",
+   "icon": "HEART"
+  },
+  {
+   "label": "SUPPER",
+   "icon": "CUP"
+  }
+ ],
+ "psalters": [
+  "18B",
+  "46A",
+  "86A"
+ ],
+ "verse": {
+  "ref": "Romans 8:31",
+  "lines": [
+   "If God be",
+   "for us"
+  ]
+ },
+ "maze": {
+  "title": "Maze: Nothing Can Separate Us!",
+  "start_icon": "PERSON",
+  "start_label": "ME",
+  "end_icon": "HEART",
+  "end_label": "GOD’S LOVE",
+  "caption": "Nothing “shall be able to separate us from the love of God, which is in Christ Jesus our Lord.” Romans 8:39"
+ },
+ "search": [
+  {
+   "word": "GOD",
+   "icon": "GOD"
+  },
+  {
+   "word": "JESUS",
+   "icon": "CROSS"
+  },
+  {
+   "word": "LOVE",
+   "icon": "HEART"
+  },
+  {
+   "word": "CUP",
+   "icon": "CUP"
+  },
+  {
+   "word": "BREAD",
+   "icon": "BREAD"
+  },
+  {
+   "word": "SHEEP",
+   "icon": "SHEEP"
+  }
+ ],
+ "color1": {
+  "title": "Color: God Is Our Strong Castle",
+  "svg": "<path d=\"M40 180 V80 H30 V60 H40 V68 H50 V60 H60 V68 H70 V60 H80 V80 H70 V180\"/><path d=\"M230 180 V80 H220 V60 H230 V68 H240 V60 H250 V68 H260 V60 H270 V80 H260 V180\"/><path d=\"M70 180 V110 H80 V98 H92 V110 H104 V98 H116 V110 H128 V98 H140 V110 H160 V98 H172 V110 H184 V98 H196 V110 H208 V98 H220 V110 H230\"/><path d=\"M125 180 V150 a25 25 0 0 1 50 0 V180\"/><path d=\"M150 125 V180\" stroke-width=\"1.5\"/><path d=\"M55 60 V30 M55 30 L78 37 L55 44\"/><path d=\"M245 60 V30 M245 30 L268 37 L245 44\"/><path d=\"M50 100 h10 v14 h-10 Z M240 100 h10 v14 h-10 Z\"/><path d=\"M88 12 h124 v34 h-124 Z\"/><path d=\"M88 12 l-10 17 l10 17 M212 12 l10 17 l-10 17\"/><text x=\"150\" y=\"36\" font-size=\"16\" font-weight=\"800\" text-anchor=\"middle\" fill=\"#000\" stroke=\"none\">GOD FOR US</text><path d=\"M0 182 H300\"/><path d=\"M90 140 h12 v12 h-12 Z M198 140 h12 v12 h-12 Z\" stroke-width=\"1.5\"/>",
+  "caption": "“If God be for us, who can be against us?” Romans 8:31"
+ },
+ "count": {
+  "icons": [
+   "CUP",
+   "BREAD",
+   "HEART",
+   "SHEEP"
+  ]
+ },
+ "dots": {
+  "points": [
+   [
+    30,
+    112
+   ],
+   [
+    30,
+    72
+   ],
+   [
+    30,
+    30
+   ],
+   [
+    48,
+    50
+   ],
+   [
+    65,
+    70
+   ],
+   [
+    85,
+    40
+   ],
+   [
+    105,
+    8
+   ],
+   [
+    125,
+    40
+   ],
+   [
+    145,
+    70
+   ],
+   [
+    162,
+    50
+   ],
+   [
+    180,
+    30
+   ],
+   [
+    180,
+    72
+   ],
+   [
+    180,
+    112
+   ],
+   [
+    140,
+    112
+   ],
+   [
+    105,
+    112
+   ],
+   [
+    70,
+    112
+   ]
+  ],
+  "extras_svg": "<circle cx=\"65\" cy=\"95\" r=\"6\"/><circle cx=\"105\" cy=\"92\" r=\"7\"/><circle cx=\"145\" cy=\"95\" r=\"6\"/>",
+  "caption": "“Nay, in all these things we are more than conquerors through him that loved us.” Romans 8:37"
+ },
+ "questions": [
+  "&ldquo;If God be for us, who can be ________ us?&rdquo;",
+  "God did not spare His own ______, Jesus.",
+  "Can anything take God&rsquo;s love away? &#9744; yes &nbsp;&#9744; no",
+  "At the Supper we eat ______ and drink from the cup.",
+  "God&rsquo;s love for His children: &#9744; never ends &nbsp;&#9744; runs out"
+ ]
+}
