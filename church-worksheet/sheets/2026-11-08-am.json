@@ -1,0 +1,165 @@
+{
+ "seed": 20261108,
+ "title": "Suffer the Little Children",
+ "service": "Morning Worship (Baptism) · Sunday, November 8, 2026",
+ "passage": "Mark 10:13–16",
+ "icons": {
+  "DROP": "<path d=\"M12 2 C8 8 5 12 5 15 a7 7 0 0 0 14 0 c0 -3 -3 -7 -7 -13 Z\"/>",
+  "BABY": "<circle cx=\"12\" cy=\"7\" r=\"4\"/><path d=\"M6 13 q6 -3 12 0 q2 5 -1 9 h-10 q-3 -4 -1 -9 Z\"/><path d=\"M8 17 h8\"/>"
+ },
+ "listen": [
+  {
+   "label": "GOD",
+   "icon": "GOD"
+  },
+  {
+   "label": "JESUS",
+   "icon": "CROSS"
+  },
+  {
+   "label": "CHILD",
+   "icon": "BABY"
+  },
+  {
+   "label": "BAPTISM",
+   "icon": "DROP"
+  }
+ ],
+ "psalters": [
+  "147A",
+  "78D",
+  "105B",
+  "128A",
+  "89D"
+ ],
+ "verse": {
+  "ref": "Mark 10:14",
+  "lines": [
+   "Forbid",
+   "them not"
+  ]
+ },
+ "maze": {
+  "title": "Maze: Bring the Children to Church",
+  "start_icon": "PERSON",
+  "start_label": "START",
+  "end_icon": "CHURCH",
+  "end_label": "CHURCH",
+  "caption": "“And he took them up in his arms, put his hands upon them, and blessed them.” Mark 10:16"
+ },
+ "search": [
+  {
+   "word": "GOD",
+   "icon": "GOD"
+  },
+  {
+   "word": "JESUS",
+   "icon": "CROSS"
+  },
+  {
+   "word": "CHILD",
+   "icon": "BABY"
+  },
+  {
+   "word": "WATER",
+   "icon": "DROP"
+  },
+  {
+   "word": "BIBLE",
+   "icon": "BIBLE"
+  },
+  {
+   "word": "LOVE",
+   "icon": "HEART"
+  }
+ ],
+ "color1": {
+  "title": "Color: Baptism",
+  "svg": "<path d=\"M80 70 h140 c0 30 -30 46 -70 46 c-40 0 -70 -16 -70 -46 Z\"/><path d=\"M92 82 q14 -6 29 0 t29 0 t29 0 t29 0\" stroke-width=\"1.5\"/><path d=\"M135 116 h30 l-6 46 h-18 Z\"/><path d=\"M110 162 h80 v12 h-80 Z\"/><path d=\"M150 18 c-7.800000000000001 11.700000000000001 -11.700000000000001 18.2 -11.700000000000001 23.400000000000002 a11.700000000000001 11.700000000000001 0 0 0 23.400000000000002 0 c0 -5.2 -3.9000000000000004 -11.700000000000001 -11.700000000000001 -23.400000000000002 Z\"/><path d=\"M118 34 c-6 9 -9 14 -9 18 a9 9 0 0 0 18 0 c0 -4 -3 -9 -9 -18 Z\"/><path d=\"M182 34 c-6 9 -9 14 -9 18 a9 9 0 0 0 18 0 c0 -4 -3 -9 -9 -18 Z\"/><path d=\"M228 124 c-10 -44 52 -44 46 0 c-2 22 -44 22 -46 0 Z\"/><circle cx=\"251\" cy=\"100\" r=\"11\"/><path d=\"M246 98 h0.1 M256 98 h0.1\" stroke-width=\"3\"/><path d=\"M247 104 q4 3 8 0\" stroke-width=\"1.5\"/><path d=\"M236 126 q15 8 30 0\" stroke-width=\"1.5\"/><path d=\"M15 100 L45 106 L75 100 L75 124 L45 130 L15 124 Z M45 106 V130\"/><path d=\"M8 132 H82 M18 132 V176 M72 132 V176\"/><path d=\"M0 176 H300\"/>",
+  "caption": "“Suffer the little children to come unto me, and forbid them not: for of such is the kingdom of God.” Mark 10:14"
+ },
+ "count": {
+  "icons": [
+   "DROP",
+   "BABY",
+   "HEART",
+   "SHEEP"
+  ]
+ },
+ "dots": {
+  "points": [
+   [
+    105,
+    4
+   ],
+   [
+    121,
+    22
+   ],
+   [
+    140,
+    40
+   ],
+   [
+    158,
+    56
+   ],
+   [
+    167,
+    72
+   ],
+   [
+    167,
+    90
+   ],
+   [
+    156,
+    106
+   ],
+   [
+    132,
+    118
+   ],
+   [
+    105,
+    122
+   ],
+   [
+    78,
+    118
+   ],
+   [
+    54,
+    106
+   ],
+   [
+    43,
+    90
+   ],
+   [
+    43,
+    72
+   ],
+   [
+    52,
+    56
+   ],
+   [
+    70,
+    40
+   ],
+   [
+    89,
+    22
+   ]
+  ],
+  "caption": "“For the promise is unto you, and to your children.” Acts 2:39"
+ },
+ "questions": [
+  "Who was brought to Jesus? &#9744; children &nbsp;&#9744; animals",
+  "&ldquo;Suffer the little children to ______ unto me.&rdquo;",
+  "Jesus took them up in His ______ and blessed them.",
+  "At baptism, the minister uses ________.",
+  "God&rsquo;s promise is to us and our &#9744; children &nbsp;&#9744; toys"
+ ]
+}
