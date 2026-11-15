@@ -35,7 +35,7 @@ def icon(name, icons, size=22):
 # ---------------- Maze: 15x10 recursive backtracker (the size/difficulty the kids like) ----------------
 MW, MH, CS = 15, 10, 17
 D = {"N": (0, -1, "S"), "S": (0, 1, "N"), "E": (1, 0, "W"), "W": (-1, 0, "E")}
-def make_maze(rng):
+def make_maze(rng, MW=MW, MH=MH):
     walls = {(x, y): {"N", "S", "E", "W"} for x in range(MW) for y in range(MH)}
     stack, seen = [(0, 0)], {(0, 0)}
     while stack:
@@ -50,7 +50,7 @@ def make_maze(rng):
     walls[(0, 0)].discard("W"); walls[(MW - 1, MH - 1)].discard("E")
     return walls
 
-def maze_svg(walls):
+def maze_svg(walls, MW=MW, MH=MH, cls="maze"):
     seg = []
     for (x, y), ws in walls.items():
         X, Y = 2 + x * CS, 2 + y * CS
@@ -58,12 +58,12 @@ def maze_svg(walls):
         if "W" in ws: seg.append(f"M{X} {Y}v{CS}")
         if y == MH - 1 and "S" in ws: seg.append(f"M{X} {Y+CS}h{CS}")
         if x == MW - 1 and "E" in ws: seg.append(f"M{X+CS} {Y}v{CS}")
-    return (f'<svg viewBox="0 0 {MW*CS+4} {MH*CS+4}" class="maze"><path d="{" ".join(seg)}" '
+    return (f'<svg viewBox="0 0 {MW*CS+4} {MH*CS+4}" class="{cls}"><path d="{" ".join(seg)}" '
             f'stroke="#000" stroke-width="2.2" stroke-linecap="square" fill="none"/></svg>')
 
 # ---------------- Word search: 8x8, right/down only ----------------
 N = 8
-def make_search(rng, words):
+def make_search(rng, words, N=N):
     for _ in range(2000):
         g = [[None] * N for _ in range(N)]
         ok = True
@@ -240,6 +240,94 @@ def build(s):
 </div>
 </div></body></html>"""
 
+# ---------------- "Big maze" layout: full-width harder maze, big tracing words ----------------
+def solution_len(walls, MW, MH):
+    from collections import deque
+    prev, q = {(0, 0)}, deque([((0, 0), 1)])
+    while q:
+        c, n = q.popleft()
+        if c == (MW - 1, MH - 1):
+            return n
+        for k, (dx, dy, _) in D.items():
+            nb = (c[0] + dx, c[1] + dy)
+            if k not in walls[c] and nb in walls and nb not in prev:
+                prev.add(nb); q.append((nb, n + 1))
+    return 0
+
+def trace_words_svg(words, icons):
+    """Big dotted words to trace, one per line, each with its picture and a writing line."""
+    rows = []
+    for i, w in enumerate(words):
+        y = i * 66
+        rows.append(f'<svg x="0" y="{y+14}" width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#000" '
+                    f'stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round">{icons[w["icon"]]}</svg>'
+                    f'<path d="M44 {y+56} H356" stroke="#000" stroke-width="1.2"/>'
+                    f'<path d="M44 {y+20} H356" stroke="#aaa" stroke-width="0.8" stroke-dasharray="4 4"/>'
+                    f'<text x="48" y="{y+55}" font-size="50" font-weight="800" letter-spacing="6" '
+                    f'font-family="DejaVu Sans, sans-serif" fill="none" stroke="#555" stroke-width="1.6" '
+                    f'stroke-dasharray="3 2.5">{escape(w["word"])}</text>')
+    return f'<svg viewBox="0 0 360 {len(words)*66}" class="tw">{"".join(rows)}</svg>'
+
+CSS_BIG = """
+.bigmaze { width: 100%; height: auto; display: block; }
+.mazebig { display: flex; align-items: stretch; gap: 6px; }
+.mazebig .ml { width: 46px; font-size: 11px; }
+.tw { width: 100%; height: auto; max-height: 190px; }
+table.ws9 td { width: 26px; height: 19px; font-size: 16px; }
+.words4 { grid-template-columns: repeat(4, 1fr); }
+.color.sm { height: 132px; }
+"""
+
+def build_bigmaze(s):
+    rng = random.Random(s.get("seed", 1))
+    icons = {**ICONS, **s.get("icons", {})}
+    m = s["maze"]
+    mw, mh = m.get("cols", 22), m.get("rows", 9)
+    walls = max((make_maze(rng, mw, mh) for _ in range(30)), key=lambda w: solution_len(w, mw, mh))
+    g = make_search(rng, [w["word"] for w in s["search"]], s.get("search_size", 9))
+    listen = "".join(
+        f'<div class="li">{icon(w["icon"], icons, 26)}<span class="w">{escape(w["label"])}</span>'
+        f'<span class="c">{"<span></span>" * 8}</span></div>' for w in s["listen"])
+    words = "".join(f'<div>{icon(w["icon"], icons, 20)}{escape(w["word"])}</div>' for w in s["search"])
+    psalters = "".join(f"<span>{escape(p)}</span>" for p in s["psalters"])
+    qs = "".join(f"<li>{q}</li>" for q in s["questions"])
+    c1 = s["color1"]
+    table = search_table(g).replace('class="ws"', 'class="ws ws9"')
+    return f"""<!doctype html><html><head><meta charset="utf-8"><title>{escape(s["title"])}</title>
+<style>{CSS}{CSS_BIG}</style></head><body><div class="page">
+<header>
+  <div><h1>{escape(s["title"])}</h1><div class="sub"><b>{escape(s["service"])}</b> &middot; {escape(s["passage"])}</div></div>
+  <div class="name">Name: ________________</div>
+</header>
+<div class="row">
+  <div class="box">
+    <h2>Listening Game</h2>
+    <div class="hint">Every time you hear the word, color in one circle! Which one wins?</div>
+    <div class="listen">{listen}</div>
+    <div class="psalters"><b>Check off the Psalters we sing:</b>{psalters}</div>
+  </div>
+</div>
+<div class="row">
+  <div class="box">
+    <h2>{escape(m["title"])}</h2>
+    <div class="mazebig">
+      <div class="ml s">{icon(m["start_icon"], icons, 32)}{escape(m["start_label"])}<br>&rarr;</div>
+      <div style="flex:1">{maze_svg(walls, mw, mh, "bigmaze")}</div>
+      <div class="ml e">&rarr;<br>{icon(m["end_icon"], icons, 32)}{escape(m["end_label"])}</div>
+    </div>
+    <div class="cap">{escape(m["caption"])}</div>
+  </div>
+</div>
+<div class="row">
+  <div class="box"><h2>Trace the Big Words</h2>{trace_words_svg(s["trace_words"], icons)}</div>
+  <div class="box"><h2>Find the Words</h2>{table}<div class="words words4">{words}</div></div>
+</div>
+<div class="row" style="flex:1">
+  <div class="box"><h2>{escape(c1["title"])}</h2>{color_svg(c1["svg"]).replace('class="color"', 'class="color sm"')}<div class="cap">{escape(c1["caption"])}</div></div>
+  <div class="box"><h2>Can You Answer?</h2><ol class="q">{qs}</ol></div>
+</div>
+</div></body></html>"""
+
 def main():
     src, out_dir = sys.argv[1], sys.argv[2]
     s = json.load(open(src))
@@ -247,7 +335,7 @@ def main():
     os.makedirs(out_dir, exist_ok=True)
     html_path = os.path.abspath(os.path.join(out_dir, name + ".html"))
     pdf_path = os.path.join(out_dir, name + ".pdf")
-    open(html_path, "w").write(build(s))
+    open(html_path, "w").write(build_bigmaze(s) if s.get("layout") == "big-maze" else build(s))
     subprocess.run([CHROME, "--headless", "--no-sandbox", "--disable-gpu", "--no-pdf-header-footer",
                     f"--print-to-pdf={pdf_path}", html_path], check=True, capture_output=True)
     pages = subprocess.run(["pdfinfo", pdf_path], capture_output=True, text=True).stdout

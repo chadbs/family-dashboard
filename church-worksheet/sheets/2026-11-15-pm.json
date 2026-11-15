@@ -1,5 +1,5 @@
 {
- "seed": 20261116,
+ "seed": 20261117,
  "title": "God’s Lesson for Jonah",
  "service": "Evening Worship · Sunday, November 15, 2026",
  "passage": "Jonah 4",
@@ -41,12 +41,14 @@
   ]
  },
  "maze": {
-  "title": "Maze: The Worm Goes to the Gourd",
+  "title": "Big Maze: The Worm Goes to the Gourd",
   "start_icon": "WORM",
   "start_label": "WORM",
   "end_icon": "PLANT",
   "end_label": "GOURD",
-  "caption": "“But God prepared a worm when the morning rose the next day, and it smote the gourd that it withered.” Jonah 4:7"
+  "caption": "“But God prepared a worm when the morning rose the next day, and it smote the gourd that it withered.” Jonah 4:7",
+  "cols": 26,
+  "rows": 10
  },
  "search": [
   {
@@ -72,6 +74,10 @@
   {
    "word": "CITY",
    "icon": "CITY"
+  },
+  {
+   "word": "ANGRY",
+   "icon": "ANGRY"
   }
  ],
  "color1": {
@@ -155,5 +161,20 @@
   "Then God sent a ________ to eat the plant.",
   "God pitied the people and the ________ too!",
   "God is &#9744; gracious and merciful &nbsp;&#9744; mean"
+ ],
+ "layout": "big-maze",
+ "trace_words": [
+  {
+   "word": "GOD",
+   "icon": "GOD"
+  },
+  {
+   "word": "JONAH",
+   "icon": "PERSON"
+  },
+  {
+   "word": "WORM",
+   "icon": "WORM"
+  }
  ]
 }

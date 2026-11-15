@@ -23,6 +23,12 @@ content per service. `church-worksheet/sheets/2026-10-18-pm.json` is the approve
   use symbols like a crown, cross, Bible, or light. People in the passage (Jonah, David, sailors) are fine.
   Teach sovereign grace in simple words: God saves; we can't save ourselves.
 
+## Fresher layout (she loves mazes)
+
+Set `"layout": "big-maze"` for a full-width harder maze (`maze.cols`/`maze.rows`, 26x10 is good), big tracing words
+(`trace_words`: 3 words with icons), a 9x9 word search with 7 words, one small coloring and the questions. No verse,
+Count It! or dot-to-dot in this layout. See `sheets/2026-11-15-pm.json`. Mix layouts week to week so it doesn't get stale.
+
 ## Steps
 
 1. **Find the bulletin.** Gmail search `from:church-news@byronprc.org bulletin newer_than:4d`. It arrives
