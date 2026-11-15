@@ -1,0 +1,163 @@
+{
+ "seed": 20261115,
+ "title": "Turn from Sin to God!",
+ "service": "Morning Worship · Sunday, November 15, 2026",
+ "passage": "Lord’s Day 33 · Jeremiah 4",
+ "icons": {
+  "TURN": "<path d=\"M6 21 V10 a6 6 0 0 1 12 0 V16\"/><path d=\"M14 13 L18 17 L22 13\"/>"
+ },
+ "listen": [
+  {
+   "label": "GOD",
+   "icon": "GOD"
+  },
+  {
+   "label": "JESUS",
+   "icon": "CROSS"
+  },
+  {
+   "label": "TURN",
+   "icon": "TURN"
+  },
+  {
+   "label": "HEART",
+   "icon": "HEART"
+  }
+ ],
+ "psalters": [
+  "22C",
+  "25D",
+  "80B",
+  "34D"
+ ],
+ "verse": {
+  "ref": "Jeremiah 4:1",
+  "lines": [
+   "return",
+   "unto me"
+  ]
+ },
+ "maze": {
+  "title": "Maze: Walk in God’s Way",
+  "start_icon": "PERSON",
+  "start_label": "ME",
+  "end_icon": "CHURCH",
+  "end_label": "GOD’S WAY",
+  "caption": "“O Jerusalem, wash thine heart from wickedness, that thou mayest be saved.” Jeremiah 4:14"
+ },
+ "search": [
+  {
+   "word": "GOD",
+   "icon": "GOD"
+  },
+  {
+   "word": "JESUS",
+   "icon": "CROSS"
+  },
+  {
+   "word": "TURN",
+   "icon": "TURN"
+  },
+  {
+   "word": "HEART",
+   "icon": "HEART"
+  },
+  {
+   "word": "PRAY",
+   "icon": "PRAY"
+  },
+  {
+   "word": "JOY",
+   "icon": "SUN"
+  }
+ ],
+ "color1": {
+  "title": "Color: Which Way? God’s Way!",
+  "svg": "<path d=\"M120 200 Q110 140 40 82\"/><path d=\"M180 200 Q190 140 262 82\"/><path d=\"M70 82 Q150 130 232 82\"/><path d=\"M14 86 l6 -12 l6 12 l6 -14 l6 14 l6 -12 l6 12\" /><path d=\"M40 70 l5 -10 l5 10 l5 -12 l5 12 l5 -10 l5 10\"/><path d=\"M0 100 l5 -9 l5 9 l5 -10 l5 10\"/><path d=\"M232 78 V50 L248 36 L264 50 V78 Z\"/><path d=\"M248 36 V24 M243 29 h10\"/><path d=\"M244 78 v-10 h8 v10\"/><circle cx=\"286\" cy=\"18\" r=\"9\"/><path d=\"M286 3 v-3 M271 18 h-3 M276 8 l-3 -3\" stroke-width=\"1.5\"/><path d=\"M150 192 V108\"/><path d=\"M150 112 H104 l-12 9 l12 9 H150 Z\"/><text x=\"124\" y=\"126\" font-size=\"13\" font-weight=\"800\" text-anchor=\"middle\" fill=\"#000\" stroke=\"none\">SIN</text><path d=\"M150 134 H196 l12 9 l-12 9 H150 Z\"/><text x=\"176\" y=\"148\" font-size=\"13\" font-weight=\"800\" text-anchor=\"middle\" fill=\"#000\" stroke=\"none\">GOD</text><circle cx=\"214\" cy=\"96\" r=\"7\"/><path d=\"M208 104 h12 l4 18 h-20 Z\"/><path d=\"M210 122 l-3 10 M218 122 l4 10\"/><path d=\"M220 108 l8 -6\" />",
+  "caption": "“If thou wilt return, O Israel, saith the LORD, return unto me.” Jeremiah 4:1"
+ },
+ "count": {
+  "icons": [
+   "HEART",
+   "SUN",
+   "BIBLE",
+   "PRAY"
+  ]
+ },
+ "dots": {
+  "points": [
+   [
+    10,
+    45
+   ],
+   [
+    45,
+    45
+   ],
+   [
+    85,
+    45
+   ],
+   [
+    120,
+    45
+   ],
+   [
+    120,
+    25
+   ],
+   [
+    120,
+    6
+   ],
+   [
+    160,
+    34
+   ],
+   [
+    200,
+    62
+   ],
+   [
+    160,
+    90
+   ],
+   [
+    120,
+    118
+   ],
+   [
+    120,
+    98
+   ],
+   [
+    120,
+    80
+   ],
+   [
+    85,
+    80
+   ],
+   [
+    45,
+    80
+   ],
+   [
+    10,
+    80
+   ],
+   [
+    10,
+    62
+   ]
+  ],
+  "caption": "“Let him return unto the LORD, and he will have mercy upon him.” Isaiah 55:7"
+ },
+ "questions": [
+  "To be converted means to ______ from sin to God.",
+  "When we sin, we should feel &#9744; sorry &nbsp;&#9744; happy",
+  "Who gives us a new heart? &#9744; me &nbsp;&#9744; God",
+  "We turn from sin &#9744; just once &nbsp;&#9744; every day",
+  "&ldquo;Return unto ______,&rdquo; saith the LORD. (Jer. 4:1)"
+ ]
+}
