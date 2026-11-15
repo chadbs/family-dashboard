@@ -29,6 +29,12 @@ Set `"layout": "big-maze"` for a full-width harder maze (`maze.cols`/`maze.rows`
 (`trace_words`: 3 words with icons), a 9x9 word search with 7 words, one small coloring and the questions. No verse,
 Count It! or dot-to-dot in this layout. See `sheets/2026-11-15-pm.json`. Mix layouts week to week so it doesn't get stale.
 
+## Puzzle layout
+
+`"layout": "puzzle"`: sermon bingo (8 icons + free middle), match the shadow (4 icons), a round maze with an icon in
+the middle, color by number (`svg` with numbered regions + `key`), and spot 5 differences (`scene` +
+`only_in_first`, the 5 things missing from the second picture). See `sheets/2026-11-15-pm-puzzle.json`.
+
 ## Steps
 
 1. **Find the bulletin.** Gmail search `from:church-news@byronprc.org bulletin newer_than:4d`. It arrives

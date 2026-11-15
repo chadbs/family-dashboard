@@ -328,6 +328,124 @@ def build_bigmaze(s):
 </div>
 </div></body></html>"""
 
+# ---------------- "Puzzle" layout: bingo, shadows, round maze, color-by-number, spot the difference ----------------
+import math
+
+def round_maze_svg(rng, rings=8, w=14, r0=16):
+    """Circular maze: start at the gap on the outside, finish in the middle."""
+    counts = [8]
+    for i in range(2, rings + 1):
+        r_in = r0 + (i - 1) * w
+        counts.append(counts[-1] * 2 if 2 * math.pi * r_in / counts[-1] > 1.9 * w else counts[-1])
+    def nbrs(i, j):
+        c = counts[i - 1]
+        out = [(i, (j + 1) % c), (i, (j - 1) % c)]
+        out.append((0, 0) if i == 1 else (i - 1, j * counts[i - 2] // c))
+        if i < rings:
+            nc = counts[i]
+            out += [(i + 1, j * 2), (i + 1, j * 2 + 1)] if nc == 2 * c else [(i + 1, j)]
+        return out
+    start = (rings, 0)
+    links, seen, stack = set(), {start}, [start]
+    while stack:
+        cur = stack[-1]
+        opts = [n for n in (nbrs(*cur) if cur != (0, 0) else [(1, j) for j in range(counts[0])]) if n not in seen]
+        if cur == (0, 0) or not opts:  # the centre is a dead end (the goal), never a branch point
+            stack.pop(); continue
+        n = rng.choice(opts)
+        links.add(frozenset((cur, n))); seen.add(n); stack.append(n)
+    R = r0 + rings * w
+    cx = cy = R + 4
+    pt = lambda r, a: (cx + r * math.sin(a), cy - r * math.cos(a))
+    d = []
+    for i in range(1, rings + 1):
+        c = counts[i - 1]
+        r_in, r_out = r0 + (i - 1) * w, r0 + i * w
+        for j in range(c):
+            a0, a1 = 2 * math.pi * j / c, 2 * math.pi * (j + 1) / c
+            inner = (0, 0) if i == 1 else (i - 1, j * counts[i - 2] // c)
+            if frozenset(((i, j), inner)) not in links:
+                (x0, y0), (x1, y1) = pt(r_in, a0), pt(r_in, a1)
+                d.append(f"M{x0:.1f} {y0:.1f}A{r_in} {r_in} 0 0 1 {x1:.1f} {y1:.1f}")
+            if frozenset(((i, j), (i, (j + 1) % c))) not in links:
+                (x0, y0), (x1, y1) = pt(r_in, a1), pt(r_out, a1)
+                d.append(f"M{x0:.1f} {y0:.1f}L{x1:.1f} {y1:.1f}")
+            if i == rings and j != 0:
+                (x0, y0), (x1, y1) = pt(r_out, a0), pt(r_out, a1)
+                d.append(f"M{x0:.1f} {y0:.1f}A{r_out} {r_out} 0 0 1 {x1:.1f} {y1:.1f}")
+    size = 2 * (R + 4)
+    return size, cx, cy, r0, f'<path d="{" ".join(d)}" stroke="#000" stroke-width="2" fill="none" stroke-linecap="round"/>'
+
+CSS_PUZ = """
+.bingo { border-collapse: collapse; margin: 0 auto; }
+.bingo td { width: 60px; height: 50px; border: 2px solid #000; text-align: center; vertical-align: middle; }
+.bingo td.free { font-size: 11px; font-weight: 800; }
+.shadows { width: 100%; height: 196px; }
+.rmaze { width: 100%; height: 318px; }
+.cbn { width: 100%; height: 300px; }
+.key { display: flex; gap: 10px; justify-content: center; font-size: 12px; font-weight: 700; flex-wrap: wrap; }
+.key span { display: inline-flex; align-items: center; gap: 4px; }
+.key b { display: inline-flex; width: 18px; height: 18px; border: 1.6px solid #000; border-radius: 50%; align-items: center; justify-content: center; font-size: 11px; }
+.diff { display: flex; gap: 10px; }
+.diff svg { flex: 1; height: 186px; border: 1.5px solid #000; border-radius: 6px; }
+.psal { font-size: 11.5px; margin-top: 3px; }
+.psal span { border: 1.5px solid #000; border-radius: 4px; padding: 0 5px; margin-left: 4px; font-weight: 700; }
+.psal span::before { content: "\\2610 "; font-weight: 400; }
+"""
+
+def build_puzzle(s):
+    rng = random.Random(s.get("seed", 1))
+    icons = {**ICONS, **s.get("icons", {})}
+    # bingo: 3x3 of icons with a free middle
+    b = list(s["bingo"]); rng.shuffle(b)
+    cells = b[:4] + ["FREE"] + b[4:8]
+    bingo = "<table class='bingo'>" + "".join(
+        "<tr>" + "".join(
+            f"<td class='free'>&#10013;<br>FREE</td>" if n == "FREE" else f"<td>{icon(n, icons, 34)}</td>"
+            for n in cells[r * 3:r * 3 + 3]) + "</tr>" for r in range(3)) + "</table>"
+    # match the shadow
+    names = s["shadows"]; shuffled = names[:]
+    while shuffled == names: rng.shuffle(shuffled)
+    sh = '<svg viewBox="0 0 220 200" class="shadows" stroke-linejoin="round" stroke-linecap="round">'
+    for k, (a, bname) in enumerate(zip(names, shuffled)):
+        y = 6 + k * 48
+        sh += (f'<svg x="8" y="{y}" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="1.8">{icons[a]}</svg>'
+               f'<circle cx="62" cy="{y+20}" r="3.5" fill="#000"/><circle cx="160" cy="{y+20}" r="3.5" fill="#000"/>'
+               f'<svg x="172" y="{y}" width="40" height="40" viewBox="0 0 24 24" fill="#000" stroke="#000" stroke-width="2.4">{icons[bname]}</svg>')
+    sh += "</svg>"
+    m = s["round_maze"]
+    size, cx, cy, r0, mz = round_maze_svg(rng, m.get("rings", 8))
+    goal = icons[m["center_icon"]]
+    rmaze = (f'<svg viewBox="-30 -18 {size+60} {size+22}" class="rmaze">{mz}'
+             f'<svg x="{cx-r0+3}" y="{cy-r0+3}" width="{2*r0-6}" height="{2*r0-6}" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2">{goal}</svg>'
+             f'<text x="{cx}" y="-6" font-size="12" font-weight="800" text-anchor="middle">&darr; START</text></svg>')
+    cb = s["color_by_number"]
+    key = "".join(f'<span><b>{n}</b>{escape(c)}</span>' for n, c in cb["key"])
+    df = s["differences"]
+    pa = color_svg(df["scene"] + df["only_in_first"]).replace('class="color"', '')
+    pb = color_svg(df["scene"]).replace('class="color"', '')
+    psal = "".join(f"<span>{escape(p)}</span>" for p in s["psalters"])
+    return f"""<!doctype html><html><head><meta charset="utf-8"><title>{escape(s["title"])}</title>
+<style>{CSS}{CSS_PUZ}</style></head><body><div class="page">
+<header>
+  <div><h1>{escape(s["title"])}</h1><div class="sub"><b>{escape(s["service"])}</b> &middot; {escape(s["passage"])}</div>
+  <div class="psal"><b>Check off the Psalters:</b>{psal}</div></div>
+  <div class="name">Name: ________________</div>
+</header>
+<div class="row">
+  <div class="box"><h2>Sermon Bingo</h2><div class="hint">Hear it? Put an X on the picture! Three in a row = BINGO!</div>{bingo}</div>
+  <div class="box"><h2>Match the Shadow</h2><div class="hint">Draw a line from each picture to its shadow.</div>{sh}</div>
+</div>
+<div class="row">
+  <div class="box"><h2>{escape(m["title"])}</h2>{rmaze}<div class="cap">{escape(m["caption"])}</div></div>
+  <div class="box"><h2>Color by Number</h2><div class="key">{key}</div>{color_svg(cb["svg"]).replace('class="color"', 'class="cbn"')}<div class="cap">{escape(cb["caption"])}</div></div>
+</div>
+<div class="row" style="flex:1">
+  <div class="box"><h2>Spot {df.get("count", 5)} Differences</h2><div class="hint">Circle the {df.get("count", 5)} things missing from the second picture!</div>
+  <div class="diff">{pa}{pb}</div><div class="cap">{escape(df["caption"])}</div></div>
+</div>
+</div></body></html>"""
+
 def main():
     src, out_dir = sys.argv[1], sys.argv[2]
     s = json.load(open(src))
@@ -335,7 +453,7 @@ def main():
     os.makedirs(out_dir, exist_ok=True)
     html_path = os.path.abspath(os.path.join(out_dir, name + ".html"))
     pdf_path = os.path.join(out_dir, name + ".pdf")
-    open(html_path, "w").write(build_bigmaze(s) if s.get("layout") == "big-maze" else build(s))
+    open(html_path, "w").write({"big-maze": build_bigmaze, "puzzle": build_puzzle}.get(s.get("layout"), build)(s))
     subprocess.run([CHROME, "--headless", "--no-sandbox", "--disable-gpu", "--no-pdf-header-footer",
                     f"--print-to-pdf={pdf_path}", html_path], check=True, capture_output=True)
     pages = subprocess.run(["pdfinfo", pdf_path], capture_output=True, text=True).stdout
