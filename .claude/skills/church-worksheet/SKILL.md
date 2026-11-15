@@ -35,6 +35,13 @@ Count It! or dot-to-dot in this layout. See `sheets/2026-11-15-pm.json`. Mix lay
 the middle, color by number (`svg` with numbered regions + `key`), and spot 5 differences (`scene` +
 `only_in_first`, the 5 things missing from the second picture). See `sheets/2026-11-15-pm-puzzle.json`.
 
+## Dots layout (she loves connect-the-dots)
+
+`"layout": "dots"`: a whole page of connect-the-dots. `rows` is a list of rows, each a list of
+`{title, points, extras_svg, height, caption, bounds?}`. One big picture (25-30 dots) on top, then 2 rows of 2 smaller
+ones (14-20 dots). Points can use any coordinates; the box fits them (pass `bounds` [x0,y0,x1,y1] when `extras_svg`
+reaches past the dots). Numbers are placed automatically. See `sheets/2026-11-15-pm-dots.json`.
+
 ## Steps
 
 1. **Find the bulletin.** Gmail search `from:church-news@byronprc.org bulletin newer_than:4d`. It arrives

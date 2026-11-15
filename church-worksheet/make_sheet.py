@@ -446,6 +446,64 @@ def build_puzzle(s):
 </div>
 </div></body></html>"""
 
+# ---------------- "Dots" layout: a page of connect-the-dots ----------------
+def big_dots_svg(pts, extras="", h=200, bounds=None):
+    """Connect-the-dots sized from its own points; numbers sit just outside the shape."""
+    xs, ys = [p[0] for p in pts], [p[1] for p in pts]
+    cx, cy = sum(xs) / len(xs), sum(ys) / len(ys)
+    x0, y0, x1, y1 = bounds or (min(xs) - 22, min(ys) - 20, max(xs) + 22, max(ys) + 20)
+    out = []
+    # put each number where it's farthest from the outline's lines and the other numbers
+    segs = [(pts[i], pts[(i + 1) % len(pts)]) for i in range(len(pts))]
+    def seg_dist(px, py, a, b):
+        (ax, ay), (bx, by) = a, b
+        L = (bx - ax) ** 2 + (by - ay) ** 2 or 1
+        t = max(0, min(1, ((px - ax) * (bx - ax) + (py - ay) * (by - ay)) / L))
+        return math.hypot(px - ax - t * (bx - ax), py - ay - t * (by - ay))
+    area = sum(a[0] * b[1] - b[0] * a[1] for a, b in segs)
+    sign = 1 if area > 0 else -1
+    placed = []
+    for i, (x, y) in enumerate(pts, 1):
+        (px, py), (nx, ny) = pts[i - 2], pts[i % len(pts)]
+        ox_, oy_ = (ny - py) * sign, -(nx - px) * sign  # outward normal
+        on = math.hypot(ox_, oy_) or 1
+        best = None
+        for k in range(16):
+            ang = 2 * math.pi * k / 16
+            qx, qy = x + 13 * math.cos(ang), y + 13 * math.sin(ang)
+            score = min([seg_dist(qx, qy, a, b) for a, b in segs] +
+                        [math.hypot(qx - ox, qy - oy) - 4 for ox, oy in placed] + [99])
+            score = min(score, 9) + 4 * (math.cos(ang) * ox_ + math.sin(ang) * oy_) / on
+            if best is None or score > best[0]:
+                best = (score, qx, qy)
+        tx, ty = best[1], best[2] + 4
+        placed.append((best[1], best[2]))
+        out.append(f'<circle cx="{x}" cy="{y}" r="3.2"/>'
+                   f'<text x="{tx:.1f}" y="{ty:.1f}" font-size="12" font-weight="800" text-anchor="middle">{i}</text>')
+    return (f'<svg viewBox="{x0} {y0} {x1-x0} {y1-y0}" style="width:100%;height:{h}px">'
+            f'<g fill="none" stroke="#000" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">{extras}</g>'
+            f'{"".join(out)}</svg>')
+
+def build_dots(s):
+    psal = "".join(f"<span>{escape(p)}</span>" for p in s["psalters"])
+    rows = ""
+    for row in s["rows"]:
+        boxes = "".join(
+            f'<div class="box"><h2>{escape(d["title"])} &middot; 1&ndash;{len(d["points"])}</h2>'
+            f'{big_dots_svg(d["points"], d.get("extras_svg", ""), d.get("height", 200), d.get("bounds"))}'
+            f'<div class="cap">{escape(d["caption"])}</div></div>' for d in row)
+        rows += f'<div class="row" style="flex:1">{boxes}</div>'
+    return f"""<!doctype html><html><head><meta charset="utf-8"><title>{escape(s["title"])}</title>
+<style>{CSS}{CSS_PUZ}</style></head><body><div class="page">
+<header>
+  <div><h1>{escape(s["title"])}</h1><div class="sub"><b>{escape(s["service"])}</b> &middot; {escape(s["passage"])}</div>
+  <div class="psal"><b>Check off the Psalters:</b>{psal}</div></div>
+  <div class="name">Name: ________________</div>
+</header>
+<div class="hint" style="font-size:12px;text-align:center"><b>Connect the dots from 1 to the last number, then color your pictures!</b></div>
+{rows}
+</div></body></html>"""
+
 def main():
     src, out_dir = sys.argv[1], sys.argv[2]
     s = json.load(open(src))
@@ -453,7 +511,7 @@ def main():
     os.makedirs(out_dir, exist_ok=True)
     html_path = os.path.abspath(os.path.join(out_dir, name + ".html"))
     pdf_path = os.path.join(out_dir, name + ".pdf")
-    open(html_path, "w").write({"big-maze": build_bigmaze, "puzzle": build_puzzle}.get(s.get("layout"), build)(s))
+    open(html_path, "w").write({"big-maze": build_bigmaze, "puzzle": build_puzzle, "dots": build_dots}.get(s.get("layout"), build)(s))
     subprocess.run([CHROME, "--headless", "--no-sandbox", "--disable-gpu", "--no-pdf-header-footer",
                     f"--print-to-pdf={pdf_path}", html_path], check=True, capture_output=True)
     pages = subprocess.run(["pdfinfo", pdf_path], capture_output=True, text=True).stdout
